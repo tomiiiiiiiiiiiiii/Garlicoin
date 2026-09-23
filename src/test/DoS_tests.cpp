@@ -16,6 +16,7 @@
 
 #include <test/test_bitcoin.h>
 
+#include <algorithm>
 #include <stdint.h>
 
 #include <boost/test/unit_test.hpp>
@@ -130,7 +131,10 @@ BOOST_AUTO_TEST_CASE(stale_tip_peer_management)
         BOOST_CHECK(node->fDisconnect == false);
     }
 
-    SetMockTime(GetTime() + 3*consensusParams.nPowTargetSpacing + 1);
+    const int64_t staleCheckDelay = std::max<int64_t>(
+        3 * consensusParams.nPowTargetSpacing,
+        STALE_CHECK_INTERVAL) + 1;
+    SetMockTime(GetTime() + staleCheckDelay);
 
     // Now tip should definitely be stale, and we should look for an extra
     // outbound peer

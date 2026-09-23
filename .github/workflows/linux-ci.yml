@@ -95,6 +95,7 @@ jobs:
           src/test/test_garlicoin --run_test=main_tests
           src/test/test_garlicoin --run_test=base58_tests
           src/test/test_garlicoin --run_test=key_tests/key_test1
+          src/test/test_garlicoin --run_test=DoS_tests/stale_tip_peer_management
 
       - name: Full unit suite (diagnostic)
         continue-on-error: true
