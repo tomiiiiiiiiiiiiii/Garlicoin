@@ -17,12 +17,13 @@ BOOST_FIXTURE_TEST_SUITE(pow_tests, BasicTestingSetup)
 BOOST_AUTO_TEST_CASE(get_next_work)
 {
     const auto chainParams = CreateChainParams(CBaseChainParams::MAIN);
-    int64_t nLastRetargetTime = 1358118740; // Block #278207
+    const auto& consensusParams = chainParams->GetConsensus();
     CBlockIndex pindexLast;
     pindexLast.nHeight = 280223;
-    pindexLast.nTime = 1358378777;  // Block #280223
-    pindexLast.nBits =  0x1c0ac141;
-    BOOST_CHECK_EQUAL(CalculateNextWorkRequired(&pindexLast, nLastRetargetTime, chainParams->GetConsensus()), 0x1c093f8d);
+    pindexLast.nTime = 1358378777;
+    pindexLast.nBits = 0x1c0ac141;
+    int64_t nLastRetargetTime = pindexLast.nTime - consensusParams.nPowTargetTimespan;
+    BOOST_CHECK_EQUAL(CalculateNextWorkRequired(&pindexLast, nLastRetargetTime, consensusParams), pindexLast.nBits);
 }
 
 /* Test the constraint on the upper bound for next work */
@@ -41,12 +42,13 @@ BOOST_AUTO_TEST_CASE(get_next_work_pow_limit)
 BOOST_AUTO_TEST_CASE(get_next_work_lower_limit_actual)
 {
     const auto chainParams = CreateChainParams(CBaseChainParams::MAIN);
-    int64_t nLastRetargetTime = 1401682934; // NOTE: Not an actual block time
+    const auto& consensusParams = chainParams->GetConsensus();
     CBlockIndex pindexLast;
     pindexLast.nHeight = 578591;
-    pindexLast.nTime = 1401757934;  // Block #578591
+    pindexLast.nTime = 1401757934;
     pindexLast.nBits = 0x1b075cf1;
-    BOOST_CHECK_EQUAL(CalculateNextWorkRequired(&pindexLast, nLastRetargetTime, chainParams->GetConsensus()), 0x1b01d73c);
+    int64_t nLastRetargetTime = pindexLast.nTime - consensusParams.nPowTargetTimespan / 8;
+    BOOST_CHECK_EQUAL(CalculateNextWorkRequired(&pindexLast, nLastRetargetTime, consensusParams), 0x1b01d73c);
 }
 
 /* Test the constraint on the upper bound for actual time taken */
