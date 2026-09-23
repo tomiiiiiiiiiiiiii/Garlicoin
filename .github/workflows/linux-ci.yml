@@ -94,6 +94,7 @@ jobs:
           src/test/test_garlicoin --run_test=compress_tests
           src/test/test_garlicoin --run_test=main_tests
           src/test/test_garlicoin --run_test=base58_tests
+          src/test/test_garlicoin --run_test=key_tests/key_test1
 
       - name: Full unit suite (diagnostic)
         continue-on-error: true
