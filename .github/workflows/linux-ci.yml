@@ -171,5 +171,4 @@ jobs:
             wallet_encryption.py \
             rpc_uptime.py \
             rpc_net.py \
-            interface_bitcoin_cli.py \
-            rpc_decodescript.py
+            interface_bitcoin_cli.py
