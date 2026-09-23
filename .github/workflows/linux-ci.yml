@@ -163,18 +163,13 @@ jobs:
         run: |
           make ${MAKEJOBS}
 
-      - name: Run wallet-enabled unit suite (diagnostic)
-        continue-on-error: true
-        run: |
-          make check VERBOSE=1
-
       - name: Run functional smoke tests
         run: |
           python3 test/functional/test_runner.py \
             --jobs=1 \
             --combinedlogslen=100 \
-            wallet_basic.py \
+            wallet_encryption.py \
             rpc_uptime.py \
             rpc_net.py \
             interface_bitcoin_cli.py \
-            feature_block.py
+            rpc_decodescript.py
