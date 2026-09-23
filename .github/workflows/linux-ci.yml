@@ -171,10 +171,10 @@ jobs:
       - name: Run functional smoke tests
         run: |
           python3 test/functional/test_runner.py \
-            --jobs=2 \
+            --jobs=1 \
             --combinedlogslen=100 \
             wallet_basic.py \
             rpc_uptime.py \
-            rpc_blockchain.py \
+            rpc_net.py \
             interface_bitcoin_cli.py \
             feature_block.py
