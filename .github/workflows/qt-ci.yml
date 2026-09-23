@@ -1,0 +1,93 @@
+name: Qt GUI CI
+
+on:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'src/**'
+      - 'depends/**'
+      - 'configure.ac'
+      - 'build-aux/**'
+      - '.github/workflows/qt-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qt-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qt-wallet-build:
+    name: Qt GUI + wallet build
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+
+    env:
+      HOST: x86_64-unknown-linux-gnu
+      MAKEJOBS: -j2
+      GARLICOIN_SCRYPT: "1"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            autoconf \
+            automake \
+            autotools-dev \
+            bsdmainutils \
+            build-essential \
+            ca-certificates \
+            ccache \
+            curl \
+            git \
+            gperf \
+            libtool \
+            patch \
+            perl \
+            pkg-config \
+            python3
+
+      - name: Cache Qt and wallet depends
+        uses: actions/cache@v4
+        with:
+          path: |
+            depends/built
+            depends/sources
+          key: garlicoin-depends-qt-wallet-${{ runner.os }}-${{ env.HOST }}-${{ hashFiles('depends/**') }}
+          restore-keys: |
+            garlicoin-depends-qt-wallet-${{ runner.os }}-${{ env.HOST }}-
+
+      - name: Build deterministic Qt 5.7.1 and Berkeley DB 4.8 dependencies
+        run: |
+          make ${MAKEJOBS} -C depends \
+            HOST="${HOST}" \
+            NO_UPNP=1
+
+      - name: Configure Qt GUI with wallet enabled
+        run: |
+          ./autogen.sh
+          CONFIG_SITE="$PWD/depends/${HOST}/share/config.site" \
+            ./configure \
+              --enable-wallet \
+              --with-gui=qt5 \
+              --without-miniupnpc \
+              --disable-zmq \
+              --enable-sse2 \
+              --disable-tests \
+              --disable-bench
+
+      - name: Build garlicoin-qt
+        run: |
+          make ${MAKEJOBS} -C src bitcoin_qt
+
+      - name: Verify GUI binary
+        run: |
+          test -x src/qt/garlicoin-qt
+          file src/qt/garlicoin-qt
