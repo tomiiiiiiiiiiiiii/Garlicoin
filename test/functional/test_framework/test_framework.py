@@ -325,10 +325,10 @@ class BitcoinTestFramework():
         blockchain.  If the cached version of the blockchain is used without
         mocktime then the mempools will not sync due to IBD.
 
-        For backwared compatibility of the python scripts with previous
-        versions of the cache, this helper function sets mocktime to Jan 1,
-        2014 + (201 * 10 * 60)"""
-        self.mocktime = 1388534400 + (201 * 10 * 60)
+        Keep mocktime aligned with Garlicoin regtest, whose genesis block
+        timestamp is 1662619162. The cached 200-block chain starts one second
+        after genesis and retains the historical 10-minute test spacing."""
+        self.mocktime = 1662619163 + (201 * 10 * 60)
 
     def disable_mocktime(self):
         self.mocktime = 0
