@@ -1,9 +1,6 @@
 name: Linux CI
 
 on:
-  push:
-    branches:
-      - maintenance-2026
   pull_request:
     branches:
       - master
