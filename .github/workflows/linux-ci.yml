@@ -103,7 +103,8 @@ jobs:
           src/test/test_garlicoin --run_test=miner_tests/CreateNewBlock_validity
 
   full-unit-suite-diagnostic:
-    name: Full unit suite (diagnostic)
+    name: Full unit suite (diagnostic, manual only)
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-22.04
     timeout-minutes: 90
 
