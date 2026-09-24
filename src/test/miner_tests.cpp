@@ -10,6 +10,7 @@
 #include <consensus/validation.h>
 #include <validation.h>
 #include <miner.h>
+#include <pow.h>
 #include <policy/policy.h>
 #include <pubkey.h>
 #include <script/standard.h>
@@ -207,8 +208,11 @@ BOOST_AUTO_TEST_CASE(CreateNewBlock_validity)
         int nHeight;
         {
             LOCK(cs_main);
-            IncrementExtraNonce(pblock, chainActive.Tip(), extraNonce);
-            nHeight = chainActive.Height() + 1;
+            const CBlockIndex* pindexPrev = chainActive.Tip();
+            IncrementExtraNonce(pblock, pindexPrev, extraNonce);
+            pblock->nTime = pindexPrev->GetBlockTime() + chainparams.GetConsensus().nPowTargetSpacing;
+            pblock->nBits = GetNextWorkRequired(pindexPrev, pblock, chainparams.GetConsensus());
+            nHeight = pindexPrev->nHeight + 1;
 
             // Keep the inherited assembler fixture's coinbase outputs
             // trivially spendable. Later cases intentionally use synthetic
