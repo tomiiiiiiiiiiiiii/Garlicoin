@@ -256,7 +256,8 @@ BOOST_AUTO_TEST_CASE(rpc_ban)
     ar = r.get_array();
     BOOST_CHECK_EQUAL(ar.size(), 0);
 
-    int64_t absoluteBanTime = GetTime() + 200;\n    BOOST_CHECK_NO_THROW(r = CallRPC(std::string("setban 127.0.0.0/24 add ") + std::to_string(absoluteBanTime) + " true"));
+    int64_t absoluteBanTime = GetTime() + 200;
+    BOOST_CHECK_NO_THROW(r = CallRPC(std::string("setban 127.0.0.0/24 add ") + std::to_string(absoluteBanTime) + " true"));
     BOOST_CHECK_NO_THROW(r = CallRPC(std::string("listbanned")));
     ar = r.get_array();
     o1 = ar[0].get_obj();
