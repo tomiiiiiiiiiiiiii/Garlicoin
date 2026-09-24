@@ -106,7 +106,6 @@ jobs:
     name: Full unit suite (diagnostic)
     runs-on: ubuntu-22.04
     timeout-minutes: 90
-    continue-on-error: true
 
     env:
       HOST: x86_64-unknown-linux-gnu
@@ -169,6 +168,9 @@ jobs:
           make ${MAKEJOBS} -C src test/test_garlicoin
 
       - name: Run full unit suite with timing
+        id: full_suite
+        timeout-minutes: 75
+        continue-on-error: true
         run: |
           start_time=$(date +%s)
           set +e
@@ -177,6 +179,11 @@ jobs:
           end_time=$(date +%s)
           echo "Full unit suite elapsed: $((end_time - start_time)) seconds"
           exit "$status"
+
+      - name: Report diagnostic outcome
+        if: always()
+        run: |
+          echo "Full unit suite outcome: ${{ steps.full_suite.outcome }}"
 
   wallet-functional-smoke:
     name: Wallet build + functional smoke tests
