@@ -99,6 +99,7 @@ jobs:
           src/test/test_garlicoin --run_test=sighash_tests/sighash_from_data
           src/test/test_garlicoin --run_test=pow_tests
           src/test/test_garlicoin --run_test=transaction_tests/tx_valid
+          src/test/test_garlicoin --run_test=tx_validationcache_tests/tx_mempool_block_doublespend
 
       - name: Full unit suite (diagnostic)
         continue-on-error: true
