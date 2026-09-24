@@ -110,7 +110,7 @@ void scrypt_N_1_1_256_sp_sse2(const char *input, char *output, char *scratchpad,
 
 	for (k = 0; k < 2; k++) {
 		for (i = 0; i < 16; i++) {
-			X.u32[k * 16 + i] = le32dec(&B[(k * 16 + (i * 5 % 16)) * 4]);
+			X.u32[k * 16 + i] = scrypt_le32dec(&B[(k * 16 + (i * 5 % 16)) * 4]);
 		}
 	}
 
@@ -132,7 +132,7 @@ void scrypt_N_1_1_256_sp_sse2(const char *input, char *output, char *scratchpad,
 
 	for (k = 0; k < 2; k++) {
 		for (i = 0; i < 16; i++) {
-			le32enc(&B[(k * 16 + (i * 5 % 16)) * 4], X.u32[k * 16 + i]);
+			scrypt_le32enc(&B[(k * 16 + (i * 5 % 16)) * 4], X.u32[k * 16 + i]);
 		}
 	}
 

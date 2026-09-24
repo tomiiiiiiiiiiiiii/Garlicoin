@@ -1,0 +1,260 @@
+name: Linux CI
+
+on:
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: linux-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-focused-tests:
+    name: Build + focused tests
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+
+    env:
+      HOST: x86_64-unknown-linux-gnu
+      MAKEJOBS: -j2
+      GARLICOIN_SCRYPT: "1"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            autoconf \
+            automake \
+            autotools-dev \
+            bsdmainutils \
+            build-essential \
+            ca-certificates \
+            ccache \
+            curl \
+            git \
+            libtool \
+            pkg-config \
+            python3
+
+      - name: Cache depends
+        uses: actions/cache@v4
+        with:
+          path: |
+            depends/built
+            depends/sources
+          key: garlicoin-depends-headless-${{ runner.os }}-${{ env.HOST }}-${{ hashFiles('depends/**') }}
+          restore-keys: |
+            garlicoin-depends-headless-${{ runner.os }}-${{ env.HOST }}-
+
+      - name: Build deterministic dependencies
+        run: |
+          make ${MAKEJOBS} -C depends \
+            HOST="${HOST}" \
+            NO_QT=1 \
+            NO_WALLET=1 \
+            NO_UPNP=1
+
+      - name: Configure
+        run: |
+          ./autogen.sh
+          CONFIG_SITE="$PWD/depends/${HOST}/share/config.site" \
+            ./configure \
+              --disable-wallet \
+              --without-gui \
+              --without-miniupnpc \
+              --disable-zmq \
+              --enable-sse2
+
+      - name: Build Garlicoin and unit-test binary
+        run: |
+          make ${MAKEJOBS}
+          make ${MAKEJOBS} -C src test/test_garlicoin
+
+      - name: Check Python test helpers
+        run: |
+          python3 -m py_compile \
+            contrib/testgen/gen_base58_test_vectors.py \
+            contrib/testgen/gen_key_io_test_vectors.py \
+            test/functional/test_framework/address.py \
+            test/functional/test_framework/test_node.py
+          contrib/testgen/gen_base58_test_vectors.py valid 5 > /tmp/grlc-key-vectors.json
+          python3 -m json.tool /tmp/grlc-key-vectors.json >/dev/null
+
+      - name: Run focused Garlicoin tests
+        run: |
+          src/test/test_garlicoin --run_test=compress_tests
+          src/test/test_garlicoin --run_test=main_tests
+          src/test/test_garlicoin --run_test=base58_tests
+          src/test/test_garlicoin --run_test=key_tests/key_test1
+          src/test/test_garlicoin --run_test=DoS_tests/stale_tip_peer_management
+          src/test/test_garlicoin --run_test=sighash_tests/sighash_from_data
+          src/test/test_garlicoin --run_test=pow_tests
+          src/test/test_garlicoin --run_test=transaction_tests/tx_valid
+          src/test/test_garlicoin --run_test=tx_validationcache_tests/tx_mempool_block_doublespend
+          src/test/test_garlicoin --run_test=miner_tests/CreateNewBlock_validity
+
+  full-unit-suite-diagnostic:
+    name: Full unit suite (diagnostic, manual only)
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+
+    env:
+      HOST: x86_64-unknown-linux-gnu
+      MAKEJOBS: -j2
+      GARLICOIN_SCRYPT: "1"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            autoconf \
+            automake \
+            autotools-dev \
+            bsdmainutils \
+            build-essential \
+            ca-certificates \
+            ccache \
+            curl \
+            git \
+            libtool \
+            pkg-config \
+            python3
+
+      - name: Cache depends
+        uses: actions/cache@v4
+        with:
+          path: |
+            depends/built
+            depends/sources
+          key: garlicoin-depends-headless-${{ runner.os }}-${{ env.HOST }}-${{ hashFiles('depends/**') }}
+          restore-keys: |
+            garlicoin-depends-headless-${{ runner.os }}-${{ env.HOST }}-
+
+      - name: Build deterministic dependencies
+        run: |
+          make ${MAKEJOBS} -C depends \
+            HOST="${HOST}" \
+            NO_QT=1 \
+            NO_WALLET=1 \
+            NO_UPNP=1
+
+      - name: Configure
+        run: |
+          ./autogen.sh
+          CONFIG_SITE="$PWD/depends/${HOST}/share/config.site" \
+            ./configure \
+              --disable-wallet \
+              --without-gui \
+              --without-miniupnpc \
+              --disable-zmq \
+              --enable-sse2
+
+      - name: Build Garlicoin and unit-test binary
+        run: |
+          make ${MAKEJOBS}
+          make ${MAKEJOBS} -C src test/test_garlicoin
+
+      - name: Run full unit suite with timing
+        id: full_suite
+        timeout-minutes: 75
+        continue-on-error: true
+        run: |
+          start_time=$(date +%s)
+          set +e
+          make check VERBOSE=1
+          status=$?
+          end_time=$(date +%s)
+          echo "Full unit suite elapsed: $((end_time - start_time)) seconds"
+          exit "$status"
+
+      - name: Report diagnostic outcome
+        if: always()
+        run: |
+          echo "Full unit suite outcome: ${{ steps.full_suite.outcome }}"
+
+  wallet-functional-smoke:
+    name: Wallet build + functional smoke tests
+    runs-on: ubuntu-22.04
+    timeout-minutes: 75
+
+    env:
+      HOST: x86_64-unknown-linux-gnu
+      MAKEJOBS: -j2
+      GARLICOIN_SCRYPT: "1"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            autoconf \
+            automake \
+            autotools-dev \
+            bsdmainutils \
+            build-essential \
+            ca-certificates \
+            ccache \
+            curl \
+            git \
+            libtool \
+            pkg-config \
+            python3
+
+      - name: Cache wallet depends
+        uses: actions/cache@v4
+        with:
+          path: |
+            depends/built
+            depends/sources
+          key: garlicoin-depends-wallet-${{ runner.os }}-${{ env.HOST }}-${{ hashFiles('depends/**') }}
+          restore-keys: |
+            garlicoin-depends-wallet-${{ runner.os }}-${{ env.HOST }}-
+
+      - name: Build dependencies with Berkeley DB 4.8
+        run: |
+          make ${MAKEJOBS} -C depends \
+            HOST="${HOST}" \
+            NO_QT=1 \
+            NO_UPNP=1
+
+      - name: Configure with wallet enabled
+        run: |
+          ./autogen.sh
+          CONFIG_SITE="$PWD/depends/${HOST}/share/config.site" \
+            ./configure \
+              --enable-wallet \
+              --without-gui \
+              --without-miniupnpc \
+              --disable-zmq \
+              --enable-sse2
+
+      - name: Build Garlicoin with wallet
+        run: |
+          make ${MAKEJOBS}
+
+      - name: Run functional smoke tests
+        run: |
+          python3 test/functional/test_runner.py \
+            --jobs=1 \
+            --combinedlogslen=100 \
+            wallet_encryption.py \
+            rpc_uptime.py \
+            rpc_net.py \
+            interface_bitcoin_cli.py

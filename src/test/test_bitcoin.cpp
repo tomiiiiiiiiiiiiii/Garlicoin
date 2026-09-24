@@ -10,6 +10,7 @@
 #include <crypto/sha256.h>
 #include <validation.h>
 #include <miner.h>
+#include <pow.h>
 #include <net_processing.h>
 #include <ui_interface.h>
 #include <streams.h>
@@ -141,25 +142,23 @@ TestChain100Setup::CreateAndProcessBlock(const std::vector<CMutableTransaction>&
     block.vtx.resize(1);
     for (const CMutableTransaction& tx : txns)
         block.vtx.push_back(MakeTransactionRef(tx));
-    // IncrementExtraNonce creates a valid coinbase and merkleRoot
+    // IncrementExtraNonce creates a valid coinbase and merkleRoot.
+    // Keep synthetic regtest blocks at the target spacing so DarkGravityWave
+    // does not ratchet test difficulty upward after its history window fills.
     unsigned int extraNonce = 0;
+    int nHeight;
     {
         LOCK(cs_main);
-        IncrementExtraNonce(&block, chainActive.Tip(), extraNonce);
-    }
-
-    BlockMap mapBlockIndex;
-
-    // Get prev block index
-    CBlockIndex* pindexPrev = NULL;
-    int nHeight = 0;
-    BlockMap::iterator mi = mapBlockIndex.find(block.hashPrevBlock);
-    if (mi != mapBlockIndex.end()) {
-        pindexPrev = (*mi).second;
+        const CBlockIndex* pindexPrev = chainActive.Tip();
+        IncrementExtraNonce(&block, pindexPrev, extraNonce);
+        block.nTime = pindexPrev->GetBlockTime() + chainparams.GetConsensus().nPowTargetSpacing;
+        block.nBits = GetNextWorkRequired(pindexPrev, &block, chainparams.GetConsensus());
+        block.nNonce = 0;
         nHeight = pindexPrev->nHeight + 1;
     }
 
-    while (!CheckProofOfWork(block.GetPoWHash(nHeight), block.nBits, chainparams.GetConsensus())) ++block.nNonce;
+    const int nPowAlgo = chainparams.GetPoWAlgo(nHeight);
+    while (!CheckProofOfWork(block.GetPoWHash(nPowAlgo), block.nBits, chainparams.GetConsensus())) ++block.nNonce;
 
     std::shared_ptr<const CBlock> shared_pblock = std::make_shared<const CBlock>(block);
     ProcessNewBlock(chainparams, shared_pblock, true, nullptr);

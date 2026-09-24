@@ -1,0 +1,18 @@
+From: Garlicoin maintenance
+Subject: [PATCH] boost: support dynamic PTHREAD_STACK_MIN on glibc 2.34+
+
+Recent glibc versions define PTHREAD_STACK_MIN through sysconf(), so it can no
+longer be evaluated by the preprocessor in #if. Test only whether the macro is
+defined and keep the existing runtime comparison unchanged.
+
+--- a/boost/thread/pthread/thread_data.hpp
++++ b/boost/thread/pthread/thread_data.hpp
+@@ -57,7 +57,7 @@ namespace boost
+ #else
+           std::size_t page_size = ::sysconf( _SC_PAGESIZE);
+ #endif
+-#if PTHREAD_STACK_MIN > 0
++#ifdef PTHREAD_STACK_MIN
+           if (size<PTHREAD_STACK_MIN) size=PTHREAD_STACK_MIN;
+ #endif
+           size = ((size+page_size-1)/page_size)*page_size;
