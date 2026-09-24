@@ -10,6 +10,7 @@
 #include <crypto/sha256.h>
 #include <validation.h>
 #include <miner.h>
+#include <pow.h>
 #include <net_processing.h>
 #include <ui_interface.h>
 #include <streams.h>
@@ -141,17 +142,19 @@ TestChain100Setup::CreateAndProcessBlock(const std::vector<CMutableTransaction>&
     block.vtx.resize(1);
     for (const CMutableTransaction& tx : txns)
         block.vtx.push_back(MakeTransactionRef(tx));
-    // IncrementExtraNonce creates a valid coinbase and merkleRoot
+    // IncrementExtraNonce creates a valid coinbase and merkleRoot.
+    // Keep synthetic regtest blocks at the target spacing so DarkGravityWave
+    // does not ratchet test difficulty upward after its history window fills.
     unsigned int extraNonce = 0;
-    {
-        LOCK(cs_main);
-        IncrementExtraNonce(&block, chainActive.Tip(), extraNonce);
-    }
-
     int nHeight;
     {
         LOCK(cs_main);
-        nHeight = chainActive.Height() + 1;
+        const CBlockIndex* pindexPrev = chainActive.Tip();
+        IncrementExtraNonce(&block, pindexPrev, extraNonce);
+        block.nTime = pindexPrev->GetBlockTime() + chainparams.GetConsensus().nPowTargetSpacing;
+        block.nBits = GetNextWorkRequired(pindexPrev, &block, chainparams.GetConsensus());
+        block.nNonce = 0;
+        nHeight = pindexPrev->nHeight + 1;
     }
 
     const int nPowAlgo = chainparams.GetPoWAlgo(nHeight);
