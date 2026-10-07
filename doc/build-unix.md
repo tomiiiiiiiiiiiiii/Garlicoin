@@ -1,381 +1,206 @@
 UNIX BUILD NOTES
-====================
-Some notes on how to build Garlicoin Core in Unix.
+================
 
-(for OpenBSD specific instructions, see [build-openbsd.md](build-openbsd.md))
+These notes cover building Garlicoin Core on Unix-like systems. For OpenBSD-specific instructions, see [build-openbsd.md](build-openbsd.md).
 
-Note
----------------------
-Always use absolute paths to configure and compile garlicoin and the dependencies,
-for example, when specifying the path of the dependency:
+Garlicoin Core is a legacy codebase with several intentionally old pinned dependencies. For repeatable maintenance and CI builds, prefer the repository's `depends` system over replacing system libraries with obsolete distribution packages.
 
-	../dist/configure --enable-cxx --disable-shared --with-pic --prefix=$BDB_PREFIX
+Basic build
+-----------
 
-Here BDB_PREFIX must be an absolute path - it is defined using $(pwd) which ensures
-the usage of the absolute path.
-
-To Build
----------------------
+When suitable dependencies are already available:
 
 ```bash
 ./autogen.sh
 ./configure
 make
-make install # optional
+# make install   # optional
 ```
 
-This will build garlicoin-qt as well if the dependencies are met.
+Use `./configure --help` to see all available build options.
 
-Dependencies
----------------------
+Recommended reproducible build with `depends`
+---------------------------------------------
 
-These dependencies are required:
+The `depends` directory builds the dependency versions pinned by this repository without requiring you to downgrade system libraries.
 
- Library     | Purpose          | Description
- ------------|------------------|----------------------
- libssl      | Crypto           | Random Number Generation, Elliptic Curve Cryptography
- libboost    | Utility          | Library for threading, data structures, etc
- libevent    | Networking       | OS independent asynchronous networking
-
-Optional dependencies:
-
- Library     | Purpose          | Description
- ------------|------------------|----------------------
- miniupnpc   | UPnP Support     | Firewall-jumping support
- libdb4.8    | Berkeley DB      | Wallet storage (only needed when wallet enabled)
- qt          | GUI              | GUI toolkit (only needed when GUI enabled)
- protobuf    | Payments in GUI  | Data interchange format used for payment protocol (only needed when GUI enabled)
- libqrencode | QR codes in GUI  | Optional for generating QR codes (only needed when GUI enabled)
- univalue    | Utility          | JSON parsing and encoding (bundled version will be used unless --with-system-univalue passed to configure)
- libzmq3     | ZMQ notification | Optional, allows generating ZMQ notifications (requires ZMQ version >= 4.x)
-
-For the versions used, see [dependencies.md](dependencies.md)
-
-Memory Requirements
---------------------
-
-C++ compilers are memory-hungry. It is recommended to have at least 1.5 GB of
-memory available when compiling Garlicoin Core. On systems with less, gcc can be
-tuned to conserve memory with additional CXXFLAGS:
-
-
-    ./configure CXXFLAGS="--param ggc-min-expand=1 --param ggc-min-heapsize=32768"
-
-Dependency Build Instructions: Ubuntu & Debian
-----------------------------------------------
-Build requirements:
-
-    sudo apt-get install build-essential libtool autotools-dev automake pkg-config libssl-dev libevent-dev bsdmainutils python3
-
-Options when installing required Boost library files:
-
-1. USE OPTION 2 On at least Ubuntu 14.04+ and Debian 7+ there are generic names for the
-individual boost development packages, so the following can be used to only
-install necessary parts of boost:
-
-        sudo apt-get install libboost-system-dev libboost-filesystem-dev libboost-chrono-dev libboost-program-options-dev libboost-test-dev libboost-thread-dev
-
-2. USE THIS INSTEAD If that doesn't work, you can install all boost development packages with:
-
-        sudo apt-get install libboost-all-dev
-
-BerkeleyDB is required for the wallet.
-
-**For Ubuntu only:** db4.8 packages are available [here](https://launchpad.net/~bitcoin/+archive/bitcoin).
-You can add the repository and install using the following commands:
-
-    sudo apt-get install software-properties-common
-    sudo add-apt-repository ppa:bitcoin/bitcoin
-    sudo apt-get update
-    sudo apt-get install libdb4.8-dev libdb4.8++-dev
-
-Ubuntu and Debian have their own libdb-dev and libdb++-dev packages, but these will install
-BerkeleyDB 5.1 or later, which break binary wallet compatibility with the distributed executables which
-are based on BerkeleyDB 4.8. If you do not care about wallet compatibility,
-pass `--with-incompatible-bdb` to configure.
-
-See the section "Disable-wallet mode" to build Garlicoin Core without wallet.
-
-Optional (see --with-miniupnpc and --enable-upnp-default):
-
-    sudo apt-get install libminiupnpc-dev
-
-ZMQ dependencies (provides ZMQ API 4.x):
-
-    sudo apt-get install libzmq3-dev
-
-Dependencies for the GUI: Ubuntu & Debian
------------------------------------------
-
-If you want to build Garlicoin-Qt, make sure that the required packages for Qt development
-are installed. Either Qt 5 or Qt 4 are necessary to build the GUI.
-If both Qt 4 and Qt 5 are installed, Qt 5 will be used. Pass `--with-gui=qt4` to configure to choose Qt4.
-To build without GUI pass `--without-gui`.
-
-To build with Qt 5 (recommended) you need the following:
-
-    sudo apt-get install libqt5gui5 libqt5core5a libqt5dbus5 qttools5-dev qttools5-dev-tools libprotobuf-dev protobuf-compiler
-
-Alternatively, to build with Qt 4 you need the following:
-
-    sudo apt-get install libqt4-dev libprotobuf-dev protobuf-compiler
-
-libqrencode (optional) can be installed with:
-
-    sudo apt-get install libqrencode-dev
-
-Once these are installed, they will be found by configure and a garlicoin-qt executable will be
-built by default.
-
-Dependency Build Instructions: Fedora
--------------------------------------
-Build requirements:
-
-    sudo dnf install gcc-c++ libtool make autoconf automake openssl-devel libevent-devel boost-devel libdb4-devel libdb4-cxx-devel python3
-
-Optional:
-
-    sudo dnf install miniupnpc-devel
-
-To build with Qt 5 (recommended) you need the following:
-
-    sudo dnf install qt5-qttools-devel qt5-qtbase-devel protobuf-devel
-
-libqrencode (optional) can be installed with:
-
-    sudo dnf install qrencode-devel
-
-Notes
------
-The release is built with GCC and then "strip garlicoind" to strip the debug
-symbols, which reduces the executable size by about 90%.
-
-
-miniupnpc
----------
-
-[miniupnpc](http://miniupnp.free.fr/) may be used for UPnP port mapping.  It can be downloaded from [here](
-http://miniupnp.tuxfamily.org/files/).  UPnP support is compiled in and
-turned off by default.  See the configure options for upnp behavior desired:
-
-	--without-miniupnpc      No UPnP support miniupnp not required
-	--disable-upnp-default   (the default) UPnP support turned off by default at runtime
-	--enable-upnp-default    UPnP support turned on by default at runtime
-
-Debian/Raspbian Stretch & Ubuntu Xenial or newer
-------------------------------------------------
-
-If your linux distro installs libssl-dev 1.1, you will need to downgrade it.
-
-Remove the current version of libssl-dev ( 1.1.0f-3 )
-`sudo apt-get remove libssl-dev`
-
-Set your repository list to point to "jessie" instead of "stretch", save and exit.
-`sudo nano /etc/apt/sources.list`
-
-Then do `sudo apt-get update` to download the packages for jessie
-
-Then do `sudo apt-get install libssl-dev` package, it should be version 1.0.1t-1
-
-Follow the instructions with `cd src && make -f makefile.unix`
-
-When complete, type `sudo apt-mark hold libssl-dev` to prevent the package from upgrading in the future
-
-Switch back your sources, by changing 'jessie' back to 'stretch' in sources.list
-
-Do a `sudo apt-get update` and `sudo apt-get upgrade` and make sure it doesn't try and install libssl-dev (it will say it has been kept back)
-
-Berkeley DB
------------
-It is recommended to use Berkeley DB 4.8. If you have to build it yourself,
-you can use [the installation script included in contrib/](/contrib/install_db4.sh)
-like so
+For a headless build without wallet or UPnP:
 
 ```bash
-GARLICOIN_ROOT=$(pwd)
-
-# Pick some path to install BDB to, here we create a directory within the garlicoin directory
-BDB_PREFIX="${GARLICOIN_ROOT}/db4"
-mkdir -p $BDB_PREFIX
-
-# Fetch the source and verify that it is not tampered with
-wget 'http://download.oracle.com/berkeley-db/db-4.8.30.NC.tar.gz'
-echo '12edc0df75bf9abd7f82f821795bcee50f42cb2e5f76a6a281b85732798364ef  db-4.8.30.NC.tar.gz' | sha256sum -c
-# -> db-4.8.30.NC.tar.gz: OK
-tar -xzvf db-4.8.30.NC.tar.gz
-
-# Update config to support newer archs
-git clone https://git.savannah.gnu.org/git/config.git
-rm -f ./db-4.8.30.NC/dist/config.guess
-rm -f ./db-4.8.30.NC/dist/config.sub
-cp ./config/config.guess ./db-4.8.30.NC/dist/config.guess
-cp ./config/config.sub ./db-4.8.30.NC/dist/config.sub
-
-# Build the library and install to our prefix
-cd db-4.8.30.NC/build_unix/
-#  Note: Do a static build so that it can be embedded into the executable, instead of having to find a .so at runtime
-../dist/configure --enable-cxx --disable-shared --with-pic --prefix=$BDB_PREFIX
-make install
-
-# Configure Garlicoin Core to use our own-built instance of BDB
-cd $GARLICOIN_ROOT
+HOST=x86_64-unknown-linux-gnu
+make -C depends HOST="$HOST" NO_QT=1 NO_WALLET=1 NO_UPNP=1
 ./autogen.sh
-./configure LDFLAGS="-L${BDB_PREFIX}/lib/" CPPFLAGS="-I${BDB_PREFIX}/include/" # (other args...)
+CONFIG_SITE="$PWD/depends/$HOST/share/config.site" \
+  ./configure --disable-wallet --without-gui --without-miniupnpc --disable-zmq --enable-sse2
+make
 ```
 
-from the root of the repository.
+For a wallet-enabled headless build:
 
-**Note**: You only need Berkeley DB if the wallet is enabled (see the section *Disable-Wallet mode* below).
+```bash
+HOST=x86_64-unknown-linux-gnu
+make -C depends HOST="$HOST" NO_QT=1 NO_UPNP=1
+./autogen.sh
+CONFIG_SITE="$PWD/depends/$HOST/share/config.site" \
+  ./configure --enable-wallet --without-gui --without-miniupnpc --disable-zmq --enable-sse2
+make
+```
 
-Boost
------
-If you need to build Boost yourself:
+For the Qt 5 GUI with wallet support:
 
-	sudo su
-	./bootstrap.sh
-	./bjam install
+```bash
+HOST=x86_64-unknown-linux-gnu
+make -C depends HOST="$HOST" NO_UPNP=1
+./autogen.sh
+CONFIG_SITE="$PWD/depends/$HOST/share/config.site" \
+  ./configure --enable-wallet --with-gui=qt5 --without-miniupnpc --disable-zmq --enable-sse2
+make
+```
 
+The current CI compatibility baseline is Ubuntu 22.04. Newer distributions may expose compiler or dependency incompatibilities in the legacy build stack and should be validated separately before being adopted as a baseline.
 
-Security
---------
-To help make your garlicoin installation more secure by making certain attacks impossible to
-exploit even if a vulnerability is found, binaries are hardened by default.
-This can be disabled with:
+Dependencies
+------------
 
-Hardening Flags:
+Core requirements include:
 
-	./configure --enable-hardening
-	./configure --disable-hardening
+| Library | Purpose |
+| --- | --- |
+| OpenSSL | Cryptographic support |
+| Boost | Utility, threading and test support |
+| libevent | Asynchronous networking |
 
+Optional components include:
 
-Hardening enables the following features:
+| Library | Purpose |
+| --- | --- |
+| Berkeley DB | Wallet storage; 4.8 is used for compatibility |
+| Qt 5 | GUI |
+| protobuf | Payment protocol / GUI support |
+| qrencode | QR codes in GUI |
+| MiniUPnPc | Optional UPnP support |
+| ZeroMQ | Optional ZMQ notifications |
 
-* Position Independent Executable
-    Build position independent code to take advantage of Address Space Layout Randomization
-    offered by some kernels. Attackers who can cause execution of code at an arbitrary memory
-    location are thwarted if they don't know where anything useful is located.
-    The stack and heap are randomly located by default but this allows the code section to be
-    randomly located as well.
+For the exact versions pinned by the deterministic build system, see [dependencies.md](dependencies.md) and the recipes in [`depends/packages/`](../depends/packages/).
 
-    On an AMD64 processor where a library was not compiled with -fPIC, this will cause an error
-    such as: "relocation R_X86_64_32 against `......' can not be used when making a shared object;"
+Ubuntu / Debian build tools
+---------------------------
 
-    To test that you have built PIE executable, install scanelf, part of paxutils, and use:
+A typical host needs the standard C/C++ and autotools toolchain:
 
-    	scanelf -e ./garlicoin
+```bash
+sudo apt-get update
+sudo apt-get install -y \
+  autoconf automake autotools-dev bsdmainutils build-essential \
+  ca-certificates curl git libtool pkg-config python3
+```
 
-    The output should contain:
+If you build against distribution libraries instead of `depends`, install the appropriate development packages for Boost, libevent, OpenSSL and any optional features you enable. Package names and available versions vary by distribution release.
 
-     TYPE
-    ET_DYN
+Do **not** replace your distribution repositories with an obsolete Debian or Ubuntu release merely to obtain an old OpenSSL package. Use the deterministic `depends` build or a controlled build environment instead.
 
-* Non-executable Stack
-    If the stack is executable then trivial stack based buffer overflow exploits are possible if
-    vulnerable buffers are found. By default, garlicoin should be built with a non-executable stack
-    but if one of the libraries it uses asks for an executable stack or someone makes a mistake
-    and uses a compiler extension which requires an executable stack, it will silently build an
-    executable without the non-executable stack protection.
+Wallet and Berkeley DB
+----------------------
 
-    To verify that the stack is non-executable after compiling use:
-    `scanelf -e ./garlicoin`
+Berkeley DB is required only when wallet support is enabled. Existing Garlicoin wallet compatibility is based on Berkeley DB 4.8.
 
-    the output should contain:
-	STK/REL/PTL
-	RW- R-- RW-
+The repository includes a helper script for building the compatible version locally:
 
-    The STK RW- means that the stack is readable and writeable but not executable.
+```bash
+./contrib/install_db4.sh "$PWD"
+```
 
-Disable-wallet mode
---------------------
-When the intention is to run only a P2P node without a wallet, garlicoin may be compiled in
-disable-wallet mode with:
+Follow the environment/configure instructions printed by the script.
 
-    ./configure --disable-wallet
+If wallet compatibility with existing Berkeley DB 4.8 builds is not required, `configure` also supports `--with-incompatible-bdb` when using another supported Berkeley DB version. Use this deliberately: wallets created or modified with incompatible database versions may not be portable to standard builds.
 
-In this case there is no dependency on Berkeley DB 4.8.
+To build without wallet support:
 
-Mining is also possible in disable-wallet mode, but only using the `getblocktemplate` RPC
-call not `getwork`.
+```bash
+./configure --disable-wallet
+```
 
-Additional Configure Flags
---------------------------
-A list of additional configure flags can be displayed with:
+GUI
+---
 
-    ./configure --help
+Qt 5 is the maintained GUI target for this fork. For reproducible builds, prefer the pinned Qt provided by `depends`.
 
+To build without the GUI:
 
-Setup and Build Example: Arch Linux
------------------------------------
-This example lists the steps necessary to setup and build a command line only, non-wallet distribution of the latest changes on Arch Linux:
+```bash
+./configure --without-gui
+```
 
-    pacman -S git base-devel boost libevent python
-    git clone https://github.com/GarlicoinOrg/Garlicoin
-    cd Garlicoin/
-    ./autogen.sh
-    ./configure --without-gui --with-incompatible-bdb --disable-tests
-    make
-    sudo make install
+To request Qt 5 explicitly:
 
-Note:
-Enabling wallet support requires either compiling against a Berkeley DB newer than 4.8 (package `db`) using `--with-incompatible-bdb`,
-or building and depending on a local version of Berkeley DB 4.8. The readily available Arch Linux packages are currently built using
-`--with-incompatible-bdb` according to the [PKGBUILD](https://projects.archlinux.org/svntogit/community.git/tree/bitcoin/trunk/PKGBUILD).
-As mentioned above, when maintaining portability of the wallet between the standard Garlicoin Core distributions and independently built
-node software is desired, Berkeley DB 4.8 must be used.
+```bash
+./configure --with-gui=qt5
+```
 
+UPnP and ZMQ
+------------
 
-ARM Cross-compilation
+UPnP support is optional. Disable it entirely with:
+
+```bash
+./configure --without-miniupnpc
+```
+
+ZMQ notifications are also optional and can be disabled with:
+
+```bash
+./configure --disable-zmq
+```
+
+Security hardening
+------------------
+
+Hardening is enabled by default where supported. The relevant configure switches are:
+
+```bash
+./configure --enable-hardening
+./configure --disable-hardening
+```
+
+Do not disable hardening merely to make an unsupported dependency combination compile; prefer fixing or isolating the compatibility issue.
+
+Memory requirements
 -------------------
-These steps can be performed on, for example, an Ubuntu VM. The depends system
-will also work on other Linux distributions, however the commands for
-installing the toolchain will be different.
 
-Make sure you install the build requirements mentioned above.
-Then, install the toolchain and curl:
+C++ compilation can use substantial memory. On constrained systems, reduce parallelism first, for example:
 
-    sudo apt-get install g++-arm-linux-gnueabihf curl
+```bash
+make -j1
+```
 
-To build executables for ARM:
+The older compiler tuning flags historically documented here should only be used when you understand their effect on your compiler version.
 
-    cd depends
-    make HOST=arm-linux-gnueabihf NO_QT=1
-    cd ..
-    ./configure --prefix=$PWD/depends/arm-linux-gnueabihf --enable-glibc-back-compat --enable-reduce-exports LDFLAGS=-static-libstdc++
-    make
+ARM cross-compilation
+---------------------
 
+The `depends` system supports cross-compilation. On Debian/Ubuntu hosts, for example:
 
-For further documentation on the depends system see [README.md](../depends/README.md) in the depends directory.
+```bash
+sudo apt-get install g++-arm-linux-gnueabihf curl
+make -C depends HOST=arm-linux-gnueabihf NO_QT=1
+./autogen.sh
+./configure --prefix="$PWD/depends/arm-linux-gnueabihf" \
+  --enable-glibc-back-compat --enable-reduce-exports LDFLAGS=-static-libstdc++
+make
+```
 
-Building on FreeBSD
---------------------
+Exact toolchain support can vary with the host distribution and should be validated in CI before publishing binaries.
 
-(Updated as of FreeBSD 11.0)
+FreeBSD
+-------
 
-Clang is installed by default as `cc` compiler, this makes it easier to get
-started than on [OpenBSD](build-openbsd.md). Installing dependencies:
+Use GNU make (`gmake`) and install the normal autotools, Boost, OpenSSL and libevent development packages from FreeBSD ports/packages. Wallet builds additionally require a compatible Berkeley DB configuration.
 
-    pkg install autoconf automake libtool pkgconf
-    pkg install boost-libs openssl libevent
-    pkg install gmake
+Because package versions change over time, prefer current FreeBSD package names rather than relying on historical version-specific commands in this document.
 
-You need to use GNU make (`gmake`) instead of `make`.
-(`libressl` instead of `openssl` will also work)
+Further information
+-------------------
 
-For the wallet (optional):
-
-    pkg install db5
-
-This will give a warning "configure: WARNING: Found Berkeley DB other
-than 4.8; wallets opened by this build will not be portable!", but as FreeBSD never
-had a binary release, this may not matter. If backwards compatibility
-with 4.8-built Garlicoin Core is needed follow the steps under "Berkeley DB" above.
-
-Then build using:
-
-    ./autogen.sh
-    ./configure BDB_CFLAGS="-I${BDB_PREFIX}/include" BDB_LIBS="-L${BDB_PREFIX}/lib -ldb_cxx"
-    gmake
-
-*Note on debugging*: The version of `gdb` installed by default is [ancient and considered harmful](https://wiki.freebsd.org/GdbRetirement).
-It is not suitable for debugging a multi-threaded C++ program, not even for getting backtraces. Please install the package `gdb` and
-use the versioned gdb command e.g. `gdb7111`.
+- [`depends/README.md`](../depends/README.md) describes the deterministic dependency system.
+- [dependencies.md](dependencies.md) records the dependency versions pinned by this repository.
+- Run `./configure --help` for the complete configure option list.
