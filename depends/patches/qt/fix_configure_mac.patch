@@ -22,9 +22,9 @@
          # --show-sdk-platform-path won't work for Command Line Tools; this is fine
          # only used by the XCTest backend to testlib
 -        isEmpty(QMAKE_MAC_SDK.$${sdk}.$${info}):if(!isEmpty(QMAKE_XCODEBUILD_PATH)|!equals(info, "--show-sdk-platform-path")): \
--            error("Could not resolve SDK $$info for '$$sdk'")
+-            error("Could not resolve SDK $$info for \'$$sdk\'")
 +        isEmpty(QMAKE_MAC_SDK.$${sdk}.$${info}):if(!isEmpty(QMAKE_XCODEBUILD_PATH)|!equals(infoarg, "--show-sdk-platform-path")): \
-+            error("Could not resolve SDK $$info for '$$sdk' using $$infoarg")
++            error("Could not resolve SDK $$info for \'$$sdk\' using $$infoarg")
          cache(QMAKE_MAC_SDK.$${sdk}.$${info}, set stash, QMAKE_MAC_SDK.$${sdk}.$${info})
      }
 
