@@ -16,7 +16,7 @@ concurrency:
 jobs:
   build-and-focused-tests:
     name: Build + focused tests
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
 
     env:
@@ -51,9 +51,9 @@ jobs:
           path: |
             depends/built
             depends/sources
-          key: garlicoin-depends-headless-${{ runner.os }}-${{ env.HOST }}-${{ hashFiles('depends/**') }}
+          key: garlicoin-depends-headless-ubuntu-24.04-${{ env.HOST }}-${{ hashFiles('depends/**') }}
           restore-keys: |
-            garlicoin-depends-headless-${{ runner.os }}-${{ env.HOST }}-
+            garlicoin-depends-headless-ubuntu-24.04-${{ env.HOST }}-
 
       - name: Build deterministic dependencies
         run: |
@@ -105,7 +105,7 @@ jobs:
   full-unit-suite-diagnostic:
     name: Full unit suite (diagnostic, manual only)
     if: github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 90
 
     env:
@@ -140,9 +140,9 @@ jobs:
           path: |
             depends/built
             depends/sources
-          key: garlicoin-depends-headless-${{ runner.os }}-${{ env.HOST }}-${{ hashFiles('depends/**') }}
+          key: garlicoin-depends-headless-ubuntu-24.04-${{ env.HOST }}-${{ hashFiles('depends/**') }}
           restore-keys: |
-            garlicoin-depends-headless-${{ runner.os }}-${{ env.HOST }}-
+            garlicoin-depends-headless-ubuntu-24.04-${{ env.HOST }}-
 
       - name: Build deterministic dependencies
         run: |
@@ -188,7 +188,7 @@ jobs:
 
   wallet-functional-smoke:
     name: Wallet build + functional smoke tests
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 75
 
     env:
@@ -223,9 +223,9 @@ jobs:
           path: |
             depends/built
             depends/sources
-          key: garlicoin-depends-wallet-${{ runner.os }}-${{ env.HOST }}-${{ hashFiles('depends/**') }}
+          key: garlicoin-depends-wallet-ubuntu-24.04-${{ env.HOST }}-${{ hashFiles('depends/**') }}
           restore-keys: |
-            garlicoin-depends-wallet-${{ runner.os }}-${{ env.HOST }}-
+            garlicoin-depends-wallet-ubuntu-24.04-${{ env.HOST }}-
 
       - name: Build dependencies with Berkeley DB 4.8
         run: |
