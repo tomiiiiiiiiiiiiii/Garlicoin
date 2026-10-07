@@ -39,6 +39,7 @@ jobs:
             ca-certificates \
             cmake \
             curl \
+            libcap-dev \
             patch
 
       - name: Cache cdrkit depends
