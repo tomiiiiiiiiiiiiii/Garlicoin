@@ -1,15 +1,15 @@
 Garlicoin Core
 ==============
 
-[![Linux CI](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/linux-ci.yml/badge.svg)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/linux-ci.yml)
-[![Qt GUI CI](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/qt-ci.yml/badge.svg)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/qt-ci.yml)
+[![Linux CI](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/linux-ci.yml/badge.svg?branch=master)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/linux-ci.yml)
+[![Qt GUI CI](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/qt-ci.yml/badge.svg?branch=master)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/qt-ci.yml)
 
 This repository is a maintained fork of [GarlicoinOrg/Garlicoin](https://github.com/GarlicoinOrg/Garlicoin). It carries conservative build, test, compatibility, and robustness fixes while keeping consensus and network behaviour changes out of routine maintenance.
 
 Maintenance status
 ------------------
 
-The `master` branch is the maintained integration branch for this fork. Changes are expected to pass the relevant GitHub Actions checks before being merged.
+The `master` branch is the maintained integration branch for this fork. Changes are expected to pass the relevant GitHub Actions checks before being merged. The main Linux and Qt workflows also validate matching pushes to `master`, and the README badges are scoped to that branch.
 
 Current automated coverage includes:
 
