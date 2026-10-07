@@ -1,31 +1,44 @@
 Dependencies
 ============
 
-These are the dependencies currently used by Garlicoin Core. You can find instructions for installing them in the `build-*.md` file for your platform.
+Garlicoin Core can be built either against suitable system libraries or with the repository's deterministic `depends` system. For reproducible maintenance and CI builds, `depends` is the reference for the versions actually pinned by this repository.
 
-| Dependency | Version used | Minimum required | CVEs | Shared | [Bundled Qt library](https://doc.qt.io/qt-5/configure-options.html) |
-| --- | --- | --- | --- | --- | --- |
-| Berkeley DB | [4.8.30](http://www.oracle.com/technetwork/database/database-technologies/berkeleydb/downloads/index.html) | 4.8.x | No |  |  |
-| Boost | [1.64.0](http://www.boost.org/users/download/) | [1.47.0](https://github.com/bitcoin/bitcoin/pull/8920) | No |  |  |
-| ccache | [3.3.4](https://ccache.samba.org/download.html) |  | No |  |  |
-| Clang |  | [3.3+](http://llvm.org/releases/download.html) (C++11 support) |  |  |  |
-| D-Bus | [1.10.18](https://cgit.freedesktop.org/dbus/dbus/tree/NEWS?h=dbus-1.10) |  | No | Yes |  |
-| Expat | [2.2.1](https://libexpat.github.io/) |  | No | Yes |  |
-| fontconfig | [2.12.1](https://www.freedesktop.org/software/fontconfig/release/) |  | No | Yes |  |
-| FreeType | [2.7.1](http://download.savannah.gnu.org/releases/freetype) |  | No |  |  |
-| GCC |  | [4.8+](https://gcc.gnu.org/) |  |  |  |
-| HarfBuzz-NG |  |  |  |  |  |
-| libevent | [2.1.8-stable](https://github.com/libevent/libevent/releases) | 2.0.22 | No |  |  |
-| libjpeg |  |  |  |  | [Yes](https://github.com/bitcoin/bitcoin/blob/master/depends/packages/qt.mk#L75) |
-| libpng |  |  |  |  | [Yes](https://github.com/bitcoin/bitcoin/blob/master/depends/packages/qt.mk#L74) |
-| MiniUPnPc | [2.0.20170509](http://miniupnp.free.fr/files) |  | No |  |  |
-| OpenSSL | [1.0.1k](https://www.openssl.org/source) |  | Yes |  |  |
-| PCRE |  |  |  |  | [Yes](https://github.com/bitcoin/bitcoin/blob/master/depends/packages/qt.mk#L76) |
-| protobuf | [2.6.3](https://github.com/google/protobuf/releases) |  | No |  |  |
-| Python (tests) |  | [3.4](https://www.python.org/downloads) |  |  |  |
-| qrencode | [3.4.4](https://fukuchi.org/works/qrencode) |  | No |  |  |
-| Qt | [5.7.1](https://download.qt.io/official_releases/qt/) | 4.7+ | No |  |  |
-| XCB |  |  |  |  | [Yes](https://github.com/bitcoin/bitcoin/blob/master/depends/packages/qt.mk#L94) (Linux only) |
-| xkbcommon |  |  |  |  | [Yes](https://github.com/bitcoin/bitcoin/blob/master/depends/packages/qt.mk#L93) (Linux only) |
-| ZeroMQ | [4.2.2](https://github.com/zeromq/libzmq/releases) |  | No |  |  |
-| zlib | [1.2.11](http://zlib.net/) |  |  |  | No |
+Pinned `depends` versions
+-------------------------
+
+The main packages currently pinned by `depends/packages/` are:
+
+| Dependency | Pinned version | Purpose |
+| --- | ---: | --- |
+| Berkeley DB | 4.8.30.NC | Wallet database compatibility |
+| Boost | 1.70.0 | Utility, threading and test support |
+| libevent | 2.1.8-stable | Networking |
+| MiniUPnPc | 2.0.20170509 | Optional UPnP support |
+| OpenSSL | 1.0.1k | Cryptographic support used by this legacy codebase |
+| protobuf | 2.6.1 | Payment protocol / GUI support |
+| qrencode | 3.4.4 | Optional QR code support |
+| Qt | 5.7.1 | GUI toolkit |
+| ZeroMQ | 4.2.2 | Optional ZMQ notifications |
+| zlib | 1.2.11 | Compression support used by the dependency stack |
+
+The authoritative values are the package recipes under [`depends/packages/`](../depends/packages/). Update this document when those recipes change.
+
+Security and compatibility note
+-------------------------------
+
+Several pinned dependencies are intentionally old because Garlicoin Core inherits a legacy build and compatibility stack. A version being pinned here does **not** mean it is current or free of known vulnerabilities.
+
+Do not infer security status from this table. Dependency upgrades should be reviewed and tested individually because they can affect wallet compatibility, deterministic builds, GUI compatibility, compiler support, or runtime behaviour.
+
+In particular:
+
+- Berkeley DB 4.8 is retained for wallet compatibility with existing builds;
+- Qt 5.7.1 and OpenSSL 1.0.1k are legacy pins and should not be treated as modern security baselines;
+- routine maintenance should avoid changing consensus or network behaviour while updating build infrastructure.
+
+System dependencies
+-------------------
+
+When building against system libraries instead of `depends`, the exact package versions vary by operating system. See the relevant `build-*.md` document for platform-specific package names and configure options.
+
+For deterministic builds, start with [`depends/README.md`](../depends/README.md).
