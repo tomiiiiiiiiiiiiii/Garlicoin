@@ -1,0 +1,66 @@
+name: Legacy X.Org Depends CI
+
+on:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'depends/packages/libICE.mk'
+      - 'depends/packages/libSM.mk'
+      - 'depends/packages/xproto.mk'
+      - 'depends/packages/xtrans.mk'
+      - '.github/workflows/legacy-xorg-depends-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: legacy-xorg-depends-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  legacy-xorg-depends:
+    name: Build libICE and libSM dependency chain
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
+
+    env:
+      HOST: x86_64-unknown-linux-gnu
+      MAKEJOBS: -j2
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            autoconf \
+            automake \
+            build-essential \
+            ca-certificates \
+            curl \
+            libtool \
+            patch \
+            pkg-config
+
+      - name: Cache legacy X.Org depends
+        uses: actions/cache@v4
+        with:
+          path: |
+            depends/built
+            depends/sources
+          key: garlicoin-depends-legacy-xorg-${{ runner.os }}-${{ env.HOST }}-${{ hashFiles('depends/**') }}
+          restore-keys: |
+            garlicoin-depends-legacy-xorg-${{ runner.os }}-${{ env.HOST }}-
+
+      - name: Build libICE and libSM with pinned sources
+        run: |
+          make ${MAKEJOBS} -C depends \
+            HOST="${HOST}" \
+            packages="xproto xtrans libICE libSM" \
+            NO_QT=1 \
+            NO_WALLET=1 \
+            NO_UPNP=1
