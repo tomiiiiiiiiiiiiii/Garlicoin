@@ -4,9 +4,27 @@ on:
   push:
     branches:
       - master
+    paths:
+      - '**'
+      - '!README.md'
+      - '!doc/**'
+      - '!depends/packages/miniupnpc.mk'
+      - '!depends/patches/miniupnpc/**'
+      - '!depends/packages/zeromq.mk'
+      - '!depends/patches/zeromq/**'
+      - '!.github/workflows/upnp-depends-ci.yml'
   pull_request:
     branches:
       - master
+    paths:
+      - '**'
+      - '!README.md'
+      - '!doc/**'
+      - '!depends/packages/miniupnpc.mk'
+      - '!depends/patches/miniupnpc/**'
+      - '!depends/packages/zeromq.mk'
+      - '!depends/patches/zeromq/**'
+      - '!.github/workflows/upnp-depends-ci.yml'
   workflow_dispatch:
 
 permissions:
