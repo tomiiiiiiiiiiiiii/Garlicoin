@@ -1,0 +1,60 @@
+name: cdrkit Depends CI
+
+on:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'depends/packages/native_cdrkit.mk'
+      - 'depends/patches/native_cdrkit/**'
+      - '.github/workflows/cdrkit-depends-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cdrkit-depends-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  native-cdrkit-build:
+    name: Build pinned cdrkit tool
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+
+    env:
+      HOST: x86_64-apple-darwin11
+      MAKEJOBS: -j2
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential \
+            ca-certificates \
+            cmake \
+            curl \
+            patch
+
+      - name: Cache cdrkit depends
+        uses: actions/cache@v4
+        with:
+          path: |
+            depends/built
+            depends/sources
+          key: garlicoin-depends-cdrkit-${{ runner.os }}-${{ hashFiles('depends/packages/native_cdrkit.mk', 'depends/patches/native_cdrkit/**') }}
+          restore-keys: |
+            garlicoin-depends-cdrkit-${{ runner.os }}-
+
+      - name: Build pinned cdrkit
+        run: |
+          make ${MAKEJOBS} -C depends \
+            HOST="${HOST}" \
+            packages="" \
+            native_packages="native_cdrkit" \
+            native_cdrkit
