@@ -1,11 +1,26 @@
-name: UPnP Depends CI
+name: Network Depends CI
 
 on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'depends/packages/miniupnpc.mk'
+      - 'depends/patches/miniupnpc/**'
+      - 'depends/packages/zeromq.mk'
+      - 'depends/patches/zeromq/**'
+      - 'depends/packages/packages.mk'
+      - 'depends/Makefile'
+      - 'depends/funcs.mk'
+      - '.github/workflows/upnp-depends-ci.yml'
   pull_request:
     branches:
       - master
     paths:
       - 'depends/packages/miniupnpc.mk'
+      - 'depends/patches/miniupnpc/**'
+      - 'depends/packages/zeromq.mk'
+      - 'depends/patches/zeromq/**'
       - 'depends/packages/packages.mk'
       - 'depends/Makefile'
       - 'depends/funcs.mk'
@@ -16,18 +31,19 @@ permissions:
   contents: read
 
 concurrency:
-  group: upnp-depends-ci-${{ github.ref }}
+  group: network-depends-ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  build-upnp-depends:
-    name: Build deterministic depends with UPnP
+  build-network-depends:
+    name: Build with MiniUPnPc and ZeroMQ
     runs-on: ubuntu-22.04
     timeout-minutes: 45
 
     env:
       HOST: x86_64-unknown-linux-gnu
       MAKEJOBS: -j2
+      GARLICOIN_SCRYPT: "1"
 
     steps:
       - name: Checkout
@@ -45,21 +61,44 @@ jobs:
             ca-certificates \
             curl \
             libtool \
-            pkg-config
+            pkg-config \
+            python3
 
-      - name: Cache depends
+      - name: Cache network depends
         uses: actions/cache@v4
         with:
           path: |
             depends/built
             depends/sources
-          key: garlicoin-depends-upnp-${{ runner.os }}-${{ env.HOST }}-${{ hashFiles('depends/**') }}
+          key: garlicoin-depends-network-${{ runner.os }}-${{ env.HOST }}-${{ hashFiles('depends/**') }}
           restore-keys: |
-            garlicoin-depends-upnp-${{ runner.os }}-${{ env.HOST }}-
+            garlicoin-depends-network-${{ runner.os }}-${{ env.HOST }}-
 
-      - name: Build deterministic dependencies with MiniUPnPc
+      - name: Build deterministic dependencies with MiniUPnPc and ZeroMQ
         run: |
           make ${MAKEJOBS} -C depends \
             HOST="${HOST}" \
             NO_QT=1 \
             NO_WALLET=1
+
+      - name: Configure with UPnP and ZMQ enabled
+        run: |
+          ./autogen.sh
+          CONFIG_SITE="$PWD/depends/${HOST}/share/config.site" \
+            ./configure \
+              --disable-wallet \
+              --without-gui \
+              --with-miniupnpc \
+              --enable-zmq \
+              --enable-sse2 \
+              --disable-tests \
+              --disable-bench
+
+      - name: Build daemon with network dependencies
+        run: |
+          make ${MAKEJOBS} -C src garlicoind
+
+      - name: Verify daemon binary
+        run: |
+          test -x src/garlicoind
+          src/garlicoind -version
