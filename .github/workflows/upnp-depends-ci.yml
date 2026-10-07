@@ -1,0 +1,65 @@
+name: UPnP Depends CI
+
+on:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'depends/packages/miniupnpc.mk'
+      - 'depends/packages/packages.mk'
+      - 'depends/Makefile'
+      - 'depends/funcs.mk'
+      - '.github/workflows/upnp-depends-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: upnp-depends-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-upnp-depends:
+    name: Build deterministic depends with UPnP
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
+
+    env:
+      HOST: x86_64-unknown-linux-gnu
+      MAKEJOBS: -j2
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            autoconf \
+            automake \
+            autotools-dev \
+            bsdmainutils \
+            build-essential \
+            ca-certificates \
+            curl \
+            libtool \
+            pkg-config
+
+      - name: Cache depends
+        uses: actions/cache@v4
+        with:
+          path: |
+            depends/built
+            depends/sources
+          key: garlicoin-depends-upnp-${{ runner.os }}-${{ env.HOST }}-${{ hashFiles('depends/**') }}
+          restore-keys: |
+            garlicoin-depends-upnp-${{ runner.os }}-${{ env.HOST }}-
+
+      - name: Build deterministic dependencies with MiniUPnPc
+        run: |
+          make ${MAKEJOBS} -C depends \
+            HOST="${HOST}" \
+            NO_QT=1 \
+            NO_WALLET=1
