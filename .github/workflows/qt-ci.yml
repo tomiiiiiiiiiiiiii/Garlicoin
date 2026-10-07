@@ -22,7 +22,7 @@ concurrency:
 jobs:
   qt-wallet-build:
     name: Qt GUI + wallet build
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 120
 
     env:
@@ -60,9 +60,9 @@ jobs:
           path: |
             depends/built
             depends/sources
-          key: garlicoin-depends-qt-wallet-${{ runner.os }}-${{ env.HOST }}-${{ hashFiles('depends/**') }}
+          key: garlicoin-depends-qt-wallet-ubuntu-24.04-${{ env.HOST }}-${{ hashFiles('depends/**') }}
           restore-keys: |
-            garlicoin-depends-qt-wallet-${{ runner.os }}-${{ env.HOST }}-
+            garlicoin-depends-qt-wallet-ubuntu-24.04-${{ env.HOST }}-
 
       - name: Build deterministic Qt 5.7.1 and Berkeley DB 4.8 dependencies
         run: |
