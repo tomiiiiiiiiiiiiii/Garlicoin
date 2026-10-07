@@ -46,15 +46,15 @@ sha256_check() {
 http_get() {
   # Args: <url> <filename> <sha256_hash>
   #
-  # It's acceptable that we don't require SSL here because we manually verify
-  # content hashes below.
+  # Require normal TLS certificate verification and verify the pinned content
+  # hash as an independent integrity check after download.
   #
   if [ -f "${2}" ]; then
     echo "File ${2} already exists; not downloading again"
   elif check_exists curl; then
-    curl --insecure "${1}" -o "${2}"
+    curl --fail --location "${1}" -o "${2}"
   else
-    wget --no-check-certificate "${1}" -O "${2}"
+    wget "${1}" -O "${2}"
   fi
 
   sha256_check "${3}" "${2}"
@@ -78,11 +78,3 @@ cd build_unix/
   "${@}"
 
 make install
-
-echo
-echo "db4 build complete."
-echo
-echo 'When compiling bitcoind, run `./configure` in the following way:'
-echo
-echo "  export BDB_PREFIX='${BDB_PREFIX}'"
-echo '  ./configure BDB_LIBS="-L${BDB_PREFIX}/lib -ldb_cxx-4.8" BDB_CFLAGS="-I${BDB_PREFIX}/include" ...'
