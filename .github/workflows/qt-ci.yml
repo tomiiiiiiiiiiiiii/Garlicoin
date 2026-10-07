@@ -1,6 +1,15 @@
 name: Qt GUI CI
 
 on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'src/**'
+      - 'depends/**'
+      - 'configure.ac'
+      - 'build-aux/**'
+      - '.github/workflows/qt-ci.yml'
   pull_request:
     branches:
       - master
