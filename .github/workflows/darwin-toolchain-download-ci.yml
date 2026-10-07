@@ -1,0 +1,53 @@
+name: Darwin Toolchain Download CI
+
+on:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'depends/packages/native_cctools.mk'
+      - '.github/workflows/darwin-toolchain-download-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: darwin-toolchain-download-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  native-cctools-download:
+    name: Verify pinned cctools and LLVM sources
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+
+    env:
+      HOST: x86_64-apple-darwin11
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install download tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            ca-certificates \
+            curl
+
+      - name: Cache source archives
+        uses: actions/cache@v4
+        with:
+          path: depends/sources
+          key: garlicoin-darwin-toolchain-sources-${{ hashFiles('depends/packages/native_cctools.mk') }}
+          restore-keys: |
+            garlicoin-darwin-toolchain-sources-
+
+      - name: Download and verify pinned native cctools sources
+        run: |
+          make -C depends \
+            HOST="${HOST}" \
+            packages="" \
+            native_packages="native_cctools" \
+            download-one
