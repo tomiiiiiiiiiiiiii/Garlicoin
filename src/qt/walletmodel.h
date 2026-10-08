@@ -7,6 +7,7 @@
 
 #include <qt/walletmodeltransaction.h>
 
+#include <script/standard.h>
 #include <support/allocators/secure.h>
 
 #include <map>
@@ -24,6 +25,7 @@ class TransactionTableModel;
 class WalletModelTransaction;
 
 class CCoinControl;
+class CKey;
 class CKeyID;
 class COutPoint;
 class COutput;
