@@ -57,7 +57,7 @@ CONFIG_SITE="$PWD/depends/$HOST/share/config.site" \
 make
 ```
 
-The current CI compatibility baseline is Ubuntu 22.04. Newer distributions may expose compiler or dependency incompatibilities in the legacy build stack and should be validated separately before being adopted as a baseline.
+Ubuntu 22.04 remains the CI compatibility baseline. The Ubuntu toolchain and Qt workflows also validate native x86_64 builds on Ubuntu 24.04 with the pinned `depends` stack. See [Ubuntu toolchain validation](ubuntu-toolchain.md) for scope, evidence and limitations.
 
 Dependencies
 ------------
@@ -92,7 +92,9 @@ A typical host needs the standard C/C++ and autotools toolchain:
 sudo apt-get update
 sudo apt-get install -y \
   autoconf automake autotools-dev bsdmainutils build-essential \
-  ca-certificates curl git libtool pkg-config python3
+  ca-certificates curl git libtool pkg-config python3 perl
+# Qt depends additionally needs gperf and patch:
+# sudo apt-get install -y gperf patch
 ```
 
 If you build against distribution libraries instead of `depends`, install the appropriate development packages for Boost, libevent, OpenSSL and any optional features you enable. Package names and available versions vary by distribution release.
