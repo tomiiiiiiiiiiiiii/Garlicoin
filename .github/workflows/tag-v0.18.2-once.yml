@@ -1,0 +1,38 @@
+name: Create v0.18.2 tag once
+
+on:
+  push:
+    branches:
+      - release/0.18.2
+    paths:
+      - '.github/workflows/tag-v0.18.2-once.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v4
+        with:
+          ref: release/0.18.2
+          fetch-depth: 0
+
+      - name: Create immutable release tag on clean parent commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git ls-remote --exit-code --tags origin refs/tags/v0.18.2 >/dev/null 2>&1; then
+            echo 'Tag v0.18.2 already exists; refusing to move it.'
+            exit 1
+          fi
+
+          TARGET="$(git rev-parse HEAD^)"
+          test "$TARGET" = "d869f993a0514e3c32aaee861afc700d2aaeb66c"
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git tag -a v0.18.2 "$TARGET" -m 'Garlicoin Core 0.18.2 - GRLC.eu Maintenance Release'
+          git push origin v0.18.2
