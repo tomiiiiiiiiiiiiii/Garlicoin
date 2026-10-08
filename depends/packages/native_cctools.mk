@@ -58,6 +58,7 @@ $(package)_cxx=$($(package)_extract_dir)/toolchain/bin/clang++
 else
 $(package)_cc=clang
 $(package)_cxx=clang++
+$(package)_cflags+=-fcommon
 endif
 endef
 
