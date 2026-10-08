@@ -106,6 +106,12 @@ jobs:
             tail -n 30 ci-logs/macos-depends.log
           else
             tail -n 250 ci-logs/macos-depends.log
+            config_log=$(find depends/work/build -path '*native_cctools*' -name config.log -print -quit)
+            if [ -n "$config_log" ]; then
+              cp "$config_log" ci-logs/native-cctools-config.log
+              echo '--- native_cctools config.log ---'
+              tail -n 200 "$config_log"
+            fi
             exit 1
           fi
 
