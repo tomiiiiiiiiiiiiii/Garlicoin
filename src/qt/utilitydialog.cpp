@@ -61,10 +61,14 @@ HelpMessageDialog::HelpMessageDialog(QWidget *parent, bool about) :
         // Replace newlines with HTML breaks
         licenseInfoHTML.replace("\n", "<br>");
 
+        const QString maintenanceInfo =
+            "<b>Maintained by GRLC.eu</b><br>"
+            "Updated for 2026 with current maintenance, compatibility and security fixes";
+
         ui->aboutMessage->setTextFormat(Qt::RichText);
         ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-        text = version + "\n" + licenseInfo;
-        ui->aboutMessage->setText(version + "<br><br>" + licenseInfoHTML);
+        text = version + "\nMaintained by GRLC.eu\nUpdated for 2026 with current maintenance, compatibility and security fixes\n" + licenseInfo;
+        ui->aboutMessage->setText(version + "<br><br>" + maintenanceInfo + "<br><br>" + licenseInfoHTML);
         ui->aboutMessage->setWordWrap(true);
         ui->helpMessage->setVisible(false);
     } else {
