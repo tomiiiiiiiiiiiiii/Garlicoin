@@ -32,6 +32,7 @@ on:
       - '!depends/packages/zlib.mk'
       - '!.github/workflows/upnp-depends-ci.yml'
       - '!.github/workflows/qt-ci.yml'
+      - '!.github/workflows/windows-ci.yml'
   pull_request:
     branches:
       - master
@@ -63,6 +64,7 @@ on:
       - '!depends/packages/zlib.mk'
       - '!.github/workflows/upnp-depends-ci.yml'
       - '!.github/workflows/qt-ci.yml'
+      - '!.github/workflows/windows-ci.yml'
   workflow_dispatch:
 
 permissions:
