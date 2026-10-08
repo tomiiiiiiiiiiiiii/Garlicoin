@@ -23,7 +23,6 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  VERSION: '0.18.0'
   MAKEJOBS: -j2
   GARLICOIN_SCRYPT: '1'
 
@@ -68,6 +67,10 @@ jobs:
               --with-gui=qt5 \
               --disable-tests \
               --disable-bench
+          # Use the same version as make dist and the native installers.
+          VERSION="$(sed -n 's/^PACKAGE_VERSION = //p' Makefile)"
+          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
           make ${MAKEJOBS}
 
       - name: Validate Linux install and ELF binaries
@@ -149,6 +152,10 @@ jobs:
               --with-gui=qt5 \
               --disable-tests \
               --disable-bench
+          # Use the same version as make dist and the native installers.
+          VERSION="$(sed -n 's/^PACKAGE_VERSION = //p' Makefile)"
+          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
           make ${MAKEJOBS}
 
       - name: Validate Windows install and PE64 binaries
@@ -267,6 +274,11 @@ jobs:
       - name: Build deterministic macOS dependencies
         run: make ${MAKEJOBS} -C depends HOST="${HOST}"
 
+      - name: Add Darwin tools to PATH
+        run: |
+          test -x "$PWD/depends/${HOST}/native/bin/${HOST}-strip"
+          echo "$PWD/depends/${HOST}/native/bin" >> "$GITHUB_PATH"
+
       - name: Configure and build macOS release
         run: |
           ./autogen.sh
@@ -277,6 +289,10 @@ jobs:
               --with-gui=qt5 \
               --disable-tests \
               --disable-bench
+          # Use the same version as make dist and the native installers.
+          VERSION="$(sed -n 's/^PACKAGE_VERSION = //p' Makefile)"
+          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
           make ${MAKEJOBS}
 
       - name: Validate macOS install and Mach-O binaries
