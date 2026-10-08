@@ -8,6 +8,8 @@ The initial [Ubuntu toolchain run](https://github.com/tomiiiiiiiiiiiiii/Garlicoi
 
 Primary reference: Litecoin Core v0.18.1. Both its `src/support/lockedpool.cpp` and the later v0.21.2 translation unit were checked; neither directly includes `<stdexcept>`. This is a local header-compatibility fix, not a copy of a newer allocator. Qt 5.9.7 and its Litecoin-derived patches are inherited unchanged from PR #32.
 
+The first GUI matrix run also reproduced `ModuleNotFoundError: No module named imp` while staging xcb-proto 1.10 on Python 3.12. Refresh only its bundled `py-compile` helper from the installed Automake (1.16.5 on the supported Ubuntu hosts). This uses the Automake upstream helper with its Python 3 importlib path, without regenerating unrelated configure logic or changing the pinned xcb-proto source. The old helper fails and the 1.16.5 helper successfully byte-compiles the same module under Python 3.12. Litecoin v0.18.1/v0.21.2 do not contain this refresh; it is a local recipe adjustment using an upstream build tool. Both normal and optimized byte-compilation retain failure propagation; the existing postprocess still removes bytecode.
+
 ## CI coverage
 
 | Workflow | Ubuntu 22.04 | Ubuntu 24.04 |

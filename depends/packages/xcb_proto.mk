@@ -9,6 +9,12 @@ define $(package)_set_vars
   $(package)_config_opts_linux=--with-pic
 endef
 
+# The bundled Automake helper imports imp, removed in Python 3.12.
+# Refresh only that build helper; bytecode is still removed in postprocess.
+define $(package)_preprocess_cmds
+  cp -f "$$(automake --print-libdir)/py-compile" py-compile
+endef
+
 define $(package)_config_cmds
   $($(package)_autoconf)
 endef
