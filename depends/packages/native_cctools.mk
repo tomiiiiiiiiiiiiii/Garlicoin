@@ -4,7 +4,6 @@ $(package)_download_path=https://github.com/theuni/cctools-port/archive
 $(package)_file_name=$($(package)_version).tar.gz
 $(package)_sha256_hash=a09c9ba4684670a0375e42d9d67e7f12c1f62581a27f28f7c825d6d7032ccc6a
 $(package)_build_subdir=cctools
-$(package)_patches=modern_glibc_sysctl.patch
 $(package)_clang_version=3.7.1
 $(package)_clang_download_path=https://releases.llvm.org/$($(package)_clang_version)
 $(package)_clang_download_file=clang+llvm-$($(package)_clang_version)-x86_64-linux-gnu-ubuntu-14.04.tar.xz
@@ -34,15 +33,11 @@ endef
 define $(package)_set_vars
 $(package)_config_opts=--target=$(host) --disable-lto-support
 $(package)_ldflags+=-Wl,-rpath=\\$$$$$$$$\$$$$$$$$ORIGIN/../lib
-# Build the Linux-host cctools binaries with the runner compiler. The pinned
-# Clang 3.7.1 bundle is still staged below and remains the Darwin cross compiler.
-$(package)_cc=clang
-$(package)_cxx=clang++
-$(package)_cflags+=-fcommon
+$(package)_cc=$($(package)_extract_dir)/toolchain/bin/clang
+$(package)_cxx=$($(package)_extract_dir)/toolchain/bin/clang++
 endef
 
 define $(package)_preprocess_cmds
-  patch -p1 < $($(package)_patch_dir)/modern_glibc_sysctl.patch && \
   cd $($(package)_build_subdir); ./autogen.sh && \
   sed -i.old "/define HAVE_PTHREADS/d" ld64/src/ld/InputFiles.h
 endef
