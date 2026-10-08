@@ -30,9 +30,12 @@ on:
       - '!depends/packages/protobuf.mk'
       - '!depends/packages/native_protobuf.mk'
       - '!depends/packages/zlib.mk'
+      - '!depends/packages/native_cctools.mk'
+      - '!depends/patches/native_cctools/**'
       - '!.github/workflows/upnp-depends-ci.yml'
       - '!.github/workflows/qt-ci.yml'
       - '!.github/workflows/windows-ci.yml'
+      - '!.github/workflows/macos-ci.yml'
   pull_request:
     branches:
       - master
@@ -62,9 +65,12 @@ on:
       - '!depends/packages/protobuf.mk'
       - '!depends/packages/native_protobuf.mk'
       - '!depends/packages/zlib.mk'
+      - '!depends/packages/native_cctools.mk'
+      - '!depends/patches/native_cctools/**'
       - '!.github/workflows/upnp-depends-ci.yml'
       - '!.github/workflows/qt-ci.yml'
       - '!.github/workflows/windows-ci.yml'
+      - '!.github/workflows/macos-ci.yml'
   workflow_dispatch:
 
 permissions:
