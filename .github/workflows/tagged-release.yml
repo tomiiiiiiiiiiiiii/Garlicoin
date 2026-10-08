@@ -1,0 +1,130 @@
+name: Tagged Release Publisher
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 240
+    steps:
+      - name: Checkout tagged source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate release metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="${GITHUB_REF_NAME#v}"
+          test "$GITHUB_REF_NAME" = "v${VERSION}"
+          test -f "doc/release-notes-${VERSION}.md"
+          grep -q "define(_CLIENT_VERSION_MAJOR, 0)" configure.ac
+          grep -q "define(_CLIENT_VERSION_MINOR, 18)" configure.ac
+          grep -q "define(_CLIENT_VERSION_REVISION, 2)" configure.ac
+          grep -q "define(_CLIENT_VERSION_BUILD, 0)" configure.ac
+
+      - name: Dispatch exact-tag release validation
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh workflow run release-validation-ci.yml --ref "$GITHUB_REF_NAME"
+
+          RUN_ID=""
+          for attempt in $(seq 1 60); do
+            RUN_ID="$(gh run list \
+              --workflow release-validation-ci.yml \
+              --event workflow_dispatch \
+              --limit 20 \
+              --json databaseId,headBranch \
+              --jq '.[] | select(.headBranch == env.GITHUB_REF_NAME) | .databaseId' \
+              | head -n1)"
+            if [ -n "$RUN_ID" ]; then
+              break
+            fi
+            sleep 2
+          done
+
+          test -n "$RUN_ID"
+          echo "RELEASE_RUN_ID=$RUN_ID" >> "$GITHUB_ENV"
+          echo "Release validation run: $RUN_ID"
+
+      - name: Wait for release validation
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: gh run watch "$RELEASE_RUN_ID" --exit-status
+
+      - name: Download Linux release artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: gh run download "$RELEASE_RUN_ID" -n release-linux-x86_64 -D release-input/linux
+
+      - name: Download Windows release artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: gh run download "$RELEASE_RUN_ID" -n release-windows-x86_64 -D release-input/windows
+
+      - name: Download macOS release artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: gh run download "$RELEASE_RUN_ID" -n release-macos-x86_64 -D release-input/macos
+
+      - name: Assemble and verify release assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="${GITHUB_REF_NAME#v}"
+          mkdir -p release-assets
+
+          cp "release-input/linux/garlicoin-${VERSION}-linux-x86_64.tar.gz" release-assets/
+          cp "release-input/linux/garlicoin-${VERSION}.tar.gz" release-assets/
+          cp "release-input/windows/garlicoin-${VERSION}-win64.zip" release-assets/
+          cp "release-input/windows/garlicoin-${VERSION}-win64-setup.exe" release-assets/
+          cp "release-input/macos/garlicoin-${VERSION}-osx64.tar.gz" release-assets/
+          cp "release-input/macos/garlicoin-${VERSION}-osx64.dmg" release-assets/
+
+          (
+            cd release-assets
+            sha256sum garlicoin-* | sort -k2 > SHA256SUMS
+          )
+
+          rm -rf /tmp/grlc-release-check
+          mkdir -p /tmp/grlc-release-check
+          tar -xzf "release-assets/garlicoin-${VERSION}-linux-x86_64.tar.gz" -C /tmp/grlc-release-check
+          FIRST_LINE="$(/tmp/grlc-release-check/garlicoin-${VERSION}/bin/garlicoind --version | head -n1)"
+          echo "$FIRST_LINE"
+          test "$FIRST_LINE" = "Garlicoin Core Daemon version v${VERSION}"
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="${GITHUB_REF_NAME#v}"
+          NOTES="doc/release-notes-${VERSION}.md"
+
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" release-assets/* --clobber
+            gh release edit "$GITHUB_REF_NAME" \
+              --title "Garlicoin Core ${VERSION} - GRLC.eu Maintenance Release" \
+              --notes-file "$NOTES"
+          else
+            gh release create "$GITHUB_REF_NAME" release-assets/* \
+              --verify-tag \
+              --title "Garlicoin Core ${VERSION} - GRLC.eu Maintenance Release" \
+              --notes-file "$NOTES"
+          fi
