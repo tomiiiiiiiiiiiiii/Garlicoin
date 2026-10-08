@@ -6,8 +6,6 @@ on:
     paths:
       - '.github/workflows/ubuntu-toolchain-ci.yml'
       - 'depends/**'
-      - '!depends/packages/native_cctools.mk'
-      - '!depends/patches/native_cctools/**'
       - 'src/**'
       - 'build-aux/**'
       - 'configure.ac'
@@ -18,8 +16,6 @@ on:
     paths:
       - '.github/workflows/ubuntu-toolchain-ci.yml'
       - 'depends/**'
-      - '!depends/packages/native_cctools.mk'
-      - '!depends/patches/native_cctools/**'
       - 'src/**'
       - 'build-aux/**'
       - 'configure.ac'
