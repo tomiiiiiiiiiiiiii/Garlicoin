@@ -1,0 +1,112 @@
+name: Ubuntu toolchain CI
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - '.github/workflows/ubuntu-toolchain-ci.yml'
+      - 'depends/**'
+      - 'src/**'
+      - 'build-aux/**'
+      - 'configure.ac'
+      - 'Makefile.am'
+      - 'test/functional/**'
+  pull_request:
+    branches: [master]
+    paths:
+      - '.github/workflows/ubuntu-toolchain-ci.yml'
+      - 'depends/**'
+      - 'src/**'
+      - 'build-aux/**'
+      - 'configure.ac'
+      - 'Makefile.am'
+      - 'test/functional/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ubuntu-toolchain-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  wallet-build:
+    name: Wallet build + smoke (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, ubuntu-24.04]
+    env:
+      HOST: x86_64-unknown-linux-gnu
+      MAKEJOBS: -j2
+      GARLICOIN_SCRYPT: "1"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install native build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            autoconf automake autotools-dev bsdmainutils build-essential \
+            ca-certificates ccache curl git libtool pkg-config python3
+          mkdir -p ci-logs
+          {
+            cat /etc/os-release
+            gcc --version
+            g++ --version
+            ldd --version
+            python3 --version
+          } | tee ci-logs/toolchain.log
+      - name: Cache wallet dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            depends/built
+            depends/sources
+          key: garlicoin-toolchain-wallet-${{ matrix.os }}-${{ env.HOST }}-${{ hashFiles('depends/**') }}
+          restore-keys: |
+            garlicoin-toolchain-wallet-${{ matrix.os }}-${{ env.HOST }}-
+      - name: Build pinned dependencies including Berkeley DB 4.8
+        run: |
+          if ! make ${MAKEJOBS} -C depends HOST="${HOST}" NO_QT=1 NO_UPNP=1 >ci-logs/depends.log 2>&1; then
+            tail -n 200 ci-logs/depends.log
+            exit 1
+          fi
+          tail -n 20 ci-logs/depends.log
+      - name: Configure wallet-enabled daemon
+        run: |
+          if ! {
+            ./autogen.sh &&
+            CONFIG_SITE="$PWD/depends/${HOST}/share/config.site" \
+              ./configure --enable-wallet --without-gui --without-miniupnpc \
+                --disable-zmq --enable-sse2
+          } >ci-logs/configure.log 2>&1; then
+            tail -n 200 ci-logs/configure.log
+            exit 1
+          fi
+          tail -n 20 ci-logs/configure.log
+      - name: Build daemon and CLI
+        run: |
+          if ! make ${MAKEJOBS} >ci-logs/build.log 2>&1; then
+            tail -n 200 ci-logs/build.log
+            exit 1
+          fi
+          tail -n 20 ci-logs/build.log
+          src/garlicoind --version
+          src/garlicoin-cli --version
+      - name: Run wallet and RPC smoke tests with system Python
+        run: |
+          python3 test/functional/test_runner.py --jobs=1 --combinedlogslen=100 \
+            wallet_encryption.py rpc_uptime.py rpc_net.py interface_bitcoin_cli.py
+      - name: Preserve build logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ubuntu-toolchain-logs-${{ matrix.os }}
+          path: |
+            ci-logs/
+            config.log
+          if-no-files-found: ignore
