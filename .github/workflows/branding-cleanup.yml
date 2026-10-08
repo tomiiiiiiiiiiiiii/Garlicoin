@@ -1,4 +1,4 @@
-name: One-off branding cleanup
+name: One-off runtime branding cleanup
 
 on:
   push:
@@ -20,41 +20,44 @@ jobs:
           ref: maintenance/release-validation
           fetch-depth: 0
 
-      - name: Replace stale Litecoin branding in Qt translations
+      - name: Clean runtime-facing stale binary names
         shell: bash
         run: |
           set -euo pipefail
 
-          while IFS= read -r -d '' file; do
-            perl -pi -e 's/LITECOIN/GARLICOIN/g; s/Litecoin/Garlicoin/g; s/litecoin/garlicoin/g' "$file"
-          done < <(git grep -Ilz -i 'litecoin' -- 'src/qt/locale/*.ts')
+          files=(
+            configure.ac
+            src/bitcoin-cli.cpp
+            src/rpc/mining.cpp
+            src/rpc/misc.cpp
+            src/wallet/rpcdump.cpp
+            src/wallet/test/wallet_tests.cpp
+          )
+
+          for file in "${files[@]}"; do
+            perl -pi -e 's/litecoind/garlicoind/g; s/litecoin-cli/garlicoin-cli/g' "$file"
+          done
+
+          git diff --check
 
           if git grep -ni -i 'litecoin' -- 'src/qt/locale/*.ts'; then
             echo 'ERROR: stale Litecoin branding remains in Qt translations.' >&2
             exit 1
           fi
 
-      - name: Set client version to 0.18.1
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          perl -0pi -e 's/define\(_CLIENT_VERSION_REVISION, 0\)/define(_CLIENT_VERSION_REVISION, 1)/' configure.ac
-
           grep -F 'define(_CLIENT_VERSION_MAJOR, 0)' configure.ac
           grep -F 'define(_CLIENT_VERSION_MINOR, 18)' configure.ac
           grep -F 'define(_CLIENT_VERSION_REVISION, 1)' configure.ac
           grep -F 'define(_CLIENT_VERSION_BUILD, 0)' configure.ac
 
-      - name: Validate and show remaining repository references
-        shell: bash
-        run: |
-          set -euo pipefail
-          git diff --check
-          echo 'Remaining case-insensitive Litecoin references outside translations:'
-          if ! git grep -ni -i 'litecoin' -- ':!src/qt/locale/*.ts'; then
-            echo 'None.'
-          fi
+          echo 'Remaining live-source references for review:'
+          git grep -ni -i 'litecoin' -- \
+            'configure.ac' \
+            'src/*.cpp' \
+            'src/*.h' \
+            'src/rpc/*.cpp' \
+            'src/wallet/*.cpp' \
+            ':!src/bitcoin.diff' || true
 
       - name: Commit cleanup
         shell: bash
@@ -62,7 +65,7 @@ jobs:
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add configure.ac src/qt/locale
+          git add configure.ac src/bitcoin-cli.cpp src/rpc/mining.cpp src/rpc/misc.cpp src/wallet/rpcdump.cpp src/wallet/test/wallet_tests.cpp
           git diff --cached --check
-          git commit -m 'release: fix Garlicoin branding and set version 0.18.1'
+          git commit -m 'release: remove stale Litecoin names from runtime text'
           git push origin HEAD:maintenance/release-validation
