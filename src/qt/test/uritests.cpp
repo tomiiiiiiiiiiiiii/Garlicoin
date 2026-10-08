@@ -58,6 +58,14 @@ void URITests::uriTests()
     uri.setUrl(QString("garlicoin:LEr4HnaeFWYhBmGxCfP2po1NPRueIk8kM2?req-message=Wikipedia Example Address"));
     QVERIFY(GUIUtil::parseBitcoinURI(uri, &rv));
 
+    // Preserve the normal BIP21-style Garlicoin URI used by wallets and QR codes.
+    uri.setUrl(QString("garlicoin:LEr4HnaeFWYhBmGxCfP2po1NPRueIk8kM2?amount=10.00000000&label=test&message=test"));
+    QVERIFY(GUIUtil::parseBitcoinURI(uri, &rv));
+    QVERIFY(rv.address == QString("LEr4HnaeFWYhBmGxCfP2po1NPRueIk8kM2"));
+    QVERIFY(rv.amount == 1000000000LL);
+    QVERIFY(rv.label == QString("test"));
+    QVERIFY(rv.message == QString("test"));
+
     uri.setUrl(QString("garlicoin:LEr4HnaeFWYhBmGxCfP2po1NPRueIk8kM2?amount=1,000&label=Wikipedia Example"));
     QVERIFY(!GUIUtil::parseBitcoinURI(uri, &rv));
 
