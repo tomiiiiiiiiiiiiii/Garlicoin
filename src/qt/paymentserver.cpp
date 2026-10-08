@@ -11,11 +11,6 @@
 #include <ui_interface.h>
 #include <util.h>
 
-#include <memory>
-
-#include <openssl/x509_vfy.h>
-
-#include <QApplication>
 #include <QByteArray>
 #include <QDataStream>
 #include <QDebug>
@@ -26,62 +21,23 @@
 #include <QLocalServer>
 #include <QLocalSocket>
 #include <QMessageBox>
-
-#if QT_VERSION < 0x050000
 #include <QUrl>
-#else
-#include <QUrl>
+#if QT_VERSION >= 0x050000
 #include <QUrlQuery>
 #endif
 
 const int BITCOIN_IPC_CONNECT_TIMEOUT = 1000; // milliseconds
 const QString BITCOIN_IPC_PREFIX("garlicoin:");
 
-struct X509StoreDeleter {
-    void operator()(X509_STORE* store) const
-    {
-        X509_STORE_free(store);
-    }
-};
-
-namespace {
-std::unique_ptr<X509_STORE, X509StoreDeleter> certStore;
-}
-
-//
-// Create a name that is unique for:
-//  testnet / non-testnet
-//  data directory
-//
 static QString ipcServerName()
 {
     QString name("GarlicoinQt");
-
-    // Append a simple hash of the datadir
-    // Note that GetDataDir(true) returns a different path
-    // for -testnet versus main net
     QString ddir(GUIUtil::boostPathToQString(GetDataDir(true)));
     name.append(QString::number(qHash(ddir)));
-
     return name;
 }
 
-// We store payment URIs received before the main GUI window is ready.
-// Legacy BIP70 files may also be queued only so we can reject them cleanly
-// once the UI is available.
 static QList<QString> savedPaymentRequests;
-
-void PaymentServer::LoadRootCAs(X509_STORE* store)
-{
-    // BIP70 is disabled. Keep this compatibility entry point temporarily so
-    // callers built around the legacy PaymentServer interface still compile.
-    // No system certificates are loaded and no certificate parsing is done.
-    if (store) {
-        certStore.reset(store);
-    } else {
-        certStore.reset(X509_STORE_new());
-    }
-}
 
 void PaymentServer::ipcParseCommandLine(int argc, char* argv[])
 {
@@ -95,7 +51,6 @@ void PaymentServer::ipcParseCommandLine(int argc, char* argv[])
         {
             savedPaymentRequests.append(arg);
 
-            // Preserve existing network selection for normal BIP21-style URIs.
             SendCoinsRecipient r;
             if (GUIUtil::parseBitcoinURI(arg, &r) && !r.address.isEmpty())
             {
@@ -113,9 +68,7 @@ void PaymentServer::ipcParseCommandLine(int argc, char* argv[])
         }
         else if (QFile::exists(arg))
         {
-            // Keep the path long enough to show a clear unsupported-BIP70
-            // message after the GUI is ready. Do not parse the file.
-            savedPaymentRequests.append(arg);
+            qWarning() << "PaymentServer::ipcParseCommandLine: BIP70 payment request files are no longer supported: " << arg;
         }
         else
         {
@@ -134,7 +87,6 @@ bool PaymentServer::ipcSendCommandLine()
         if (!socket->waitForConnected(BITCOIN_IPC_CONNECT_TIMEOUT))
         {
             delete socket;
-            socket = nullptr;
             return false;
         }
 
@@ -150,7 +102,6 @@ bool PaymentServer::ipcSendCommandLine()
         socket->disconnectFromServer();
 
         delete socket;
-        socket = nullptr;
         fResult = true;
     }
 
@@ -161,15 +112,12 @@ PaymentServer::PaymentServer(QObject* parent, bool startLocalServer) :
     QObject(parent),
     saveURIs(true),
     uriServer(0),
-    netManager(0),
     optionsModel(0)
 {
     if (parent)
         parent->installEventFilter(this);
 
     QString name = ipcServerName();
-
-    // Clean up old socket leftover from a crash.
     QLocalServer::removeServer(name);
 
     if (startLocalServer)
@@ -190,6 +138,12 @@ PaymentServer::~PaymentServer()
 {
 }
 
+void PaymentServer::LoadRootCAs()
+{
+    // BIP70 certificate handling was removed. Intentionally no-op until the
+    // legacy initialization call is removed in a follow-up cleanup.
+}
+
 bool PaymentServer::eventFilter(QObject *object, QEvent *event)
 {
     if (event->type() == QEvent::FileOpen) {
@@ -205,19 +159,11 @@ bool PaymentServer::eventFilter(QObject *object, QEvent *event)
     return QObject::eventFilter(object, event);
 }
 
-void PaymentServer::initNetManager()
-{
-    // BIP70 network fetching has been removed. Kept as a temporary no-op
-    // until the legacy interface is deleted in the cleanup commit.
-}
-
 void PaymentServer::uiReady()
 {
     saveURIs = false;
     for (const QString& s : savedPaymentRequests)
-    {
         handleURIOrFile(s);
-    }
     savedPaymentRequests.clear();
 }
 
@@ -236,8 +182,6 @@ void PaymentServer::handleURIOrFile(const QString& s)
 #else
         QUrlQuery uri((QUrl(s)));
 #endif
-        // BIP70 used the r= parameter to point at a remote PaymentRequest.
-        // Never fetch or parse it. Normal garlicoin: URIs continue below.
         if (uri.hasQueryItem("r"))
         {
             Q_EMIT message(tr("URI handling"),
@@ -250,7 +194,8 @@ void PaymentServer::handleURIOrFile(const QString& s)
         if (GUIUtil::parseBitcoinURI(s, &recipient))
         {
             if (!IsValidDestinationString(recipient.address.toStdString())) {
-                Q_EMIT message(tr("URI handling"), tr("Invalid payment address %1").arg(recipient.address),
+                Q_EMIT message(tr("URI handling"),
+                    tr("Invalid payment address %1").arg(recipient.address),
                     CClientUIInterface::MSG_ERROR);
             }
             else {
@@ -270,8 +215,15 @@ void PaymentServer::handleURIOrFile(const QString& s)
         Q_EMIT message(tr("Payment request file handling"),
             tr("BIP70 payment request files are no longer supported. Please use a normal garlicoin: URI with a payment address."),
             CClientUIInterface::ICON_WARNING);
-        return;
     }
+}
+
+void PaymentServer::fetchPaymentACK(CWallet* wallet, const SendCoinsRecipient& recipient, QByteArray transaction)
+{
+    Q_UNUSED(wallet);
+    Q_UNUSED(recipient);
+    Q_UNUSED(transaction);
+    // BIP70 PaymentACK submission was removed. No network action is performed.
 }
 
 void PaymentServer::handleURIConnection()
@@ -286,83 +238,15 @@ void PaymentServer::handleURIConnection()
 
     QDataStream in(clientConnection);
     in.setVersion(QDataStream::Qt_4_0);
-    if (clientConnection->bytesAvailable() < (int)sizeof(quint16)) {
+    if (clientConnection->bytesAvailable() < (int)sizeof(quint16))
         return;
-    }
+
     QString msg;
     in >> msg;
-
     handleURIOrFile(msg);
-}
-
-bool PaymentServer::readPaymentRequestFromFile(const QString& filename, PaymentRequestPlus& request)
-{
-    Q_UNUSED(filename);
-    Q_UNUSED(request);
-    return false;
-}
-
-bool PaymentServer::processPaymentRequest(const PaymentRequestPlus& request, SendCoinsRecipient& recipient)
-{
-    Q_UNUSED(request);
-    Q_UNUSED(recipient);
-    return false;
-}
-
-void PaymentServer::fetchRequest(const QUrl& url)
-{
-    Q_UNUSED(url);
-}
-
-void PaymentServer::fetchPaymentACK(CWallet* wallet, const SendCoinsRecipient& recipient, QByteArray transaction)
-{
-    Q_UNUSED(wallet);
-    Q_UNUSED(recipient);
-    Q_UNUSED(transaction);
-}
-
-void PaymentServer::netRequestFinished(QNetworkReply* reply)
-{
-    Q_UNUSED(reply);
-}
-
-void PaymentServer::reportSslErrors(QNetworkReply* reply, const QList<QSslError>& errs)
-{
-    Q_UNUSED(reply);
-    Q_UNUSED(errs);
 }
 
 void PaymentServer::setOptionsModel(OptionsModel *_optionsModel)
 {
-    this->optionsModel = _optionsModel;
-}
-
-void PaymentServer::handlePaymentACK(const QString& paymentACKMsg)
-{
-    Q_UNUSED(paymentACKMsg);
-}
-
-bool PaymentServer::verifyNetwork(const payments::PaymentDetails& requestDetails)
-{
-    return requestDetails.network() == Params().NetworkIDString();
-}
-
-bool PaymentServer::verifyExpired(const payments::PaymentDetails& requestDetails)
-{
-    return requestDetails.has_expires() && (int64_t)requestDetails.expires() < GetTime();
-}
-
-bool PaymentServer::verifySize(qint64 requestSize)
-{
-    return requestSize <= BIP70_MAX_PAYMENTREQUEST_SIZE;
-}
-
-bool PaymentServer::verifyAmount(const CAmount& requestAmount)
-{
-    return MoneyRange(requestAmount);
-}
-
-X509_STORE* PaymentServer::getCertStore()
-{
-    return certStore.get();
+    optionsModel = _optionsModel;
 }

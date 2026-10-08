@@ -14,7 +14,6 @@
 #include <qt/clientmodel.h>
 #include <qt/guiconstants.h>
 #include <qt/intro.h>
-#include <qt/paymentrequestplus.h>
 #include <qt/guiutil.h>
 
 #include <clientversion.h>
@@ -84,13 +83,9 @@ HelpMessageDialog::HelpMessageDialog(QWidget *parent, bool about) :
         std::string strUsage = HelpMessage(HMM_BITCOIN_QT);
         const bool showDebug = gArgs.GetBoolArg("-help-debug", false);
         strUsage += HelpMessageGroup(tr("UI Options:").toStdString());
-        if (showDebug) {
-            strUsage += HelpMessageOpt("-allowselfsignedrootcertificates", strprintf("Allow self signed root certificates (default: %u)", DEFAULT_SELFSIGNED_ROOTCERTS));
-        }
         strUsage += HelpMessageOpt("-choosedatadir", strprintf(tr("Choose data directory on startup (default: %u)").toStdString(), DEFAULT_CHOOSE_DATADIR));
         strUsage += HelpMessageOpt("-lang=<lang>", tr("Set language, for example \"de_DE\" (default: system locale)").toStdString());
         strUsage += HelpMessageOpt("-min", tr("Start minimized").toStdString());
-        strUsage += HelpMessageOpt("-rootcertificates=<file>", tr("Set SSL root certificates for payment request (default: -system-)").toStdString());
         strUsage += HelpMessageOpt("-splash", strprintf(tr("Show splash screen on startup (default: %u)").toStdString(), DEFAULT_SPLASHSCREEN));
         strUsage += HelpMessageOpt("-resetguisettings", tr("Reset all settings changed in the GUI").toStdString());
         if (showDebug) {
@@ -121,7 +116,6 @@ HelpMessageDialog::HelpMessageDialog(QWidget *parent, bool about) :
             } else if (line.startsWith("   ")) {
                 cursor.insertText(line.trimmed()+' ');
             } else if (line.size() > 0) {
-                //Title of a group
                 if (cursor.currentTable())
                     cursor.currentTable()->appendRows(1);
                 cursor.movePosition(QTextCursor::Down);
@@ -143,17 +137,14 @@ HelpMessageDialog::~HelpMessageDialog()
 
 void HelpMessageDialog::printToConsole()
 {
-    // On other operating systems, the expected action is to print the message to the console.
     fprintf(stdout, "%s\n", qPrintable(text));
 }
 
 void HelpMessageDialog::showOrPrint()
 {
 #if defined(WIN32)
-    // On Windows, show a message box, as there is no stderr/stdout in windowed applications
     exec();
 #else
-    // On other operating systems, print help text to console
     printToConsole();
 #endif
 }
@@ -162,7 +153,6 @@ void HelpMessageDialog::on_okButton_accepted()
 {
     close();
 }
-
 
 /** "Shutdown" window */
 ShutdownWindow::ShutdownWindow(QWidget *parent, Qt::WindowFlags f):
@@ -180,11 +170,9 @@ QWidget *ShutdownWindow::showShutdownWindow(BitcoinGUI *window)
     if (!window)
         return nullptr;
 
-    // Show a simple window indicating shutdown status
     QWidget *shutdownWindow = new ShutdownWindow();
     shutdownWindow->setWindowTitle(window->windowTitle());
 
-    // Center shutdown window at where main window was
     const QPoint global = window->mapToGlobal(window->rect().center());
     shutdownWindow->move(global.x() - shutdownWindow->width() / 2, global.y() - shutdownWindow->height() / 2);
     shutdownWindow->show();
