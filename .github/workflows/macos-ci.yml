@@ -102,17 +102,32 @@ jobs:
           tar -C depends/SDKs -xf "$sdk_archive"
           test -d "depends/SDKs/MacOSX${OSX_SDK_VERSION}.sdk"
 
-      - name: Prepare Darwin-only Boost bootstrap
+      - name: Prepare Darwin-only toolchain compatibility
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          path = Path('depends/packages/boost.mk')
-          text = path.read_text()
+
+          native = Path('depends/packages/native_cctools.mk')
+          text = native.read_text()
+          old = "$(package)_cc=$($(package)_extract_dir)/toolchain/bin/clang\n$(package)_cxx=$($(package)_extract_dir)/toolchain/bin/clang++"
+          new = "$(package)_cc=clang\n$(package)_cxx=clang++\n$(package)_cflags+=-fcommon"
+          if old not in text:
+              raise SystemExit('expected native_cctools compiler block not found')
+          text = text.replace(old, new, 1)
+
+          old = "define $(package)_preprocess_cmds\n  cd $($(package)_build_subdir); ./autogen.sh && \\\n  sed -i.old \"/define HAVE_PTHREADS/d\" ld64/src/ld/InputFiles.h"
+          new = "define $(package)_preprocess_cmds\n  sed -i '/#include <sys\\/sysctl.h>/s/^/#ifdef __APPLE__\\n/; /#include <sys\\/sysctl.h>/a #endif' $($(package)_build_subdir)/libstuff/macosx_deployment_target.c && \\\n  sed -i 's/^#ifndef __CYGWIN__/#if !defined(__CYGWIN__) \\&\\& !defined(__linux__)/' $($(package)_build_subdir)/include/foreign/sys/sysctl.h && \\\n  cd $($(package)_build_subdir); ./autogen.sh && \\\n  sed -i.old \"/define HAVE_PTHREADS/d\" ld64/src/ld/InputFiles.h"
+          if old not in text:
+              raise SystemExit('expected native_cctools preprocess block not found')
+          native.write_text(text.replace(old, new, 1))
+
+          boost = Path('depends/packages/boost.mk')
+          text = boost.read_text()
           old = './bootstrap.sh --without-icu --with-libraries=$($(package)_config_libraries) --with-toolset=$($(package)_toolset_$(host_os))'
           new = './bootstrap.sh --without-icu --with-libraries=$($(package)_config_libraries) $(if $(filter darwin,$(host_os)),--with-toolset=gcc,--with-toolset=$($(package)_toolset_$(host_os)))'
           if old not in text:
               raise SystemExit('expected Boost bootstrap line not found')
-          path.write_text(text.replace(old, new, 1))
+          boost.write_text(text.replace(old, new, 1))
           PY
 
       - name: Build deterministic macOS dependencies
