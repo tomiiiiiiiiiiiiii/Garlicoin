@@ -1,0 +1,50 @@
+name: Prepare Garlicoin Core 0.18.2
+
+on:
+  push:
+    branches:
+      - release/0.18.2
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v4
+        with:
+          ref: release/0.18.2
+          fetch-depth: 0
+
+      - name: Prepare 0.18.2 source metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q '^define(_CLIENT_VERSION_MAJOR, 0)$' configure.ac
+          grep -q '^define(_CLIENT_VERSION_MINOR, 18)$' configure.ac
+          grep -q '^define(_CLIENT_VERSION_REVISION, 1)$' configure.ac
+          grep -q '^define(_CLIENT_VERSION_BUILD, 0)$' configure.ac
+
+          sed -i 's/^define(_CLIENT_VERSION_REVISION, 1)$/define(_CLIENT_VERSION_REVISION, 2)/' configure.ac
+          sed -i 's/Version 0\.18\.1/Version 0.18.2/' README.md
+          sed -i 's/Garlicoin Core \*\*0\.18\.1\*\*/Garlicoin Core **0.18.2**/' README.md
+
+          grep -q '^define(_CLIENT_VERSION_REVISION, 2)$' configure.ac
+          grep -q 'Version 0.18.2' README.md
+          grep -q 'Garlicoin Core \*\*0.18.2\*\*' README.md
+
+      - name: Commit release preparation
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- configure.ac README.md; then
+            echo 'Release metadata is already prepared.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add configure.ac README.md
+          git commit -m 'release: prepare Garlicoin Core 0.18.2'
+          git push origin HEAD:release/0.18.2
