@@ -75,6 +75,11 @@ class P2PConnection(asyncio.Protocol):
         self._loop = None
         self.state = "closed"
 
+    @property
+    def connected(self):
+        """Keep the asyncore connection-state API used by existing tests."""
+        return self.state == "connected"
+
     def peer_connect(self, dstaddr, dstport, net="regtest"):
         assert not network_thread_running()
         self.dstaddr = dstaddr

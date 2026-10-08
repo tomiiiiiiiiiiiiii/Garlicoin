@@ -40,6 +40,7 @@ class TransportTest(unittest.TestCase):
                     while len(received) < len(expected):
                         received += conn.recv(4096)
                     self.assertEqual(received, expected)
+                    self.assertTrue(peer.connected)
                     raw = frame(b'ping', struct.pack('<Q', 456))
                     conn.sendall(raw[:7])
                     conn.sendall(raw[7:] + raw)
@@ -59,6 +60,7 @@ class TransportTest(unittest.TestCase):
                 peer.peer_disconnect()
                 network_thread_join()
             self.assertEqual(peer.state, 'closed')
+            self.assertFalse(peer.connected)
 
     def test_refused_connection_and_empty_loop(self):
         with socket.socket() as reserved:
