@@ -58,6 +58,7 @@ jobs:
             build-essential \
             ca-certificates \
             ccache \
+            clang \
             cmake \
             curl \
             git \
@@ -74,6 +75,8 @@ jobs:
             python3 \
             python3-setuptools \
             xz-utils
+          clang --version
+          clang++ --version
 
       - name: Cache macOS depends
         uses: actions/cache@v4
