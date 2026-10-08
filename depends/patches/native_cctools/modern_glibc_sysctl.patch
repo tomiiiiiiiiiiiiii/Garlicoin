@@ -10,3 +10,11 @@
  #include "stuff/errors.h"
  #include "stuff/allocate.h"
  #include "stuff/macosx_deployment_target.h"
+--- a/cctools/include/foreign/sys/sysctl.h
++++ b/cctools/include/foreign/sys/sysctl.h
+@@ -1,4 +1,4 @@
+-#ifndef __CYGWIN__
++#if !defined(__CYGWIN__) && !defined(__linux__)
+ #include_next <sys/sysctl.h>
+ #else
+ #ifndef __SYSCTL_H__
