@@ -51,7 +51,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             autoconf automake autotools-dev bsdmainutils build-essential \
-            ca-certificates ccache curl git libtool pkg-config python3
+            ca-certificates ccache curl git libtool pkg-config python3 perl
           mkdir -p ci-logs
           {
             cat /etc/os-release
@@ -59,6 +59,16 @@ jobs:
             g++ --version
             ldd --version
             python3 --version
+            autoconf --version
+            automake --version
+            libtoolize --version
+            pkg-config --version
+            perl -V:version
+            make --version
+            ld --version
+            as --version
+            depends/config.guess
+            depends/config.sub "${HOST}"
           } | tee ci-logs/toolchain.log
       - name: Cache wallet dependencies
         uses: actions/cache@v4
@@ -97,6 +107,19 @@ jobs:
           tail -n 20 ci-logs/build.log
           src/garlicoind --version
           src/garlicoin-cli --version
+      - name: Run focused Garlicoin tests
+        run: |
+          src/test/test_garlicoin --run_test=compress_tests
+          src/test/test_garlicoin --run_test=main_tests
+          src/test/test_garlicoin --run_test=base58_tests
+          src/test/test_garlicoin --run_test=key_tests/key_test1
+          src/test/test_garlicoin --run_test=DoS_tests/stale_tip_peer_management
+          src/test/test_garlicoin --run_test=sighash_tests/sighash_from_data
+          src/test/test_garlicoin --run_test=pow_tests
+          src/test/test_garlicoin --run_test=transaction_tests/tx_valid
+          src/test/test_garlicoin --run_test=tx_validationcache_tests/tx_mempool_block_doublespend
+          src/test/test_garlicoin --run_test=miner_tests/CreateNewBlock_validity
+
       - name: Run wallet and RPC smoke tests with system Python
         run: |
           python3 test/functional/test_runner.py --jobs=1 --combinedlogslen=100 \
