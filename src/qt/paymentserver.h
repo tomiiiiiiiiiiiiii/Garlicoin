@@ -10,9 +10,11 @@
 
 #include <qt/walletmodel.h>
 
+#include <QByteArray>
 #include <QObject>
 #include <QString>
 
+class CWallet;
 class OptionsModel;
 
 QT_BEGIN_NAMESPACE
@@ -33,6 +35,10 @@ public:
     explicit PaymentServer(QObject* parent, bool startLocalServer = true);
     ~PaymentServer();
 
+    // Temporary no-op compatibility entry point for the existing application
+    // initialization sequence. BIP70 certificate loading has been removed.
+    static void LoadRootCAs();
+
     // Retained for compatibility with the existing GUI initialization flow.
     void setOptionsModel(OptionsModel *optionsModel);
 
@@ -49,6 +55,10 @@ public Q_SLOTS:
 
     // Handle an incoming normal garlicoin: URI. Legacy BIP70 inputs are rejected.
     void handleURIOrFile(const QString& s);
+
+    // Temporary no-op compatibility slot. PaymentACK/BIP70 network submission
+    // has been removed and no network request is performed.
+    void fetchPaymentACK(CWallet* wallet, const SendCoinsRecipient& recipient, QByteArray transaction);
 
 private Q_SLOTS:
     void handleURIConnection();
