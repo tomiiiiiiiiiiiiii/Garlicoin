@@ -9,8 +9,6 @@ on:
       - 'configure.ac'
       - 'build-aux/**'
       - 'depends/**'
-      - '!depends/packages/native_cctools.mk'
-      - '!depends/patches/native_cctools/**'
       - 'doc/build-windows.md'
       - '.github/workflows/windows-ci.yml'
   pull_request:
@@ -21,8 +19,6 @@ on:
       - 'configure.ac'
       - 'build-aux/**'
       - 'depends/**'
-      - '!depends/packages/native_cctools.mk'
-      - '!depends/patches/native_cctools/**'
       - 'doc/build-windows.md'
       - '.github/workflows/windows-ci.yml'
   workflow_dispatch:
