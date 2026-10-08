@@ -1,0 +1,148 @@
+name: macOS Deterministic CI
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'src/**'
+      - 'configure.ac'
+      - 'build-aux/**'
+      - 'depends/**'
+      - 'doc/build-osx.md'
+      - '.github/workflows/macos-ci.yml'
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'src/**'
+      - 'configure.ac'
+      - 'build-aux/**'
+      - 'depends/**'
+      - 'doc/build-osx.md'
+      - '.github/workflows/macos-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: macos-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  darwin-cross-build:
+    name: macOS x86_64 cross-build
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+
+    env:
+      HOST: x86_64-apple-darwin14
+      OSX_SDK_VERSION: '10.11'
+      SDK_URL: https://bitcoincore.org/depends-sources/sdks
+      MAKEJOBS: -j2
+      GARLICOIN_SCRYPT: '1'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Darwin cross-build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            autoconf \
+            automake \
+            autotools-dev \
+            bsdmainutils \
+            build-essential \
+            ca-certificates \
+            ccache \
+            cmake \
+            curl \
+            git \
+            imagemagick \
+            libbz2-dev \
+            libcap-dev \
+            librsvg2-bin \
+            libtiff-tools \
+            libtool \
+            libz-dev \
+            patch \
+            pkg-config \
+            python3 \
+            python3-setuptools \
+            xz-utils
+
+      - name: Cache macOS depends
+        uses: actions/cache@v4
+        with:
+          path: |
+            depends/built
+            depends/sources
+            depends/sdk-sources
+          key: garlicoin-depends-macos-${{ runner.os }}-${{ env.HOST }}-${{ hashFiles('depends/**') }}
+          restore-keys: |
+            garlicoin-depends-macos-${{ runner.os }}-${{ env.HOST }}-
+
+      - name: Fetch macOS SDK
+        run: |
+          mkdir -p depends/SDKs depends/sdk-sources
+          sdk_archive="depends/sdk-sources/MacOSX${OSX_SDK_VERSION}.sdk.tar.gz"
+          if [ ! -f "$sdk_archive" ]; then
+            curl --location --fail \
+              "${SDK_URL}/MacOSX${OSX_SDK_VERSION}.sdk.tar.gz" \
+              -o "$sdk_archive"
+          fi
+          rm -rf "depends/SDKs/MacOSX${OSX_SDK_VERSION}.sdk"
+          tar -C depends/SDKs -xf "$sdk_archive"
+          test -d "depends/SDKs/MacOSX${OSX_SDK_VERSION}.sdk"
+
+      - name: Build deterministic macOS dependencies
+        run: |
+          mkdir -p ci-logs
+          if make ${MAKEJOBS} -C depends HOST="${HOST}" >ci-logs/macos-depends.log 2>&1; then
+            tail -n 30 ci-logs/macos-depends.log
+          else
+            tail -n 250 ci-logs/macos-depends.log
+            exit 1
+          fi
+
+      - name: Configure macOS wallet and Qt GUI
+        run: |
+          ./autogen.sh
+          CONFIG_SITE="$PWD/depends/${HOST}/share/config.site" \
+            ./configure \
+              --enable-wallet \
+              --with-gui=qt5 \
+              --disable-tests \
+              --disable-bench
+
+      - name: Build macOS executables
+        run: |
+          if make ${MAKEJOBS} -C src >ci-logs/macos-build.log 2>&1; then
+            tail -n 30 ci-logs/macos-build.log
+          else
+            tail -n 250 ci-logs/macos-build.log
+            exit 1
+          fi
+
+      - name: Verify macOS binaries
+        run: |
+          test -f src/garlicoind
+          test -f src/garlicoin-cli
+          test -f src/qt/garlicoin-qt
+          file src/garlicoind | tee /tmp/garlicoind.file
+          file src/garlicoin-cli | tee /tmp/garlicoin-cli.file
+          file src/qt/garlicoin-qt | tee /tmp/garlicoin-qt.file
+          grep -q 'Mach-O 64-bit x86_64' /tmp/garlicoind.file
+          grep -q 'Mach-O 64-bit x86_64' /tmp/garlicoin-cli.file
+          grep -q 'Mach-O 64-bit x86_64' /tmp/garlicoin-qt.file
+
+      - name: Upload macOS build logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-darwin-build-logs
+          path: ci-logs/
+          if-no-files-found: ignore
