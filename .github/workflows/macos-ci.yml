@@ -58,7 +58,6 @@ jobs:
             build-essential \
             ca-certificates \
             ccache \
-            clang \
             cmake \
             curl \
             git \
@@ -75,8 +74,6 @@ jobs:
             python3 \
             python3-setuptools \
             xz-utils
-          clang --version
-          clang++ --version
 
       - name: Cache macOS depends
         uses: actions/cache@v4
@@ -105,7 +102,7 @@ jobs:
       - name: Build deterministic macOS dependencies
         run: |
           mkdir -p ci-logs
-          if make ${MAKEJOBS} -C depends HOST="${HOST}" FORCE_USE_SYSTEM_CLANG=1 >ci-logs/macos-depends.log 2>&1; then
+          if make ${MAKEJOBS} -C depends HOST="${HOST}" >ci-logs/macos-depends.log 2>&1; then
             tail -n 30 ci-logs/macos-depends.log
           else
             tail -n 250 ci-logs/macos-depends.log
