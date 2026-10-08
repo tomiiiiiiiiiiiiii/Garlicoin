@@ -19,6 +19,27 @@ def frame(command, payload):
 
 
 class TransportTest(unittest.TestCase):
+    def test_invalid_frame_closes_connection(self):
+        with socket.socket() as listener:
+            listener.bind(('127.0.0.1', 0))
+            listener.listen()
+            listener.settimeout(2)
+            peer = P2PInterface()
+            peer.peer_connect('127.0.0.1', listener.getsockname()[1], send_version=False)
+            network_thread_start()
+            try:
+                with listener.accept()[0] as conn:
+                    conn.settimeout(2)
+                    raw = bytearray(frame(b'ping', struct.pack('<Q', 456)))
+                    raw[20] ^= 1  # Corrupt the checksum without changing payload.
+                    with self.assertLogs('TestFramework.mininode', level='ERROR'), \
+                            self.assertLogs('asyncio', level='ERROR'):
+                        conn.sendall(raw)
+                        self.assertEqual(conn.recv(1), b'')
+            finally:
+                peer.peer_disconnect()
+                network_thread_join()
+
     def test_fragmented_messages_and_restart(self):
         # Exercise pre-start buffering, fragmented/coalesced reads, automatic
         # pong, cross-thread writes, remote EOF, and repeated loop lifetimes.
