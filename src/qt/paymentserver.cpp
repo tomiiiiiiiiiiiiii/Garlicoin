@@ -29,24 +29,14 @@
 const int BITCOIN_IPC_CONNECT_TIMEOUT = 1000; // milliseconds
 const QString BITCOIN_IPC_PREFIX("garlicoin:");
 
-//
-// Create a name that is unique for:
-//  testnet / non-testnet
-//  data directory
-//
 static QString ipcServerName()
 {
     QString name("GarlicoinQt");
-
-    // Append a simple hash of the datadir.
-    // GetDataDir(true) differs between mainnet and testnet.
     QString ddir(GUIUtil::boostPathToQString(GetDataDir(true)));
     name.append(QString::number(qHash(ddir)));
-
     return name;
 }
 
-// Store payment URIs received before the main GUI window is ready.
 static QList<QString> savedPaymentRequests;
 
 void PaymentServer::ipcParseCommandLine(int argc, char* argv[])
@@ -61,8 +51,6 @@ void PaymentServer::ipcParseCommandLine(int argc, char* argv[])
         {
             savedPaymentRequests.append(arg);
 
-            // Preserve the existing network-selection behavior for normal
-            // garlicoin: URIs containing an address.
             SendCoinsRecipient r;
             if (GUIUtil::parseBitcoinURI(arg, &r) && !r.address.isEmpty())
             {
@@ -80,8 +68,6 @@ void PaymentServer::ipcParseCommandLine(int argc, char* argv[])
         }
         else if (QFile::exists(arg))
         {
-            // BIP70 PaymentRequest files are no longer supported and are not
-            // parsed. Log this here because the GUI may not be ready yet.
             qWarning() << "PaymentServer::ipcParseCommandLine: BIP70 payment request files are no longer supported: " << arg;
         }
         else
@@ -128,13 +114,10 @@ PaymentServer::PaymentServer(QObject* parent, bool startLocalServer) :
     uriServer(0),
     optionsModel(0)
 {
-    // Install the global file-open event filter used for garlicoin: links.
     if (parent)
         parent->installEventFilter(this);
 
     QString name = ipcServerName();
-
-    // Clean up an old local socket left behind by a crash.
     QLocalServer::removeServer(name);
 
     if (startLocalServer)
@@ -153,6 +136,12 @@ PaymentServer::PaymentServer(QObject* parent, bool startLocalServer) :
 
 PaymentServer::~PaymentServer()
 {
+}
+
+void PaymentServer::LoadRootCAs()
+{
+    // BIP70 certificate handling was removed. Intentionally no-op until the
+    // legacy initialization call is removed in a follow-up cleanup.
 }
 
 bool PaymentServer::eventFilter(QObject *object, QEvent *event)
@@ -193,7 +182,6 @@ void PaymentServer::handleURIOrFile(const QString& s)
 #else
         QUrlQuery uri((QUrl(s)));
 #endif
-        // r= is the legacy BIP70 PaymentRequest mechanism. Never fetch it.
         if (uri.hasQueryItem("r"))
         {
             Q_EMIT message(tr("URI handling"),
@@ -228,6 +216,14 @@ void PaymentServer::handleURIOrFile(const QString& s)
             tr("BIP70 payment request files are no longer supported. Please use a normal garlicoin: URI with a payment address."),
             CClientUIInterface::ICON_WARNING);
     }
+}
+
+void PaymentServer::fetchPaymentACK(CWallet* wallet, const SendCoinsRecipient& recipient, QByteArray transaction)
+{
+    Q_UNUSED(wallet);
+    Q_UNUSED(recipient);
+    Q_UNUSED(transaction);
+    // BIP70 PaymentACK submission was removed. No network action is performed.
 }
 
 void PaymentServer::handleURIConnection()
