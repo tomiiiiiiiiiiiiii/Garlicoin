@@ -4,6 +4,7 @@ $(package)_download_path=https://github.com/theuni/cctools-port/archive
 $(package)_file_name=$($(package)_version).tar.gz
 $(package)_sha256_hash=a09c9ba4684670a0375e42d9d67e7f12c1f62581a27f28f7c825d6d7032ccc6a
 $(package)_build_subdir=cctools
+$(package)_patches=modern_glibc_sysctl.patch
 
 ifeq ($(strip $(FORCE_USE_SYSTEM_CLANG)),)
 $(package)_clang_version=3.7.1
@@ -61,6 +62,7 @@ endif
 endef
 
 define $(package)_preprocess_cmds
+  patch -p1 < $($(package)_patch_dir)/modern_glibc_sysctl.patch && \
   cd $($(package)_build_subdir); ./autogen.sh && \
   sed -i.old "/define HAVE_PTHREADS/d" ld64/src/ld/InputFiles.h
 endef
