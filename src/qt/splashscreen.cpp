@@ -33,7 +33,7 @@ SplashScreen::SplashScreen(Qt::WindowFlags f, const NetworkStyle *networkStyle) 
     int paddingRight            = 50;
     int paddingTop              = 50;
     int titleVersionVSpace      = 17;
-    int titleCopyrightVSpace    = 40;
+    int titleCopyrightVSpace    = 95;
 
     float fontFactor            = 1.0;
     float devicePixelRatio      = 1.0;
@@ -44,6 +44,7 @@ SplashScreen::SplashScreen(Qt::WindowFlags f, const NetworkStyle *networkStyle) 
     // define text to place
     QString titleText       = tr(PACKAGE_NAME);
     QString versionText     = QString("Version %1").arg(QString::fromStdString(FormatFullVersion()));
+    QString maintenanceText = QString("Maintained by GRLC.eu\nUpdated for 2026 with current maintenance and security fixes");
     QString copyrightText   = QString::fromUtf8(CopyrightHolders(strprintf("\xc2\xA9 %u-%u ", 2011, COPYRIGHT_YEAR)).c_str());
     QString titleAddText    = networkStyle->getTitleAddText();
 
@@ -99,6 +100,15 @@ SplashScreen::SplashScreen(Qt::WindowFlags f, const NetworkStyle *networkStyle) 
         titleVersionVSpace -= 5;
     }
     pixPaint.drawText(pixmap.width()/devicePixelRatio-titleTextWidth-paddingRight+2,paddingTop+titleVersionVSpace,versionText);
+
+    // draw maintenance status
+    {
+        pixPaint.setFont(QFont(font, 9*fontFactor));
+        const int x = pixmap.width()/devicePixelRatio-titleTextWidth-paddingRight;
+        const int y = paddingTop+35;
+        QRect maintenanceRect(x, y, pixmap.width() - x - paddingRight, 55);
+        pixPaint.drawText(maintenanceRect, Qt::AlignLeft | Qt::AlignTop | Qt::TextWordWrap, maintenanceText);
+    }
 
     // draw copyright stuff
     {
