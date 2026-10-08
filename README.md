@@ -8,10 +8,10 @@ Garlicoin Core
 [![macOS Deterministic CI](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/macos-ci.yml/badge.svg?branch=master)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/macos-ci.yml)
 [![Release Validation CI](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/release-validation-ci.yml/badge.svg?event=pull_request)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/release-validation-ci.yml)
 ![Maintained 2026](https://img.shields.io/badge/maintained-2026-brightgreen)
-![Version 0.18.1](https://img.shields.io/badge/version-0.18.1-blue)
+![Version 0.18.2](https://img.shields.io/badge/version-0.18.1-blue)
 ![License MIT](https://img.shields.io/badge/license-MIT-blue)
 
-This repository is a maintained fork of [GarlicoinOrg/Garlicoin](https://github.com/GarlicoinOrg/Garlicoin), focused on keeping Garlicoin Core **0.18.1** buildable, testable and maintainable on current systems.
+This repository is a maintained fork of [GarlicoinOrg/Garlicoin](https://github.com/GarlicoinOrg/Garlicoin), focused on keeping Garlicoin Core **0.18.2** buildable, testable and maintainable on current systems.
 
 The maintenance line preserves Garlicoin consensus, Allium proof of work, DarkGravityWave, wallet format, address formats, network identity and existing user datadirs. Garlicoin is Litecoin-derived, with Litecoin Core 0.18.1 used as the primary upstream reference for compatible maintenance fixes.
 
