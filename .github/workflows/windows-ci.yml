@@ -117,12 +117,24 @@ jobs:
 
       - name: Verify Windows binaries
         run: |
-          test -f src/garlicoind.exe
-          test -f src/garlicoin-cli.exe
-          test -f src/qt/garlicoin-qt.exe
-          file src/garlicoind.exe
-          file src/garlicoin-cli.exe
-          file src/qt/garlicoin-qt.exe
+          for binary in \
+            src/garlicoind.exe \
+            src/garlicoin-cli.exe \
+            src/qt/garlicoin-qt.exe
+          do
+            test -f "$binary"
+            description="$(file "$binary")"
+            echo "$description"
+            case "$description" in
+              *"PE32+ executable"*"x86-64"*"MS Windows"*) ;;
+              *)
+                echo "ERROR: $binary is not a 64-bit Windows PE executable" >&2
+                exit 1
+                ;;
+            esac
+            x86_64-w64-mingw32-objdump -f "$binary" | tee /tmp/pe-header.txt
+            grep -q 'file format pei-x86-64' /tmp/pe-header.txt
+          done
 
       - name: Upload Windows build logs
         if: always()
