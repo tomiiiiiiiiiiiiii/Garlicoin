@@ -102,6 +102,19 @@ jobs:
           tar -C depends/SDKs -xf "$sdk_archive"
           test -d "depends/SDKs/MacOSX${OSX_SDK_VERSION}.sdk"
 
+      - name: Prepare Darwin-only Boost bootstrap
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('depends/packages/boost.mk')
+          text = path.read_text()
+          old = './bootstrap.sh --without-icu --with-libraries=$($(package)_config_libraries) --with-toolset=$($(package)_toolset_$(host_os))'
+          new = './bootstrap.sh --without-icu --with-libraries=$($(package)_config_libraries) $(if $(filter darwin,$(host_os)),--with-toolset=gcc,--with-toolset=$($(package)_toolset_$(host_os)))'
+          if old not in text:
+              raise SystemExit('expected Boost bootstrap line not found')
+          path.write_text(text.replace(old, new, 1))
+          PY
+
       - name: Build deterministic macOS dependencies
         run: |
           mkdir -p ci-logs
@@ -114,6 +127,12 @@ jobs:
               cp "$config_log" ci-logs/native-cctools-config.log
               echo '--- native_cctools config.log ---'
               tail -n 200 "$config_log"
+            fi
+            boost_log=$(find depends/work/build -path '*boost*' -name bootstrap.log -print -quit)
+            if [ -n "$boost_log" ]; then
+              cp "$boost_log" ci-logs/boost-bootstrap.log
+              echo '--- Boost bootstrap.log ---'
+              tail -n 200 "$boost_log"
             fi
             exit 1
           fi
