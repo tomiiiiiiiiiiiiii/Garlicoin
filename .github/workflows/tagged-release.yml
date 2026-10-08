@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing release tag to build and publish
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -13,23 +19,37 @@ jobs:
   build-and-publish:
     runs-on: ubuntu-22.04
     timeout-minutes: 240
+    env:
+      RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}
     steps:
       - name: Checkout tagged source
         uses: actions/checkout@v4
         with:
+          ref: ${{ env.RELEASE_TAG }}
           fetch-depth: 0
 
       - name: Validate release metadata
         shell: bash
         run: |
           set -euo pipefail
-          VERSION="${GITHUB_REF_NAME#v}"
-          test "$GITHUB_REF_NAME" = "v${VERSION}"
+          case "$RELEASE_TAG" in
+            v[0-9]*.[0-9]*.[0-9]*) ;;
+            *) echo "Invalid release tag: $RELEASE_TAG"; exit 1 ;;
+          esac
+
+          VERSION="${RELEASE_TAG#v}"
+          test "$(git describe --exact-match --tags HEAD)" = "$RELEASE_TAG"
           test -f "doc/release-notes-${VERSION}.md"
-          grep -q "define(_CLIENT_VERSION_MAJOR, 0)" configure.ac
-          grep -q "define(_CLIENT_VERSION_MINOR, 18)" configure.ac
-          grep -q "define(_CLIENT_VERSION_REVISION, 2)" configure.ac
-          grep -q "define(_CLIENT_VERSION_BUILD, 0)" configure.ac
+
+          MAJOR="$(sed -n 's/^define(_CLIENT_VERSION_MAJOR, \([0-9][0-9]*\))$/\1/p' configure.ac)"
+          MINOR="$(sed -n 's/^define(_CLIENT_VERSION_MINOR, \([0-9][0-9]*\))$/\1/p' configure.ac)"
+          REVISION="$(sed -n 's/^define(_CLIENT_VERSION_REVISION, \([0-9][0-9]*\))$/\1/p' configure.ac)"
+          BUILD="$(sed -n 's/^define(_CLIENT_VERSION_BUILD, \([0-9][0-9]*\))$/\1/p' configure.ac)"
+          test "${MAJOR}.${MINOR}.${REVISION}" = "$VERSION"
+          test "$BUILD" = "0"
+
+          echo "TARGET_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
 
       - name: Dispatch exact-tag release validation
         env:
@@ -37,16 +57,16 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          gh workflow run release-validation-ci.yml --ref "$GITHUB_REF_NAME"
+          gh workflow run release-validation-ci.yml --ref "$RELEASE_TAG"
 
           RUN_ID=""
           for attempt in $(seq 1 60); do
             RUN_ID="$(gh run list \
               --workflow release-validation-ci.yml \
               --event workflow_dispatch \
-              --limit 20 \
-              --json databaseId,headBranch \
-              --jq '.[] | select(.headBranch == env.GITHUB_REF_NAME) | .databaseId' \
+              --limit 30 \
+              --json databaseId,headBranch,headSha \
+              --jq ".[] | select(.headBranch == \"$RELEASE_TAG\" and .headSha == \"$TARGET_SHA\") | .databaseId" \
               | head -n1)"
             if [ -n "$RUN_ID" ]; then
               break
@@ -86,7 +106,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          VERSION="${GITHUB_REF_NAME#v}"
           mkdir -p release-assets
 
           cp "release-input/linux/garlicoin-${VERSION}-linux-x86_64.tar.gz" release-assets/
@@ -114,16 +133,15 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          VERSION="${GITHUB_REF_NAME#v}"
           NOTES="doc/release-notes-${VERSION}.md"
 
-          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
-            gh release upload "$GITHUB_REF_NAME" release-assets/* --clobber
-            gh release edit "$GITHUB_REF_NAME" \
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" release-assets/* --clobber
+            gh release edit "$RELEASE_TAG" \
               --title "Garlicoin Core ${VERSION} - GRLC.eu Maintenance Release" \
               --notes-file "$NOTES"
           else
-            gh release create "$GITHUB_REF_NAME" release-assets/* \
+            gh release create "$RELEASE_TAG" release-assets/* \
               --verify-tag \
               --title "Garlicoin Core ${VERSION} - GRLC.eu Maintenance Release" \
               --notes-file "$NOTES"
