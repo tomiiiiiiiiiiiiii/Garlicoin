@@ -19,10 +19,15 @@ jobs:
           fetch-depth: 0
 
       - name: Enable tagged release publication
+        env:
+          PUBLISH_B64: ICBwdWJsaXNoLXJlbGVhc2U6CiAgICBuYW1lOiBQdWJsaXNoIEdpdEh1YiByZWxlYXNlCiAgICBpZjogc3RhcnRzV2l0aChnaXRodWIucmVmLCAncmVmcy90YWdzL3YnKQogICAgbmVlZHM6CiAgICAgIC0gbGludXgtcmVsZWFzZQogICAgICAtIHdpbmRvd3MtcmVsZWFzZQogICAgICAtIG1hY29zLXJlbGVhc2UKICAgIHJ1bnMtb246IHVidW50dS0yMi4wNAogICAgcGVybWlzc2lvbnM6CiAgICAgIGNvbnRlbnRzOiB3cml0ZQogICAgc3RlcHM6CiAgICAgIC0gbmFtZTogQ2hlY2tvdXQgcmVsZWFzZSBub3RlcwogICAgICAgIHVzZXM6IGFjdGlvbnMvY2hlY2tvdXRAdjQKCiAgICAgIC0gbmFtZTogRG93bmxvYWQgTGludXggcmVsZWFzZSBhcnRpZmFjdHMKICAgICAgICB1c2VzOiBhY3Rpb25zL2Rvd25sb2FkLWFydGlmYWN0QHY0CiAgICAgICAgd2l0aDoKICAgICAgICAgIG5hbWU6IHJlbGVhc2UtbGludXgteDg2XzY0CiAgICAgICAgICBwYXRoOiByZWxlYXNlLWlucHV0L2xpbnV4CgogICAgICAtIG5hbWU6IERvd25sb2FkIFdpbmRvd3MgcmVsZWFzZSBhcnRpZmFjdHMKICAgICAgICB1c2VzOiBhY3Rpb25zL2Rvd25sb2FkLWFydGlmYWN0QHY0CiAgICAgICAgd2l0aDoKICAgICAgICAgIG5hbWU6IHJlbGVhc2Utd2luZG93cy14ODZfNjQKICAgICAgICAgIHBhdGg6IHJlbGVhc2UtaW5wdXQvd2luZG93cwoKICAgICAgLSBuYW1lOiBEb3dubG9hZCBtYWNPUyByZWxlYXNlIGFydGlmYWN0cwogICAgICAgIHVzZXM6IGFjdGlvbnMvZG93bmxvYWQtYXJ0aWZhY3RAdjQKICAgICAgICB3aXRoOgogICAgICAgICAgbmFtZTogcmVsZWFzZS1tYWNvcy14ODZfNjQKICAgICAgICAgIHBhdGg6IHJlbGVhc2UtaW5wdXQvbWFjb3MKCiAgICAgIC0gbmFtZTogQXNzZW1ibGUgYW5kIHZlcmlmeSByZWxlYXNlIGFzc2V0cwogICAgICAgIHNoZWxsOiBiYXNoCiAgICAgICAgcnVuOiB8CiAgICAgICAgICBzZXQgLWV1byBwaXBlZmFpbAogICAgICAgICAgVkVSU0lPTj0iJHtHSVRIVUJfUkVGX05BTUUjdn0iCiAgICAgICAgICBta2RpciAtcCByZWxlYXNlLWFzc2V0cwoKICAgICAgICAgIGNwICJyZWxlYXNlLWlucHV0L2xpbnV4L2dhcmxpY29pbi0ke1ZFUlNJT059LWxpbnV4LXg4Nl82NC50YXIuZ3oiIHJlbGVhc2UtYXNzZXRzLwogICAgICAgICAgY3AgInJlbGVhc2UtaW5wdXQvbGludXgvZ2FybGljb2luLSR7VkVSU0lPTn0udGFyLmd6IiByZWxlYXNlLWFzc2V0cy8KICAgICAgICAgIGNwICJyZWxlYXNlLWlucHV0L3dpbmRvd3MvZ2FybGljb2luLSR7VkVSU0lPTn0td2luNjQuemlwIiByZWxlYXNlLWFzc2V0cy8KICAgICAgICAgIGNwICJyZWxlYXNlLWlucHV0L3dpbmRvd3MvZ2FybGljb2luLSR7VkVSU0lPTn0td2luNjQtc2V0dXAuZXhlIiByZWxlYXNlLWFzc2V0cy8KICAgICAgICAgIGNwICJyZWxlYXNlLWlucHV0L21hY29zL2dhcmxpY29pbi0ke1ZFUlNJT059LW9zeDY0LnRhci5neiIgcmVsZWFzZS1hc3NldHMvCiAgICAgICAgICBjcCAicmVsZWFzZS1pbnB1dC9tYWNvcy9nYXJsaWNvaW4tJHtWRVJTSU9OfS1vc3g2NC5kbWciIHJlbGVhc2UtYXNzZXRzLwoKICAgICAgICAgICgKICAgICAgICAgICAgY2QgcmVsZWFzZS1hc3NldHMKICAgICAgICAgICAgc2hhMjU2c3VtIGdhcmxpY29pbi0qIHwgc29ydCAtazIgPiBTSEEyNTZTVU1TCiAgICAgICAgICApCgogICAgICAgICAgcm0gLXJmIC90bXAvZ3JsYy1yZWxlYXNlLWNoZWNrCiAgICAgICAgICBta2RpciAtcCAvdG1wL2dybGMtcmVsZWFzZS1jaGVjawogICAgICAgICAgdGFyIC14emYgInJlbGVhc2UtYXNzZXRzL2dhcmxpY29pbi0ke1ZFUlNJT059LWxpbnV4LXg4Nl82NC50YXIuZ3oiIC1DIC90bXAvZ3JsYy1yZWxlYXNlLWNoZWNrCiAgICAgICAgICBGSVJTVF9MSU5FPSIkKC90bXAvZ3JsYy1yZWxlYXNlLWNoZWNrL2dhcmxpY29pbi0ke1ZFUlNJT059L2Jpbi9nYXJsaWNvaW5kIC0tdmVyc2lvbiB8IGhlYWQgLW4xKSIKICAgICAgICAgIHRlc3QgIiRGSVJTVF9MSU5FIiA9ICJHYXJsaWNvaW4gQ29yZSBEYWVtb24gdmVyc2lvbiB2JHtWRVJTSU9OfSIKCiAgICAgIC0gbmFtZTogUHVibGlzaCBHaXRIdWIgcmVsZWFzZQogICAgICAgIGVudjoKICAgICAgICAgIEdIX1RPS0VOOiAke3sgZ2l0aHViLnRva2VuIH19CiAgICAgICAgc2hlbGw6IGJhc2gKICAgICAgICBydW46IHwKICAgICAgICAgIHNldCAtZXVvIHBpcGVmYWlsCiAgICAgICAgICBWRVJTSU9OPSIke0dJVEhVQl9SRUZfTkFNRSN2fSIKICAgICAgICAgIE5PVEVTPSJkb2MvcmVsZWFzZS1ub3Rlcy0ke1ZFUlNJT059Lm1kIgogICAgICAgICAgdGVzdCAtZiAiJE5PVEVTIgoKICAgICAgICAgIGlmIGdoIHJlbGVhc2UgdmlldyAiJEdJVEhVQl9SRUZfTkFNRSIgPi9kZXYvbnVsbCAyPiYxOyB0aGVuCiAgICAgICAgICAgIGdoIHJlbGVhc2UgdXBsb2FkICIkR0lUSFVCX1JFRl9OQU1FIiByZWxlYXNlLWFzc2V0cy8qIC0tY2xvYmJlcgogICAgICAgICAgICBnaCByZWxlYXNlIGVkaXQgIiRHSVRIVUJfUkVGX05BTUUiIFwKICAgICAgICAgICAgICAtLXRpdGxlICJHYXJsaWNvaW4gQ29yZSAke1ZFUlNJT059IC0gR1JMQy5ldSBNYWludGVuYW5jZSBSZWxlYXNlIiBcCiAgICAgICAgICAgICAgLS1ub3Rlcy1maWxlICIkTk9URVMiCiAgICAgICAgICBlbHNlCiAgICAgICAgICAgIGdoIHJlbGVhc2UgY3JlYXRlICIkR0lUSFVCX1JFRl9OQU1FIiByZWxlYXNlLWFzc2V0cy8qIFwKICAgICAgICAgICAgICAtLXZlcmlmeS10YWcgXAogICAgICAgICAgICAgIC0tdGl0bGUgIkdhcmxpY29pbiBDb3JlICR7VkVSU0lPTn0gLSBHUkxDLmV1IE1haW50ZW5hbmNlIFJlbGVhc2UiIFwKICAgICAgICAgICAgICAtLW5vdGVzLWZpbGUgIiROT1RFUyIKICAgICAgICAgIGZpCg==
+          NOTES_B64: IyBHYXJsaWNvaW4gQ29yZSAwLjE4LjIgLSBHUkxDLmV1IE1haW50ZW5hbmNlIFJlbGVhc2UKCkdhcmxpY29pbiBDb3JlIDAuMTguMiBpcyBhIG1haW50ZW5hbmNlIHJlbGVhc2Ugb2YgdGhlIGFjdGl2ZWx5IG1haW50YWluZWQgR1JMQy5ldSBlZGl0aW9uIG9mIEdhcmxpY29pbiBDb3JlLgoKVGhpcyByZWxlYXNlIGNvbnRpbnVlcyB0aGUgbW9kZXJuaXphdGlvbiBhbmQgY2xlYW51cCBvZiB0aGUgR2FybGljb2luIDAuMTgueCBjb2RlYmFzZSB3aGlsZSBwcmVzZXJ2aW5nIGNvbXBhdGliaWxpdHkgd2l0aCB0aGUgZXhpc3RpbmcgR2FybGljb2luIG5ldHdvcmssIGJsb2NrY2hhaW4sIHdhbGxldHMsIGFkZHJlc3NlcyBhbmQgdXNlciBkYXRhZGlycy4KCiMjIEhpZ2hsaWdodHMKCi0gaW1wcm92ZWQgY29tcGF0aWJpbGl0eSB3aXRoIGN1cnJlbnQgTGludXggdG9vbGNoYWlucywgaW5jbHVkaW5nIFVidW50dSAyMi4wNCBhbmQgVWJ1bnR1IDI0LjA0Ci0gbWFpbnRhaW5lZCBkZXRlcm1pbmlzdGljIGJ1aWxkcyBmb3IgTGludXgsIFdpbmRvd3MgYW5kIG1hY09TCi0gUHl0aG9uIDMuMTIrIGNvbXBhdGlibGUgUDJQIGZ1bmN0aW9uYWwgdGVzdCBmcmFtZXdvcmsKLSBsZWdhY3kgQklQNzAgUGF5bWVudCBQcm90b2NvbCBpbXBsZW1lbnRhdGlvbiByZW1vdmVkCi0gbm9ybWFsIGBnYXJsaWNvaW46YCBwYXltZW50IFVSSXMgcmVtYWluIHN1cHBvcnRlZAotIGFkZGl0aW9uYWwgYnVpbGQtc3lzdGVtIGFuZCBkZXBlbmRlbmN5IG1haW50ZW5hbmNlCi0gaW1wcm92ZWQgY3Jvc3MtcGxhdGZvcm0gQ0kgYW5kIHJlbGVhc2UgdmFsaWRhdGlvbgotIEdhcmxpY29pbiBicmFuZGluZyBhbmQgcnVudGltZSBtZXNzYWdlIGNsZWFudXAKLSBHUkxDLmV1IG1haW50YWluZWQgYnVpbGQgaWRlbnRpZmljYXRpb24KCk5vIGNvbnNlbnN1cyBydWxlcywgcHJvb2Ytb2Ytd29yayBwYXJhbWV0ZXJzLCBhZGRyZXNzIGZvcm1hdHMsIHdhbGxldCBmb3JtYXRzIG9yIG5ldHdvcmsgaWRlbnRpdHkgaGF2ZSBiZWVuIGludGVudGlvbmFsbHkgY2hhbmdlZC4KClRoaXMgcmVsZWFzZSByZW1haW5zIGNvbXBhdGlibGUgd2l0aCBleGlzdGluZyBHYXJsaWNvaW4gQ29yZSBkYXRhZGlycyBhbmQgd2FsbGV0cy4KCiMjIE1haW50YWluZWQgYnkgR1JMQy5ldQoKVGhlc2UgYmluYXJpZXMgYXJlIG1haW50YWluZWQgYXMgdGhlICoqR1JMQy5ldSBlZGl0aW9uICgyMDI2KSoqIHRvIHByb3ZpZGUgYW4gYWN0aXZlbHkgbWFpbnRhaW5lZCBHYXJsaWNvaW4gQ29yZSBidWlsZCBmb3IgY3VycmVudCBvcGVyYXRpbmcgc3lzdGVtcy4KClVwc3RyZWFtIEdhcmxpY29pbiBwcm9qZWN0OgpodHRwczovL2dpdGh1Yi5jb20vR2FybGljb2luT3JnL0dhcmxpY29pbgoKTWFpbnRhaW5lZCByZXBvc2l0b3J5OgpodHRwczovL2dpdGh1Yi5jb20vdG9taWlpaWlpaWlpaWlpaWkvR2FybGljb2luCgojIyBEb3dubG9hZHMKCi0gYGdhcmxpY29pbi0wLjE4LjItbGludXgteDg2XzY0LnRhci5nemAKLSBgZ2FybGljb2luLTAuMTguMi13aW42NC56aXBgCi0gYGdhcmxpY29pbi0wLjE4LjItd2luNjQtc2V0dXAuZXhlYAotIGBnYXJsaWNvaW4tMC4xOC4yLW9zeDY0LnRhci5nemAKLSBgZ2FybGljb2luLTAuMTguMi1vc3g2NC5kbWdgCi0gYGdhcmxpY29pbi0wLjE4LjIudGFyLmd6YCAtIHNvdXJjZSBjb2RlCi0gYFNIQTI1NlNVTVNgCgpVc2VycyBzaG91bGQgdmVyaWZ5IGRvd25sb2FkZWQgZmlsZXMgYWdhaW5zdCBgU0hBMjU2U1VNU2AgYmVmb3JlIGluc3RhbGxhdGlvbi4K
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
+          import base64
+          import os
           from pathlib import Path
 
           workflow = Path('.github/workflows/release-validation-ci.yml')
@@ -33,142 +38,13 @@ jobs:
           if trigger_old in text:
               text = text.replace(trigger_old, trigger_new, 1)
           elif "    tags:\n      - 'v*'" not in text:
-              raise SystemExit('could not add tag trigger to release validation workflow')
+              raise SystemExit('could not add tag trigger')
 
           if '  publish-release:\n' not in text:
-              publish = r'''
-
-  publish-release:
-    name: Publish GitHub release
-    if: startsWith(github.ref, 'refs/tags/v')
-    needs:
-      - linux-release
-      - windows-release
-      - macos-release
-    runs-on: ubuntu-22.04
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout release notes
-        uses: actions/checkout@v4
-
-      - name: Download Linux release artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: release-linux-x86_64
-          path: release-input/linux
-
-      - name: Download Windows release artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: release-windows-x86_64
-          path: release-input/windows
-
-      - name: Download macOS release artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: release-macos-x86_64
-          path: release-input/macos
-
-      - name: Assemble and verify release assets
-        shell: bash
-        run: |
-          set -euo pipefail
-          VERSION="${GITHUB_REF_NAME#v}"
-          mkdir -p release-assets
-
-          cp "release-input/linux/garlicoin-${VERSION}-linux-x86_64.tar.gz" release-assets/
-          cp "release-input/linux/garlicoin-${VERSION}.tar.gz" release-assets/
-          cp "release-input/windows/garlicoin-${VERSION}-win64.zip" release-assets/
-          cp "release-input/windows/garlicoin-${VERSION}-win64-setup.exe" release-assets/
-          cp "release-input/macos/garlicoin-${VERSION}-osx64.tar.gz" release-assets/
-          cp "release-input/macos/garlicoin-${VERSION}-osx64.dmg" release-assets/
-
-          (
-            cd release-assets
-            sha256sum garlicoin-* | sort -k2 > SHA256SUMS
-          )
-
-          rm -rf /tmp/grlc-release-check
-          mkdir -p /tmp/grlc-release-check
-          tar -xzf "release-assets/garlicoin-${VERSION}-linux-x86_64.tar.gz" -C /tmp/grlc-release-check
-          FIRST_LINE="$(/tmp/grlc-release-check/garlicoin-${VERSION}/bin/garlicoind --version | head -n1)"
-          test "$FIRST_LINE" = "Garlicoin Core Daemon version v${VERSION}"
-
-      - name: Publish GitHub release
-        env:
-          GH_TOKEN: __GH_TOKEN_EXPR__
-        shell: bash
-        run: |
-          set -euo pipefail
-          VERSION="${GITHUB_REF_NAME#v}"
-          NOTES="doc/release-notes-${VERSION}.md"
-          test -f "$NOTES"
-
-          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
-            gh release upload "$GITHUB_REF_NAME" release-assets/* --clobber
-            gh release edit "$GITHUB_REF_NAME" \
-              --title "Garlicoin Core ${VERSION} - GRLC.eu Maintenance Release" \
-              --notes-file "$NOTES"
-          else
-            gh release create "$GITHUB_REF_NAME" release-assets/* \
-              --verify-tag \
-              --title "Garlicoin Core ${VERSION} - GRLC.eu Maintenance Release" \
-              --notes-file "$NOTES"
-          fi
-'''
-              token_expr = '$' + '{{ github.token }}'
-              publish = publish.replace('__GH_TOKEN_EXPR__', token_expr)
-              text = text.rstrip() + publish + '\n'
+              text = text.rstrip() + '\n\n' + base64.b64decode(os.environ['PUBLISH_B64']).decode().rstrip() + '\n'
 
           workflow.write_text(text)
-
-          notes = Path('doc/release-notes-0.18.2.md')
-          notes.write_text('''# Garlicoin Core 0.18.2 - GRLC.eu Maintenance Release
-
-Garlicoin Core 0.18.2 is a maintenance release of the actively maintained GRLC.eu edition of Garlicoin Core.
-
-This release continues the modernization and cleanup of the Garlicoin 0.18.x codebase while preserving compatibility with the existing Garlicoin network, blockchain, wallets, addresses and user datadirs.
-
-## Highlights
-
-- improved compatibility with current Linux toolchains, including Ubuntu 22.04 and Ubuntu 24.04
-- maintained deterministic builds for Linux, Windows and macOS
-- Python 3.12+ compatible P2P functional test framework
-- legacy BIP70 Payment Protocol implementation removed
-- normal `garlicoin:` payment URIs remain supported
-- additional build-system and dependency maintenance
-- improved cross-platform CI and release validation
-- Garlicoin branding and runtime message cleanup
-- GRLC.eu maintained build identification
-
-No consensus rules, proof-of-work parameters, address formats, wallet formats or network identity have been intentionally changed.
-
-This release remains compatible with existing Garlicoin Core datadirs and wallets.
-
-## Maintained by GRLC.eu
-
-These binaries are maintained as the **GRLC.eu edition (2026)** to provide an actively maintained Garlicoin Core build for current operating systems.
-
-Upstream Garlicoin project:
-https://github.com/GarlicoinOrg/Garlicoin
-
-Maintained repository:
-https://github.com/tomiiiiiiiiiiiiii/Garlicoin
-
-## Downloads
-
-- `garlicoin-0.18.2-linux-x86_64.tar.gz`
-- `garlicoin-0.18.2-win64.zip`
-- `garlicoin-0.18.2-win64-setup.exe`
-- `garlicoin-0.18.2-osx64.tar.gz`
-- `garlicoin-0.18.2-osx64.dmg`
-- `garlicoin-0.18.2.tar.gz` - source code
-- `SHA256SUMS`
-
-Users should verify downloaded files against `SHA256SUMS` before installation.
-''')
-
+          Path('doc/release-notes-0.18.2.md').write_bytes(base64.b64decode(os.environ['NOTES_B64']))
           Path('.github/workflows/prepare-and-tag-release-0.18.2.yml').unlink()
           PY
 
