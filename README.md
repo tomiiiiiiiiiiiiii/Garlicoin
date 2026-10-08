@@ -6,7 +6,7 @@ Garlicoin Core
 [![Qt GUI CI](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/qt-ci.yml/badge.svg?branch=master)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/qt-ci.yml)
 [![Windows MinGW CI](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/windows-ci.yml/badge.svg?branch=master)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/windows-ci.yml)
 [![macOS Deterministic CI](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/macos-ci.yml/badge.svg?branch=master)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/macos-ci.yml)
-[![Release Validation CI](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/release-validation-ci.yml/badge.svg?branch=master)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/release-validation-ci.yml)
+[![Release Validation CI](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/release-validation-ci.yml/badge.svg?event=pull_request)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/release-validation-ci.yml)
 ![Maintained 2026](https://img.shields.io/badge/maintained-2026-brightgreen)
 ![Version 0.18.1](https://img.shields.io/badge/version-0.18.1-blue)
 ![License MIT](https://img.shields.io/badge/license-MIT-blue)
