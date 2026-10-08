@@ -5,28 +5,18 @@ $(package)_file_name=$($(package)_version).tar.gz
 $(package)_sha256_hash=a09c9ba4684670a0375e42d9d67e7f12c1f62581a27f28f7c825d6d7032ccc6a
 $(package)_build_subdir=cctools
 $(package)_patches=modern_glibc_sysctl.patch
-
-ifeq ($(strip $(FORCE_USE_SYSTEM_CLANG)),)
 $(package)_clang_version=3.7.1
 $(package)_clang_download_path=https://releases.llvm.org/$($(package)_clang_version)
 $(package)_clang_download_file=clang+llvm-$($(package)_clang_version)-x86_64-linux-gnu-ubuntu-14.04.tar.xz
 $(package)_clang_file_name=clang-llvm-$($(package)_clang_version)-x86_64-linux-gnu-ubuntu-14.04.tar.xz
 $(package)_clang_sha256_hash=99b28a6b48e793705228a390471991386daa33a9717cd9ca007fcdde69608fd9
 $(package)_extra_sources=$($(package)_clang_file_name)
-endif
 
-ifeq ($(strip $(FORCE_USE_SYSTEM_CLANG)),)
 define $(package)_fetch_cmds
 $(call fetch_file,$(package),$($(package)_download_path),$($(package)_download_file),$($(package)_file_name),$($(package)_sha256_hash)) && \
 $(call fetch_file,$(package),$($(package)_clang_download_path),$($(package)_clang_download_file),$($(package)_clang_file_name),$($(package)_clang_sha256_hash))
 endef
-else
-define $(package)_fetch_cmds
-$(call fetch_file,$(package),$($(package)_download_path),$($(package)_download_file),$($(package)_file_name),$($(package)_sha256_hash))
-endef
-endif
 
-ifeq ($(strip $(FORCE_USE_SYSTEM_CLANG)),)
 define $(package)_extract_cmds
   mkdir -p $($(package)_extract_dir) && \
   echo "$($(package)_sha256_hash)  $($(package)_source)" > $($(package)_extract_dir)/.$($(package)_file_name).hash && \
@@ -40,26 +30,15 @@ define $(package)_extract_cmds
   chmod +x toolchain/bin/$(host)-dsymutil && \
   tar --strip-components=1 -xf $($(package)_source)
 endef
-else
-define $(package)_extract_cmds
-  mkdir -p $($(package)_extract_dir) && \
-  echo "$($(package)_sha256_hash)  $($(package)_source)" > $($(package)_extract_dir)/.$($(package)_file_name).hash && \
-  $(build_SHA256SUM) -c $($(package)_extract_dir)/.$($(package)_file_name).hash && \
-  tar --strip-components=1 -xf $($(package)_source)
-endef
-endif
 
 define $(package)_set_vars
 $(package)_config_opts=--target=$(host) --disable-lto-support
 $(package)_ldflags+=-Wl,-rpath=\\$$$$$$$$\$$$$$$$$ORIGIN/../lib
-ifeq ($(strip $(FORCE_USE_SYSTEM_CLANG)),)
-$(package)_cc=$($(package)_extract_dir)/toolchain/bin/clang
-$(package)_cxx=$($(package)_extract_dir)/toolchain/bin/clang++
-else
+# Build the Linux-host cctools binaries with the runner compiler. The pinned
+# Clang 3.7.1 bundle is still staged below and remains the Darwin cross compiler.
 $(package)_cc=clang
 $(package)_cxx=clang++
 $(package)_cflags+=-fcommon
-endif
 endef
 
 define $(package)_preprocess_cmds
@@ -76,7 +55,6 @@ define $(package)_build_cmds
   $(MAKE)
 endef
 
-ifeq ($(strip $(FORCE_USE_SYSTEM_CLANG)),)
 define $(package)_stage_cmds
   $(MAKE) DESTDIR=$($(package)_staging_dir) install && \
   cd $($(package)_extract_dir)/toolchain && \
@@ -90,8 +68,3 @@ define $(package)_stage_cmds
   if `test -d include/c++/`; then cp -rf include/c++/ $($(package)_staging_prefix_dir)/include/; fi && \
   if `test -d lib/c++/`; then cp -rf lib/c++/ $($(package)_staging_prefix_dir)/lib/; fi
 endef
-else
-define $(package)_stage_cmds
-  $(MAKE) DESTDIR=$($(package)_staging_dir) install
-endef
-endif
