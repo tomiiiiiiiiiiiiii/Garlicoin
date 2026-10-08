@@ -1,0 +1,194 @@
+name: Prepare and tag Garlicoin Core 0.18.2
+
+on:
+  push:
+    branches:
+      - release/0.18.2
+
+permissions:
+  contents: write
+
+jobs:
+  prepare-and-tag:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v4
+        with:
+          ref: release/0.18.2
+          fetch-depth: 0
+
+      - name: Enable tagged release publication
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          workflow = Path('.github/workflows/release-validation-ci.yml')
+          text = workflow.read_text()
+
+          trigger_old = "on:\n  pull_request:"
+          trigger_new = "on:\n  push:\n    tags:\n      - 'v*'\n  pull_request:"
+          if trigger_old in text:
+              text = text.replace(trigger_old, trigger_new, 1)
+          elif "    tags:\n      - 'v*'" not in text:
+              raise SystemExit('could not add tag trigger to release validation workflow')
+
+          if '  publish-release:\n' not in text:
+              publish = r'''
+
+  publish-release:
+    name: Publish GitHub release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs:
+      - linux-release
+      - windows-release
+      - macos-release
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout release notes
+        uses: actions/checkout@v4
+
+      - name: Download Linux release artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release-linux-x86_64
+          path: release-input/linux
+
+      - name: Download Windows release artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release-windows-x86_64
+          path: release-input/windows
+
+      - name: Download macOS release artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release-macos-x86_64
+          path: release-input/macos
+
+      - name: Assemble and verify release assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="${GITHUB_REF_NAME#v}"
+          mkdir -p release-assets
+
+          cp "release-input/linux/garlicoin-${VERSION}-linux-x86_64.tar.gz" release-assets/
+          cp "release-input/linux/garlicoin-${VERSION}.tar.gz" release-assets/
+          cp "release-input/windows/garlicoin-${VERSION}-win64.zip" release-assets/
+          cp "release-input/windows/garlicoin-${VERSION}-win64-setup.exe" release-assets/
+          cp "release-input/macos/garlicoin-${VERSION}-osx64.tar.gz" release-assets/
+          cp "release-input/macos/garlicoin-${VERSION}-osx64.dmg" release-assets/
+
+          (
+            cd release-assets
+            sha256sum garlicoin-* | sort -k2 > SHA256SUMS
+          )
+
+          rm -rf /tmp/grlc-release-check
+          mkdir -p /tmp/grlc-release-check
+          tar -xzf "release-assets/garlicoin-${VERSION}-linux-x86_64.tar.gz" -C /tmp/grlc-release-check
+          FIRST_LINE="$(/tmp/grlc-release-check/garlicoin-${VERSION}/bin/garlicoind --version | head -n1)"
+          test "$FIRST_LINE" = "Garlicoin Core Daemon version v${VERSION}"
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: __GH_TOKEN_EXPR__
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="${GITHUB_REF_NAME#v}"
+          NOTES="doc/release-notes-${VERSION}.md"
+          test -f "$NOTES"
+
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" release-assets/* --clobber
+            gh release edit "$GITHUB_REF_NAME" \
+              --title "Garlicoin Core ${VERSION} - GRLC.eu Maintenance Release" \
+              --notes-file "$NOTES"
+          else
+            gh release create "$GITHUB_REF_NAME" release-assets/* \
+              --verify-tag \
+              --title "Garlicoin Core ${VERSION} - GRLC.eu Maintenance Release" \
+              --notes-file "$NOTES"
+          fi
+'''
+              token_expr = '$' + '{{ github.token }}'
+              publish = publish.replace('__GH_TOKEN_EXPR__', token_expr)
+              text = text.rstrip() + publish + '\n'
+
+          workflow.write_text(text)
+
+          notes = Path('doc/release-notes-0.18.2.md')
+          notes.write_text('''# Garlicoin Core 0.18.2 - GRLC.eu Maintenance Release
+
+Garlicoin Core 0.18.2 is a maintenance release of the actively maintained GRLC.eu edition of Garlicoin Core.
+
+This release continues the modernization and cleanup of the Garlicoin 0.18.x codebase while preserving compatibility with the existing Garlicoin network, blockchain, wallets, addresses and user datadirs.
+
+## Highlights
+
+- improved compatibility with current Linux toolchains, including Ubuntu 22.04 and Ubuntu 24.04
+- maintained deterministic builds for Linux, Windows and macOS
+- Python 3.12+ compatible P2P functional test framework
+- legacy BIP70 Payment Protocol implementation removed
+- normal `garlicoin:` payment URIs remain supported
+- additional build-system and dependency maintenance
+- improved cross-platform CI and release validation
+- Garlicoin branding and runtime message cleanup
+- GRLC.eu maintained build identification
+
+No consensus rules, proof-of-work parameters, address formats, wallet formats or network identity have been intentionally changed.
+
+This release remains compatible with existing Garlicoin Core datadirs and wallets.
+
+## Maintained by GRLC.eu
+
+These binaries are maintained as the **GRLC.eu edition (2026)** to provide an actively maintained Garlicoin Core build for current operating systems.
+
+Upstream Garlicoin project:
+https://github.com/GarlicoinOrg/Garlicoin
+
+Maintained repository:
+https://github.com/tomiiiiiiiiiiiiii/Garlicoin
+
+## Downloads
+
+- `garlicoin-0.18.2-linux-x86_64.tar.gz`
+- `garlicoin-0.18.2-win64.zip`
+- `garlicoin-0.18.2-win64-setup.exe`
+- `garlicoin-0.18.2-osx64.tar.gz`
+- `garlicoin-0.18.2-osx64.dmg`
+- `garlicoin-0.18.2.tar.gz` - source code
+- `SHA256SUMS`
+
+Users should verify downloaded files against `SHA256SUMS` before installation.
+''')
+
+          Path('.github/workflows/prepare-and-tag-release-0.18.2.yml').unlink()
+          PY
+
+      - name: Commit clean release automation state
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'release: enable tagged 0.18.2 publication'
+          git push origin HEAD:release/0.18.2
+
+      - name: Create and push v0.18.2 tag
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git ls-remote --exit-code --tags origin refs/tags/v0.18.2 >/dev/null 2>&1; then
+            echo 'Tag v0.18.2 already exists; refusing to move it.'
+            exit 1
+          fi
+          git tag -a v0.18.2 -m 'Garlicoin Core 0.18.2 - GRLC.eu Maintenance Release'
+          git push origin v0.18.2
