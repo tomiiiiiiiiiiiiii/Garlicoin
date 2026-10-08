@@ -1,180 +1,140 @@
 WINDOWS BUILD NOTES
-====================
+===================
 
-Below are some notes on how to build Garlicoin Core for Windows.
+This document describes the currently verified 64-bit Windows cross-build path for Garlicoin Core.
 
-The options known to work for building Garlicoin Core on Windows are:
+The supported maintenance target is:
 
-* On Linux using the [Mingw-w64](https://mingw-w64.org/doku.php) cross compiler tool chain. Ubuntu Trusty 14.04 is recommended
-and is the platform used to build the Garlicoin Core Windows release binaries.
-* On Windows using [Windows
-Subsystem for Linux (WSL)](https://msdn.microsoft.com/commandline/wsl/about) and the Mingw-w64 cross compiler tool chain.
+- build host: Ubuntu 22.04;
+- target: `x86_64-w64-mingw32`;
+- MinGW-w64 POSIX thread model;
+- deterministic `depends` build;
+- wallet enabled;
+- Qt 5 GUI enabled.
 
-Other options which may work but which have not been extensively tested are (please contribute instructions):
+This procedure is validated by the repository's Windows MinGW CI. It builds and verifies:
 
-* On Windows using a POSIX compatibility layer application such as [cygwin](http://www.cygwin.com/) or [msys2](http://www.msys2.org/).
-* On Windows using a native compiler tool chain such as [Visual Studio](https://www.visualstudio.com).
+- `src/garlicoind.exe`;
+- `src/garlicoin-cli.exe`;
+- `src/qt/garlicoin-qt.exe`.
 
-Installing Windows Subsystem for Linux
----------------------------------------
+The CI additionally checks that these are 64-bit Windows PE executables rather than host Linux ELF binaries.
 
-With Windows 10, Microsoft has released a new feature named the [Windows
-Subsystem for Linux (WSL)](https://msdn.microsoft.com/commandline/wsl/about). This
-feature allows you to run a bash shell directly on Windows in an Ubuntu-based
-environment. Within this environment you can cross compile for Wigit ndows without
-the need for a separate Linux VM or server. Note that while WSL can be installed with
-other Linux variants, such as OpenSUSE, the following instructions have only been
-tested with Ubuntu.
+Garlicoin is Litecoin-derived. Litecoin Core 0.18.1 remains the primary upstream reference for this build generation, but the commands below reflect the procedure actually validated for the current Garlicoin tree on Ubuntu 22.04.
 
-This feature is not supported in versions of Windows prior to Windows 10 or on
-Windows Server SKUs. In addition, it is available [only for 64-bit versions of
-Windows](https://msdn.microsoft.com/en-us/commandline/wsl/install_guide).
+64-bit Windows cross-build on Ubuntu 22.04
+------------------------------------------
 
-Full instructions to install WSL are available on the above link.
-To install WSL on Windows 10 with Fall Creators Update installed (version >= 16215.0) do the following:
+Install the host build tools and the 64-bit MinGW-w64 compiler:
 
-1. Enable the Windows Subsystem for Linux feature
-  * From Start, search for "Turn Windows features on or off" (type 'turn')
-  * Select Windows Subsystem for Linux
-  * Click OK
-  * Restart if necessary
-2. Install Ubuntu
-  * Open Microsoft Store and search for Ubuntu or use [this link](https://www.microsoft.com/store/productId/9NBLGGH4MSV6)
-  * Click Install
-3. Complete Installation
-  * Open a cmd prompt and type "Ubuntu"
-  * Create a new UNIX user account (this is a separate account from your Windows account)
+    sudo apt-get update
+    sudo apt-get install -y --no-install-recommends \
+        autoconf \
+        automake \
+        autotools-dev \
+        bsdmainutils \
+        build-essential \
+        ca-certificates \
+        ccache \
+        curl \
+        file \
+        g++-mingw-w64-x86-64 \
+        git \
+        gperf \
+        libtool \
+        mingw-w64-tools \
+        patch \
+        perl \
+        pkg-config \
+        python3
 
-After the bash shell is active, you can follow the instructions below, starting
-with the "Cross-compilation" section. Compiling the 64-bit version is
-recommended but it is possible to compile the 32-bit version.
+Select the POSIX MinGW thread model for both C and C++:
 
-Cross-compilation for Ubuntu and Windows Subsystem for Linux
-------------------------------------------------------------
+    sudo update-alternatives --set x86_64-w64-mingw32-gcc /usr/bin/x86_64-w64-mingw32-gcc-posix
+    sudo update-alternatives --set x86_64-w64-mingw32-g++ /usr/bin/x86_64-w64-mingw32-g++-posix
 
-At the time of writing the Windows Subsystem for Linux installs Ubuntu Xenial 16.04. The Mingw-w64 package
-for Ubuntu Xenial does not produce working executables for some of the Garlicoin Core applications.
-It is possible to build on Ubuntu Xenial by installing the cross compiler packages from Ubuntu Zesty, see the steps below.
-Building on Ubuntu Zesty 17.04 up to 17.10 has been verified to work.
+The POSIX variant is required by this C++11-era codebase. The Win32 thread variant conflicts with standard threading facilities used by the source tree.
 
-The steps below can be performed on Ubuntu (including in a VM) or WSL. The depends system
-will also work on other Linux distributions, however the commands for
-installing the toolchain will be different.
+You can confirm the selected compiler with:
 
-First, install the general dependencies:
+    x86_64-w64-mingw32-gcc --version
+    x86_64-w64-mingw32-g++ --version
+    x86_64-w64-mingw32-g++ -v
 
-    sudo apt install build-essential libtool autotools-dev automake pkg-config bsdmainutils curl git
+Build the pinned deterministic dependencies:
 
-A host toolchain (`build-essential`) is necessary because some dependency
-packages (such as `protobuf`) need to build host utilities that are used in the
-build process.
+    make -j2 -C depends HOST=x86_64-w64-mingw32
 
-See also: [dependencies.md](dependencies.md).
+Then configure Garlicoin Core using the generated depends configuration:
 
-## Building for 64-bit Windows
+    ./autogen.sh
+    CONFIG_SITE="$PWD/depends/x86_64-w64-mingw32/share/config.site" \
+        ./configure \
+            --enable-wallet \
+            --with-gui=qt5 \
+            --disable-tests \
+            --disable-bench
 
-The first step is to install the mingw-w64 cross-compilation tool chain. Due to different Ubuntu
-packages for each distribution and problems with the Xenial packages the steps for each are different.
+Build the Windows executables:
 
-Common steps to install mingw32 cross compiler tool chain:
+    make -j2 -C src
 
-    sudo apt install g++-mingw-w64-x86-64
+Expected binaries
+-----------------
 
-Ubuntu Trusty 14.04:
+A successful wallet + Qt build produces at least:
 
-    No further steps required
+    src/garlicoind.exe
+    src/garlicoin-cli.exe
+    src/qt/garlicoin-qt.exe
 
-Ubuntu Xenial 16.04 and Windows Subsystem for Linux <sup>[1](#footnote1),[2](#footnote2)</sup>:
+Verify that the files are 64-bit Windows PE executables:
 
-    sudo apt install software-properties-common
-    sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu zesty universe"
-    sudo apt update
-    sudo apt upgrade
-    sudo update-alternatives --config x86_64-w64-mingw32-g++ # Set the default mingw32 g++ compiler option to posix.
+    file src/garlicoind.exe
+    file src/garlicoin-cli.exe
+    file src/qt/garlicoin-qt.exe
 
-Ubuntu Zesty 17.04 <sup>[2](#footnote2)</sup>:
+Each result should identify a `PE32+ executable`, `x86-64`, for Microsoft Windows.
 
-    sudo update-alternatives --config x86_64-w64-mingw32-g++ # Set the default mingw32 g++ compiler option to posix.
+For an additional target-format check:
 
-Once the tool chain is installed the build steps are common:
+    x86_64-w64-mingw32-objdump -f src/garlicoind.exe
+    x86_64-w64-mingw32-objdump -f src/garlicoin-cli.exe
+    x86_64-w64-mingw32-objdump -f src/qt/garlicoin-qt.exe
 
-Note that for WSL the Garlicoin Core source path MUST be somewhere in the default mount file system, for
-example /usr/src/garlicoin, AND not under /mnt/d/. If this is not the case the dependency autoconf scripts will fail.
-This means you cannot use a directory that located directly on the host Windows file system to perform the build.
+The reported file format should be:
 
-The next three steps are an example of how to acquire the source in an appropriate way.
+    pei-x86-64
 
-    cd /usr/src
-    sudo git clone https://github.com/GarlicoinOrg/Garlicoin.git
-    sudo chmod -R a+rw garlicoin
+Depends system
+--------------
 
-Once the source code is ready the build steps are below.
+The Windows cross-build uses the versions pinned by the Garlicoin `depends` system. Do not replace those dependencies with host libraries when reproducing the deterministic build.
 
-    PATH=$(echo "$PATH" | sed -e 's/:\/mnt.*//g') # strip out problematic Windows %PATH% imported var
-    cd depends
-    make HOST=x86_64-w64-mingw32
-    cd ..
-    ./autogen.sh # not required when building from tarball
-    CONFIG_SITE=$PWD/depends/x86_64-w64-mingw32/share/config.site ./configure --prefix=/
-    make
+See [depends/README.md](../depends/README.md) for additional information about the depends framework.
 
-## Building for 32-bit Windows
+Current compatibility scope
+---------------------------
 
-To build executables for Windows 32-bit, install the following dependencies:
+The verified path above is specifically the 64-bit MinGW-w64 cross-build on Ubuntu 22.04.
 
-    sudo apt install g++-mingw-w64-i686 mingw-w64-i686-dev
+The following are not claimed as currently CI-validated by this document:
 
-For Ubuntu Xenial 16.04, Ubuntu Zesty 17.04 and Windows Subsystem for Linux <sup>[2](#footnote2)</sup>:
+- native Visual Studio builds;
+- Cygwin or MSYS2 builds;
+- 32-bit Windows builds;
+- WSL-specific filesystem/install procedures;
+- runtime Windows testing under Wine or on a Windows runner.
 
-    sudo update-alternatives --config i686-w64-mingw32-g++  # Set the default mingw32 g++ compiler option to posix.
+These environments may work, but should not be documented as supported until they are tested against the current Garlicoin tree.
 
-Note that for WSL the Garlicoin Core source path MUST be somewhere in the default mount file system, for
-example /usr/src/garlicoin, AND not under /mnt/d/. If this is not the case the dependency autoconf scripts will fail.
-This means you cannot use a directory that located directly on the host Windows file system to perform the build.
+Dependency compatibility
+------------------------
 
-The next three steps are an example of how to acquire the source in an appropriate way.
+The current verified Windows build retains the existing pinned compatibility baseline, including:
 
-    cd /usr/src
-    sudo git clone https://github.com/GarlicoinOrg/Garlicoin.git
-    sudo chmod -R a+rw Garlicoin
+- Berkeley DB 4.8 for wallet compatibility;
+- Qt 5.9.7;
+- OpenSSL 1.0.1k.
 
-Then build using:
-
-    PATH=$(echo "$PATH" | sed -e 's/:\/mnt.*//g') # strip out problematic Windows %PATH% imported var
-    cd depends
-    make HOST=i686-w64-mingw32
-    cd ..
-    ./autogen.sh # not required when building from tarball
-    CONFIG_SITE=$PWD/depends/i686-w64-mingw32/share/config.site ./configure --prefix=/
-    make
-
-## Depends system
-
-For further documentation on the depends system see [README.md](../depends/README.md) in the depends directory.
-
-Installation
--------------
-
-After building using the Windows subsystem it can be useful to copy the compiled
-executables to a directory on the windows drive in the same directory structure
-as they appear in the release `.zip` archive. This can be done in the following
-way. This will install to `c:\workspace\garlicoin`, for example:
-
-    make install DESTDIR=/mnt/c/workspace/garlicoin
-
-Footnotes
----------
-
-<a name="footnote1">1</a>: There is currently a bug in the 64 bit Mingw-w64 cross compiler packaged for WSL/Ubuntu Xenial 16.04 that
-causes two of the garlicoin executables to crash shortly after start up. The bug is related to the
--fstack-protector-all g++ compiler flag which is used to mitigate buffer overflows.
-Installing the Mingw-w64 packages from the Ubuntu 17 distribution solves the issue, however, this is not
-an officially supported approach and it's only recommended if you are prepared to reinstall WSL/Ubuntu should
-something break.
-
-<a name="footnote2">2</a>: Starting from Ubuntu Xenial 16.04 both the 32 and 64 bit Mingw-w64 packages install two different
-compiler options to allow a choice between either posix or win32 threads. The default option is win32 threads which is the more
-efficient since it will result in binary code that links directly with the Windows kernel32.lib. Unfortunately, the headers
-required to support win32 threads conflict with some of the classes in the C++11 standard library in particular std::mutex.
-It's not possible to build the garlicoin code using the win32 version of the Mingw-w64 cross compilers (at least not without
-modifying headers in the garlicoin source code).
+A successful modern MinGW cross-build does not by itself justify changing these versions. Dependency upgrades should remain separate, evidence-driven maintenance work.
