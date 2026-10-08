@@ -11,9 +11,11 @@ Garlicoin Core
 ![Version 0.18.1](https://img.shields.io/badge/version-0.18.1-blue)
 ![License MIT](https://img.shields.io/badge/license-MIT-blue)
 
-This repository is a maintained fork of [GarlicoinOrg/Garlicoin](https://github.com/GarlicoinOrg/Garlicoin), focused on keeping Garlicoin Core **0.18.1** buildable and maintainable on current systems.
+This repository is a maintained fork of [GarlicoinOrg/Garlicoin](https://github.com/GarlicoinOrg/Garlicoin), focused on keeping Garlicoin Core **0.18.1** buildable, testable and maintainable on current systems.
 
 The maintenance line preserves Garlicoin consensus, Allium proof of work, DarkGravityWave, wallet format, address formats, network identity and existing user datadirs. Garlicoin is Litecoin-derived, with Litecoin Core 0.18.1 used as the primary upstream reference for compatible maintenance fixes.
+
+Maintained builds are identified as the **grlc.eu edition (2026)** to distinguish the actively maintained binaries from older upstream builds.
 
 Current status
 --------------
@@ -28,6 +30,8 @@ Validated and maintained:
 - cross-platform release validation for Linux, Windows and macOS;
 - Linux binary/source tarballs, Windows ZIP + NSIS installer, and macOS tarball + DMG;
 - SHA256 manifests for validated release artifacts;
+- Python 3.12+ compatible P2P functional-test transport based on the Litecoin Core 0.18.1 lineage;
+- legacy BIP70 Payment Protocol runtime and implementation removed while normal `garlicoin:` payment URIs remain supported;
 - maintained dependency sources and selected dependency/security fixes;
 - Garlicoin branding cleanup in GUI, translations and runtime-facing messages.
 
