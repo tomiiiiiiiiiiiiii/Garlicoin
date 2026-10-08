@@ -12,13 +12,14 @@ The main packages currently pinned by `depends/packages/` are:
 | --- | ---: | --- |
 | Berkeley DB | 4.8.30.NC | Wallet database compatibility |
 | Boost | 1.70.0 | Utility, threading and test support |
-| libevent | 2.1.8-stable | Networking |
-| MiniUPnPc | 2.0.20170509 | Optional UPnP support |
+| Expat | 2.2.6 | XML support in GUI dependencies |
+| libevent | 2.1.11-stable | Networking |
+| MiniUPnPc | 2.0.20180203 | Optional UPnP support |
 | OpenSSL | 1.0.1k | Cryptographic support used by this legacy codebase |
 | protobuf | 2.6.1 | Payment protocol / GUI support |
 | qrencode | 3.4.4 | Optional QR code support |
-| Qt | 5.7.1 | GUI toolkit |
-| ZeroMQ | 4.2.2 | Optional ZMQ notifications |
+| Qt | 5.9.7 | GUI toolkit |
+| ZeroMQ | 4.3.1 | Optional ZMQ notifications |
 | zlib | 1.2.11 | Compression support used by the dependency stack |
 
 The authoritative values are the package recipes under [`depends/packages/`](../depends/packages/). Update this document when those recipes change.
@@ -33,8 +34,16 @@ Do not infer security status from this table. Dependency upgrades should be revi
 In particular:
 
 - Berkeley DB 4.8 is retained for wallet compatibility with existing builds;
-- Qt 5.7.1 and OpenSSL 1.0.1k are legacy pins and should not be treated as modern security baselines;
+- Qt 5.9.7 and OpenSSL 1.0.1k are legacy pins and should not be treated as modern security baselines;
 - routine maintenance should avoid changing consensus or network behaviour while updating build infrastructure.
+
+The Qt 5.9.7 recipe, source hashes, static-plugin configure checks and base
+patch set follow [Litecoin Core v0.18.1](https://github.com/litecoin-project/litecoin/tree/v0.18.1).
+Garlicoin uses Qt's HTTPS archive location and additionally includes the missing
+`<limits>` header needed to compile Qt 5.9.7 with newer GCC versions. Expat,
+FreeType build options and libxcb configuration support are aligned with the
+same Litecoin release. This is build/GUI maintenance; Berkeley DB 4.8 and
+OpenSSL 1.0.1k remain unchanged.
 
 System dependencies
 -------------------
