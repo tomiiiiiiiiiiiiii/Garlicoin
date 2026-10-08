@@ -66,6 +66,7 @@ jobs:
             libcap-dev \
             librsvg2-bin \
             libtiff-tools \
+            libtinfo5 \
             libtool \
             libz-dev \
             patch \
