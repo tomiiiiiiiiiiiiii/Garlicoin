@@ -11,98 +11,59 @@ Garlicoin Core
 ![Version 0.18.1](https://img.shields.io/badge/version-0.18.1-blue)
 ![License MIT](https://img.shields.io/badge/license-MIT-blue)
 
-This repository is a maintained fork of [GarlicoinOrg/Garlicoin](https://github.com/GarlicoinOrg/Garlicoin).
+This repository is a maintained fork of [GarlicoinOrg/Garlicoin](https://github.com/GarlicoinOrg/Garlicoin), focused on keeping Garlicoin Core **0.18.1** buildable and maintainable on current systems.
 
-The goal is to keep the Garlicoin Core 0.18.1 maintenance line buildable, testable and maintainable on current systems without changing the Garlicoin blockchain, wallet format or network identity.
-
-Maintenance direction
----------------------
-
-Garlicoin Core 0.18.1 is treated here as a long-lived maintenance line.
-
-Work focuses on:
-
-- current Linux, Windows and macOS toolchain compatibility;
-- deterministic dependency builds and reproducible release validation;
-- CI coverage for daemon, CLI, wallet and Qt GUI;
-- repair of stale inherited tests and test harness assumptions;
-- secure and reliable dependency sources;
-- conservative dependency updates and selected robustness/security backports.
-
-Routine maintenance intentionally preserves:
-
-- genesis and chain parameters;
-- Allium proof of work;
-- DarkGravityWave difficulty adjustment;
-- rewards and emission rules;
-- address prefixes and transaction/block interpretation;
-- existing Berkeley DB `wallet.dat` files and user datadirs;
-- network and RPC compatibility where practical.
-
-Garlicoin is Litecoin-derived. Litecoin Core 0.18.1 is the primary upstream reference for this maintenance line. Later Litecoin releases may be consulted for individual fixes, but newer architecture or features are not imported automatically.
+The maintenance line preserves Garlicoin consensus, Allium proof of work, DarkGravityWave, wallet format, address formats, network identity and existing user datadirs. Garlicoin is Litecoin-derived, with Litecoin Core 0.18.1 used as the primary upstream reference for compatible maintenance fixes.
 
 Current status
 --------------
 
-Completed or established:
+Validated and maintained:
 
-- repaired Garlicoin-specific test fixtures and mining/PoW test harnesses;
-- deterministic Linux builds with wallet and functional smoke coverage;
+- Linux builds with wallet, Qt GUI and functional smoke coverage;
+- Ubuntu 22.04 and 24.04 toolchain compatibility;
+- Windows x86_64 MinGW deterministic cross-builds;
+- macOS x86_64 deterministic cross-builds;
 - Qt 5.9.7 GUI + wallet validation;
-- RPC/HTTP hardening;
-- replacement of dead or unauthenticated dependency sources with verified HTTPS sources;
-- maintenance updates for libevent, MiniUPnPc and ZeroMQ;
-- Ubuntu 22.04 and Ubuntu 24.04 validation, including GCC 13 and Python 3.12 compatibility fixes;
-- Windows / MinGW 64-bit deterministic cross-build validation for `garlicoind.exe`, `garlicoin-cli.exe` and `garlicoin-qt.exe`;
-- deterministic macOS x86_64 cross-build validation for `garlicoind`, `garlicoin-cli` and `garlicoin-qt`;
 - cross-platform release validation for Linux, Windows and macOS;
-- Linux binary and source tarball validation;
-- Windows ZIP and NSIS installer validation;
-- macOS binary tarball and DMG validation;
-- SHA256 manifests and CI artifact upload for validated release outputs;
-- Garlicoin branding cleanup across Qt translations and runtime-facing messages;
-- maintained application version set to `0.18.1`.
-
-Planned follow-up work includes further Python/P2P test-harness cleanup, explicit compatibility tests with existing wallets and datadirs, and additional conservative maintenance backports where justified.
-
-The `master` branch is the maintained integration branch. Relevant GitHub Actions checks are expected to pass before maintenance changes are merged.
-
-Official Garlicoin release tags remain available in the [upstream repository](https://github.com/GarlicoinOrg/Garlicoin/tags). This fork should not be treated as a separate official release channel unless explicitly stated otherwise.
+- Linux binary/source tarballs, Windows ZIP + NSIS installer, and macOS tarball + DMG;
+- SHA256 manifests for validated release artifacts;
+- maintained dependency sources and selected dependency/security fixes;
+- Garlicoin branding cleanup in GUI, translations and runtime-facing messages.
 
 Building
 --------
 
-Start with [INSTALL.md](INSTALL.md). Platform-specific instructions are available in [`doc/`](doc/).
+Start with [INSTALL.md](INSTALL.md).
 
-For the currently validated Linux toolchain scope, see [`doc/ubuntu-toolchain.md`](doc/ubuntu-toolchain.md). The validated Windows cross-build procedure is documented in [`doc/build-windows.md`](doc/build-windows.md), and the macOS build procedure is documented in [`doc/build-osx.md`](doc/build-osx.md).
+Platform notes:
+
+- Linux / Ubuntu: [`doc/ubuntu-toolchain.md`](doc/ubuntu-toolchain.md)
+- Windows: [`doc/build-windows.md`](doc/build-windows.md)
+- macOS: [`doc/build-osx.md`](doc/build-osx.md)
 
 Testing
 -------
 
-Unit tests:
-
 ```sh
 make check
-```
-
-Functional tests:
-
-```sh
 python3 test/functional/test_runner.py
 ```
 
-Further details are available in [`src/test/README.md`](src/test/README.md) and [`test/functional/`](test/functional/).
+See [`src/test/README.md`](src/test/README.md) and [`test/functional/`](test/functional/) for details.
 
-Development process
--------------------
+Development
+-----------
+
+The `master` branch is the maintained integration branch. Maintenance changes should remain narrowly scoped and should not mix routine build/dependency work with consensus or wallet-format changes.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-Maintenance changes should stay narrowly scoped and document the upstream reference or reproduced failure that justifies them. Routine build/dependency maintenance should not be mixed with consensus or wallet-format changes.
+Official Garlicoin release tags remain available in the [upstream repository](https://github.com/GarlicoinOrg/Garlicoin/tags).
 
-Garlicoin developer/community discussion is available on [Discord](https://discord.gg/mmAb4ewGb6).
+Community discussion: [Discord](https://discord.gg/mmAb4ewGb6)
 
 License
 -------
 
-Garlicoin Core is released under the terms of the MIT license. See [COPYING](COPYING) for more information.
+Garlicoin Core is released under the MIT license. See [COPYING](COPYING).
