@@ -4,6 +4,7 @@ Garlicoin Core
 [![Linux CI](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/linux-ci.yml/badge.svg?branch=master)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/linux-ci.yml)
 [![Ubuntu Toolchain CI](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/ubuntu-toolchain-ci.yml/badge.svg?branch=master)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/ubuntu-toolchain-ci.yml)
 [![Qt GUI CI](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/qt-ci.yml/badge.svg?branch=master)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/qt-ci.yml)
+[![Windows MinGW CI](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/windows-ci.yml/badge.svg?branch=master)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/windows-ci.yml)
 ![Maintained 2026](https://img.shields.io/badge/maintained-2026-brightgreen)
 ![License MIT](https://img.shields.io/badge/license-MIT-blue)
 
@@ -48,11 +49,8 @@ Completed or established:
 - RPC/HTTP hardening;
 - replacement of dead or unauthenticated dependency sources with verified HTTPS sources;
 - maintenance updates for libevent, MiniUPnPc and ZeroMQ;
-- Ubuntu 22.04 and Ubuntu 24.04 validation, including GCC 13 and Python 3.12 compatibility fixes.
-
-Current work:
-
-- Windows / MinGW 64-bit deterministic cross-build compatibility for `garlicoind.exe`, `garlicoin-cli.exe` and `garlicoin-qt.exe`.
+- Ubuntu 22.04 and Ubuntu 24.04 validation, including GCC 13 and Python 3.12 compatibility fixes;
+- Windows / MinGW 64-bit deterministic cross-build validation for `garlicoind.exe`, `garlicoin-cli.exe` and `garlicoin-qt.exe`.
 
 Planned follow-up work includes macOS validation, further Python/P2P test-harness cleanup, reproducible release validation and explicit compatibility tests with existing wallets and datadirs.
 
@@ -65,7 +63,7 @@ Building
 
 Start with [INSTALL.md](INSTALL.md). Platform-specific instructions are available in [`doc/`](doc/).
 
-For the currently validated Linux toolchain scope, see [`doc/ubuntu-toolchain.md`](doc/ubuntu-toolchain.md).
+For the currently validated Linux toolchain scope, see [`doc/ubuntu-toolchain.md`](doc/ubuntu-toolchain.md). The validated Windows cross-build procedure is documented in [`doc/build-windows.md`](doc/build-windows.md).
 
 Testing
 -------
