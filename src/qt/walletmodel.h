@@ -35,15 +35,6 @@ QT_BEGIN_NAMESPACE
 class QTimer;
 QT_END_NAMESPACE
 
-// Temporary compile-only compatibility marker for old GUI code. This is not
-// a BIP70 object and can never become initialized. The remaining dead GUI
-// branch using this marker will be removed in a follow-up cleanup.
-class DisabledPaymentRequest
-{
-public:
-    bool IsInitialized() const { return false; }
-};
-
 class SendCoinsRecipient
 {
 public:
@@ -57,13 +48,9 @@ public:
     // Message from a normal garlicoin: URI.
     QString message;
 
-    // Compile-only compatibility field for a dead pre-removal GUI branch.
-    // It always reports uninitialized and has no BIP70 implementation.
-    DisabledPaymentRequest paymentRequest;
-
-    // Keep the legacy serialized PaymentRequest field only so existing saved
-    // recipient data can still be loaded and stored losslessly. It is never
-    // parsed or executed now that BIP70 support has been removed.
+    // Keep the legacy serialized PaymentRequest fields only so existing saved
+    // recipient data can still be loaded and stored with the same layout.
+    // They are opaque compatibility data and are never parsed or executed.
     std::string sPaymentRequest;
     QString authenticatedMerchant;
 
