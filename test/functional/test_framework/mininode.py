@@ -11,11 +11,10 @@ found in the mini-node branch of http://github.com/jgarzik/pynode.
 
 P2PConnection: A low-level connection object to a node's P2P interface
 P2PInterface: A high-level interface object for communicating to a node over P2P"""
-import asyncore
+import asyncio
 from collections import defaultdict
 from io import BytesIO
 import logging
-import socket
 import struct
 import sys
 import threading
@@ -55,7 +54,7 @@ MAGIC_BYTES = {
     "regtest": b"\xfa\xbf\xb5\xda",   # regtest
 }
 
-class P2PConnection(asyncore.dispatcher):
+class P2PConnection(asyncio.Protocol):
     """A low-level connection object to a node's P2P interface.
 
     This class is responsible for:
@@ -69,71 +68,78 @@ class P2PConnection(asyncore.dispatcher):
     sub-classed and the on_message() callback overridden."""
 
     def __init__(self):
-        # All P2PConnections must be created before starting the NetworkThread.
-        # assert that the network thread is not running.
+        # Preserve the legacy create/connect-before-start lifecycle. Transport
+        # callbacks follow Litecoin Core v0.18.1's asyncio.Protocol implementation.
         assert not network_thread_running()
+        self._transport = None
+        self._loop = None
+        self.state = "closed"
 
-        super().__init__(map=mininode_socket_map)
+    @property
+    def connected(self):
+        """Keep the asyncore connection-state API used by existing tests."""
+        return self.state == "connected"
 
     def peer_connect(self, dstaddr, dstport, net="regtest"):
+        assert not network_thread_running()
         self.dstaddr = dstaddr
         self.dstport = dstport
-        self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
         self.sendbuf = b""
         self.recvbuf = b""
         self.state = "connecting"
         self.network = net
         self.disconnect = False
+        mininode_connections.append(self)
 
-        logger.info('Connecting to Garlicoin Node: %s:%d' % (self.dstaddr, self.dstport))
-
+    async def _run_connection(self):
+        self._loop = asyncio.get_running_loop()
+        self._closed = self._loop.create_future()
         try:
-            self.connect((dstaddr, dstport))
-        except:
-            self.handle_close()
+            await self._loop.create_connection(lambda: self, self.dstaddr, self.dstport)
+            await self._closed
+        except OSError as exc:
+            logger.warning("Connection failed to %s:%d: %s", self.dstaddr, self.dstport, exc)
+            self.connection_lost(exc)
 
     def peer_disconnect(self):
-        # Connection could have already been closed by other end.
-        if self.state == "connected":
-            self.disconnect_node()
+        self.disconnect_node()
 
-    # Connection and disconnection methods
+    def disconnect_node(self):
+        if self.state == "closed":
+            return
+        self.disconnect = True
+        if self._loop is not None and not self._loop.is_closed():
+            self._loop.call_soon_threadsafe(self._abort)
 
-    def handle_connect(self):
-        """asyncore callback when a connection is opened."""
-        if self.state != "connected":
-            logger.debug("Connected & Listening: %s:%d" % (self.dstaddr, self.dstport))
+    def _abort(self):
+        if self._transport is not None:
+            self._transport.abort()
+
+    def connection_made(self, transport):
+        self._transport = transport
+        with mininode_lock:
             self.state = "connected"
+            transport.write(self.sendbuf)
+            self.sendbuf = b""
+        if self.disconnect:
+            self._abort()
+        else:
             self.on_open()
 
-    def handle_close(self):
-        """asyncore callback when a connection is closed."""
-        logger.debug("Closing connection to: %s:%d" % (self.dstaddr, self.dstport))
+    def connection_lost(self, exc):
+        if self.state == "closed":
+            return
+        self._transport = None
         self.state = "closed"
         self.recvbuf = b""
         self.sendbuf = b""
-        try:
-            self.close()
-        except:
-            pass
         self.on_close()
+        if not self._closed.done():
+            self._closed.set_result(None)
 
-    def disconnect_node(self):
-        """Disconnect the p2p connection.
-
-        Called by the test logic thread. Causes the p2p connection
-        to be disconnected on the next iteration of the asyncore loop."""
-        self.disconnect = True
-
-    # Socket read methods
-
-    def handle_read(self):
-        """asyncore callback when data is read from the socket."""
-        t = self.recv(8192)
-        if len(t) > 0:
-            self.recvbuf += t
-            self._on_data()
+    def data_received(self, data):
+        self.recvbuf += data
+        self._on_data()
 
     def _on_data(self):
         """Try to read P2P messages from the recv buffer.
@@ -168,7 +174,7 @@ class P2PConnection(asyncore.dispatcher):
                 self._log_message("receive", t)
                 self.on_message(t)
         except Exception as e:
-            logger.exception('Error reading message:', repr(e))
+            logger.exception('Error reading message: %s', e)
             raise
 
     def on_message(self, message):
@@ -176,31 +182,6 @@ class P2PConnection(asyncore.dispatcher):
         raise NotImplementedError
 
     # Socket write methods
-
-    def writable(self):
-        """asyncore method to determine whether the handle_write() callback should be called on the next loop."""
-        with mininode_lock:
-            pre_connection = self.state == "connecting"
-            length = len(self.sendbuf)
-        return (length > 0 or pre_connection)
-
-    def handle_write(self):
-        """asyncore callback when data should be written to the socket."""
-        with mininode_lock:
-            # asyncore does not expose socket connection, only the first read/write
-            # event, thus we must check connection manually here to know when we
-            # actually connect
-            if self.state == "connecting":
-                self.handle_connect()
-            if not self.writable():
-                return
-
-            try:
-                sent = self.send(self.sendbuf)
-            except:
-                self.handle_close()
-                return
-            self.sendbuf = self.sendbuf[sent:]
 
     def send_message(self, message, pushbuf=False):
         """Send a P2P message over the socket.
@@ -221,14 +202,14 @@ class P2PConnection(asyncore.dispatcher):
         tmsg += h[:4]
         tmsg += data
         with mininode_lock:
-            if (len(self.sendbuf) == 0 and not pushbuf):
-                try:
-                    sent = self.send(tmsg)
-                    self.sendbuf = tmsg[sent:]
-                except BlockingIOError:
-                    self.sendbuf = tmsg
-            else:
+            if self.state == "connecting" and pushbuf:
                 self.sendbuf += tmsg
+            else:
+                # asyncio transports must only be used by the network thread.
+                def maybe_write():
+                    if self._transport is not None and not self._transport.is_closing():
+                        self._transport.write(tmsg)
+                self._loop.call_soon_threadsafe(maybe_write)
 
     # Class utility methods
 
@@ -389,10 +370,8 @@ class P2PInterface(P2PConnection):
         wait_until(test_function, timeout=timeout, lock=mininode_lock)
         self.ping_counter += 1
 
-# Keep our own socket map for asyncore, so that we can track disconnects
-# ourselves (to workaround an issue with closing an asyncore socket when
-# using select)
-mininode_socket_map = dict()
+# Connections are queued before the legacy NetworkThread is started.
+mininode_connections = []
 
 # One lock for synchronizing all data access between the networking thread (see
 # NetworkThread below) and the thread running the test logic.  For simplicity,
@@ -407,16 +386,12 @@ class NetworkThread(threading.Thread):
         super().__init__(name="NetworkThread")
 
     def run(self):
-        while mininode_socket_map:
-            # We check for whether to disconnect outside of the asyncore
-            # loop to workaround the behavior of asyncore when using
-            # select
-            disconnected = []
-            for fd, obj in mininode_socket_map.items():
-                if obj.disconnect:
-                    disconnected.append(obj)
-            [obj.handle_close() for obj in disconnected]
-            asyncore.loop(0.1, use_poll=True, map=mininode_socket_map, count=1)
+        async def run_connections():
+            connections = list(mininode_connections)
+            mininode_connections.clear()
+            await asyncio.gather(*(conn._run_connection() for conn in connections))
+        # A fresh loop per run preserves tests which disconnect, join and restart.
+        asyncio.run(run_connections())
         logger.debug("Network thread closing")
 
 def network_thread_start():

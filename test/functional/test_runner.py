@@ -107,6 +107,7 @@ BASE_SCRIPTS= [
     'rpc_net.py',
     'wallet_keypool.py',
     'p2p_mempool.py',
+    'p2p_transport.py',
     'mining_prioritisetransaction.py',
     'p2p_invalid_block.py',
     'p2p_invalid_tx.py',
