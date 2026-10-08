@@ -121,9 +121,15 @@ jobs:
 
       - name: Build deterministic Qt 5.9.7 and Berkeley DB 4.8 dependencies
         run: |
-          make ${MAKEJOBS} -C depends \
+          mkdir -p ci-logs
+          if make ${MAKEJOBS} -C depends \
             HOST="${HOST}" \
-            NO_UPNP=1
+            NO_UPNP=1 >ci-logs/qt-depends.log 2>&1; then
+            tail -n 20 ci-logs/qt-depends.log
+          else
+            tail -n 200 ci-logs/qt-depends.log
+            exit 1
+          fi
 
       - name: Configure Qt GUI with wallet enabled
         run: |
@@ -140,9 +146,22 @@ jobs:
 
       - name: Build garlicoin-qt
         run: |
-          make ${MAKEJOBS} -C src bitcoin_qt
+          if make ${MAKEJOBS} -C src bitcoin_qt >ci-logs/qt-build.log 2>&1; then
+            tail -n 20 ci-logs/qt-build.log
+          else
+            tail -n 200 ci-logs/qt-build.log
+            exit 1
+          fi
 
       - name: Verify GUI binary
         run: |
           test -x src/qt/garlicoin-qt
           file src/qt/garlicoin-qt
+
+      - name: Upload Qt build logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qt-build-logs
+          path: ci-logs/
+          if-no-files-found: ignore
