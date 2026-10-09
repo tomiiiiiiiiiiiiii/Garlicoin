@@ -23,8 +23,10 @@ define $(package)_set_vars
 $(package)_config_opts_release = -release
 $(package)_config_opts_debug = -debug
 $(package)_config_opts += -bindir $(build_prefix)/bin
-# Qt 5.15.19 qlocale_win.cpp uses std::size; only the MinGW Qt build needs C++17.
-$(package)_config_opts += -c++std $(if $(filter mingw32,$(host_os)),c++17,c++11)
+# Qt 5.15.19 Windows uses std::size (C++17). The Apple QtTest logger
+# aggregate initializers with default member values require C++14.
+# These are Qt-only compiler modes; Core retains its existing standard.
+$(package)_config_opts += -c++std $(if $(filter mingw32,$(host_os)),c++17,$(if $(filter darwin,$(host_os)),c++14,c++11))
 $(package)_config_opts += -confirm-license
 $(package)_config_opts += -dbus-runtime
 $(package)_config_opts += -hostprefix $(build_prefix)
