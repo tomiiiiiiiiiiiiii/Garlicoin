@@ -1,115 +1,117 @@
-Mac OS X Build Instructions and Notes
-====================================
-The commands in this guide should be executed in a Terminal application.
-The built-in one is located in `/Applications/Utilities/Terminal.app`.
+macOS BUILD NOTES
+=================
 
-Preparation
------------
-Install the OS X command line tools:
+This document describes the currently verified native macOS x86_64 build path for the maintained Garlicoin Core 0.18.x line.
 
-`xcode-select --install`
+Validated CI baseline
+---------------------
 
-When the popup appears, click `Install`.
+The repository currently validates macOS with:
 
-Then install [Homebrew](https://brew.sh).
+- Intel x86_64 runner: `macos-15-intel`;
+- Xcode 16;
+- macOS SDK 15.0;
+- deployment target: macOS 10.13;
+- Qt 5.15.19;
+- OpenSSL 3.5.9;
+- Berkeley DB 4.8.30 for wallet compatibility.
 
-Dependencies
-----------------------
+Qt, OpenSSL, Berkeley DB, and the other pinned dependencies are built through the repository `depends` system. The release build verifies that Qt/OpenSSL/BDB are not left as non-system dynamic dependencies.
 
-    brew install automake berkeley-db4 libtool boost miniupnpc openssl pkg-config protobuf python3 qt libevent
+The CI baseline is the supported release path. Other macOS/Xcode combinations may work, but are not implied to be validated by this document.
 
-See [dependencies.md](dependencies.md) for a complete overview.
+Prerequisites
+-------------
 
-If you want to build the disk image with `make deploy` (.dmg / optional), you need RSVG
+Install Xcode 16 and select it as the active developer directory. Install the build tools with Homebrew:
 
-    brew install librsvg
+```sh
+brew install autoconf automake libtool pkg-config make
+```
 
-If you want to build with ZeroMQ support
-    
-    brew install zeromq
+Verify the native architecture, Xcode, and SDK:
 
-NOTE: Building with Qt4 is still supported, however, could result in a broken UI. Building with Qt5 is recommended.
+```sh
+uname -m
+xcodebuild -version
+xcrun --sdk macosx --show-sdk-version
+```
 
-Build Garlicoin Core
-------------------------
+The validated CI values are `x86_64`, Xcode 16, and SDK 15.0.
 
-1. Clone the garlicoin source code and cd into `garlicoin`
+Build pinned dependencies
+-------------------------
 
-        git clone https://github.com/GarlicoinOrg/Garlicoin
-        cd garlicoin
+From the repository root:
 
-2.  Build garlicoin-core:
+```sh
+export MACOSX_DEPLOYMENT_TARGET=10.13
+export DEVELOPER_DIR=/Applications/Xcode_16.app/Contents/Developer
+export SDKROOT="$(xcrun --sdk macosx --show-sdk-path)"
+export OSX_SDK_VERSION="$(xcrun --sdk macosx --show-sdk-version)"
+export HOST="$(depends/config.guess)"
 
-    Configure and build the headless garlicoin binaries as well as the GUI (if Qt is found).
+gmake -j3 -C depends HOST="$HOST" \
+  OSX_MIN_VERSION="$MACOSX_DEPLOYMENT_TARGET" \
+  OSX_SDK_VERSION="$OSX_SDK_VERSION" \
+  OSX_SDK="$SDKROOT" \
+  darwin_CXX="$(xcrun -f clang++) -mmacosx-version-min=$MACOSX_DEPLOYMENT_TARGET -stdlib=libc++ -Wno-error=enum-constexpr-conversion" \
+  HOST_ID_SALT=native-xcode16-enum-compat \
+  darwin_native_packages= \
+  qt_config_opts_darwin="-platform macx-clang -no-framework"
+```
 
-    You can disable the GUI build by passing `--without-gui` to configure.
+The detected host must be an `x86_64-apple-darwin*` target for the validated release configuration.
 
-        ./autogen.sh
-        ./configure
-        make
+Configure and build Core + Qt
+-----------------------------
 
-3.  It is recommended to build and run the unit tests:
+```sh
+./autogen.sh
+CONFIG_SITE="$PWD/depends/$HOST/share/config.site" \
+  ./configure \
+    --enable-wallet \
+    --with-gui=qt5 \
+    --disable-tests \
+    --disable-bench
 
-        make check
+gmake -j3
+```
 
-4.  You can also create a .dmg that contains the .app bundle (optional):
+Expected binaries include:
 
-        make deploy
+```text
+src/garlicoind
+src/garlicoin-cli
+src/garlicoin-tx
+src/qt/garlicoin-qt
+```
 
-5.  Installation into user directories (optional):
+Create the app bundle
+---------------------
 
-        make install
+The native release path creates the application bundle with:
 
-    or
+```sh
+gmake appbundle
+```
 
-        cd ~/garlicoin/src
-        cp litecoind /usr/local/bin/
-        cp garlicoin-cli /usr/local/bin/
+The resulting GUI executable is located at:
 
-Running
--------
+```text
+Garlicoin-Qt.app/Contents/MacOS/Garlicoin-Qt
+```
 
-Garlicoin Core is now available at `./src/garlicoind`
+The release workflow additionally creates and validates the DMG using native macOS tooling.
 
-Before running, it's recommended you create an RPC configuration file.
+Verification
+------------
 
-    echo -e "rpcuser=garlicoinrpc\nrpcpassword=$(xxd -l 16 -p /dev/urandom)" > "/Users/${USER}/Library/Application Support/Garlicoin/garlicoin.conf"
+For release work, do not rely only on a successful compile. The repository's native macOS and release-validation workflows check the Mach-O architecture, deployment target, static dependency linkage, CLI/GUI version output, app bundle, and release packaging.
 
-    chmod 600 "/Users/${USER}/Library/Application Support/Garlicoin/garlicoin.conf"
+See:
 
-The first time you run garlicoind, it will start downloading the blockchain. This process could take several hours.
+- `.github/workflows/macos-native-qt515.yml`
+- `.github/workflows/release-validation-ci.yml`
 
-You can monitor the download process by looking at the debug.log file:
-
-    tail -f $HOME/Library/Application\ Support/Garlicoin/debug.log
-
-Other commands:
--------
-
-    ./src/garlicoind -daemon # Starts the garlicoin daemon.
-    ./src/garlicoin-cli --help # Outputs a list of command-line options.
-    ./src/garlicoin-cli help # Outputs a list of RPC commands when the daemon is running.
-
-Using Qt Creator as IDE
-------------------------
-You can use Qt Creator as an IDE, for garlicoin development.
-Download and install the community edition of [Qt Creator](https://www.qt.io/download/).
-Uncheck everything except Qt Creator during the installation process.
-
-1. Make sure you installed everything through Homebrew mentioned above
-2. Do a proper ./configure --enable-debug
-3. In Qt Creator do "New Project" -> Import Project -> Import Existing Project
-4. Enter "garlicoin-qt" as project name, enter src/qt as location
-5. Leave the file selection as it is
-6. Confirm the "summary page"
-7. In the "Projects" tab select "Manage Kits..."
-8. Select the default "Desktop" kit and select "Clang (x86 64bit in /usr/bin)" as compiler
-9. Select LLDB as debugger (you might need to set the path to your installation)
-10. Start debugging with Qt Creator
-
-Notes
------
-
-* Tested on OS X 10.8 through 10.13 on 64-bit Intel processors only.
-
-* Building with downloaded Qt binaries is not officially supported. See the notes in [#7714](https://github.com/bitcoin/bitcoin/issues/7714)
+Legacy Linux-to-Darwin cross-build notes are intentionally not part of this guide. That path is retained only as a manual historical workflow and is not the supported Qt 5.15.19 macOS release path.

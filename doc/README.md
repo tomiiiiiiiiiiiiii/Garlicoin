@@ -1,81 +1,59 @@
-Garlicoin Core
-=============
+Garlicoin Core documentation
+============================
 
-Setup
----------------------
-Garlicoin Core is the original Garlicoin client and it builds the backbone of the network. It downloads and, by default, stores the entire history of Garlicoin transactions (which is currently more than 7 GBs); depending on the speed of your computer and network connection, the synchronization process can take anywhere from a few hours to a day or more.
+This directory contains documentation relevant to the maintained Garlicoin Core 0.18.x line.
 
-To download Garlicoin Core, visit [garlicoin.io](https://garlicoin.io).
-
-Running
----------------------
-The following are some helpful notes on how to run Garlicoin on your native platform.
-
-### Unix
-
-Unpack the files into a directory and run:
-
-- `bin/garlicoin-qt` (GUI) or
-- `bin/garlicoind` (headless)
-
-### Windows
-
-Unpack the files into a directory, and then run garlicoin-qt.exe.
-
-### OS X
-
-Drag Garlicoin-Core to your applications folder, and then run Garlicoin-Core.
-
-### Need Help?
-
-* See the documentation at the [Garlicoin Wiki](https://garlicoin.info/)
-for help and more information.
-* Ask for help on [#garlicoin](http://webchat.freenode.net?channels=garlicoin) on Freenode. If you don't have an IRC client use [webchat here](http://webchat.freenode.net?channels=garlicoin).
-* Ask for help on the [GarlicoinTalk](https://garlicointalk.io/) forums.
+The repository source, `depends` recipes, and GitHub Actions workflows are the source of truth when a document and the implementation disagree. The currently validated release platforms are Linux x86_64, Windows x86_64 (MinGW), and native macOS x86_64.
 
 Building
----------------------
-The following are developer notes on how to build Garlicoin on your native platform. They are not complete guides, but include notes on the necessary libraries, compile flags, etc.
+--------
 
 - [Dependencies](dependencies.md)
-- [OS X Build Notes](build-osx.md)
-- [Unix Build Notes](build-unix.md)
-- [Windows Build Notes](build-windows.md)
-- [OpenBSD Build Notes](build-openbsd.md)
-- [Gitian Building Guide](gitian-building.md)
+- [Unix build notes](build-unix.md)
+- [Ubuntu toolchain validation](ubuntu-toolchain.md)
+- [Windows x86_64 build notes](build-windows.md)
+- [macOS x86_64 build notes](build-osx.md)
+
+Additional Unix platform notes are retained for reference but are not part of the current CI release matrix:
+
+- [OpenBSD build notes](build-openbsd.md)
+- [NetBSD build notes](build-netbsd.md)
 
 Development
----------------------
-The Garlicoin repo's [root README](/README.md) contains relevant information on the development process and automated testing.
+-----------
 
-- [Developer Notes](developer-notes.md)
-- [Release Notes](release-notes.md)
-- [Release Process](release-process.md)
-- [Source Code Documentation (External Link)](https://dev.visucore.com/garlicoin/doxygen/)
-- [Translation Process](translation_process.md)
-- [Translation Strings Policy](translation_strings_policy.md)
-- [Travis CI](travis-ci.md)
-- [Unauthenticated REST Interface](REST-interface.md)
-- [Shared Libraries](shared-libraries.md)
-- [BIPS](bips.md)
-- [Dnsseed Policy](dnsseed-policy.md)
+- [Developer notes](developer-notes.md)
+- [Release process](release-process.md)
+- [Unauthenticated REST interface](REST-interface.md)
+- [Shared libraries](shared-libraries.md)
+- [BIPs](bips.md)
+- [DNS seed policy](dnsseed-policy.md)
 - [Benchmarking](benchmarking.md)
+- [Fuzz testing](fuzzing.md)
+- [Translation strings policy](translation_strings_policy.md)
 
-### Resources
-* Discuss on the [GarlicoinTalk](https://garlicointalk.io/) forums.
-* Discuss general Garlicoin development on #garlicoin-dev on Freenode. If you don't have an IRC client use [webchat here](http://webchat.freenode.net/?channels=garlicoin-dev).
+Operation and integration
+-------------------------
 
-### Miscellaneous
-- [Assets Attribution](assets-attribution.md)
-- [Files](files.md)
-- [Fuzz-testing](fuzzing.md)
-- [Reduce Traffic](reduce-traffic.md)
-- [Tor Support](tor.md)
-- [Init Scripts (systemd/upstart/openrc)](init.md)
+- [Data files](files.md)
+- [Reduce traffic](reduce-traffic.md)
+- [Tor support](tor.md)
+- [Init scripts](init.md)
 - [ZMQ](zmq.md)
 
-License
+Current release notes
 ---------------------
-Distributed under the [MIT software license](/COPYING).
-This product includes software developed by the OpenSSL Project for use in the [OpenSSL Toolkit](https://www.openssl.org/). This product includes
-cryptographic software written by Eric Young ([eay@cryptsoft.com](mailto:eay@cryptsoft.com)), and UPnP software written by Thomas Bernard.
+
+- [Garlicoin Core 0.18.3](release-notes-0.18.3.md)
+- [Garlicoin Core 0.18.2](release-notes-0.18.2.md)
+
+Historical Bitcoin and Litecoin release-note archives inherited from upstream are intentionally not kept in this directory. They remain available through Git history and the respective upstream projects.
+
+Project information
+-------------------
+
+The [root README](../README.md) describes the maintained fork, current release, supported artifacts, and CI status.
+
+- [Contributing](../CONTRIBUTING.md)
+- [Asset attribution](assets-attribution.md)
+- [MIT license](../COPYING)
