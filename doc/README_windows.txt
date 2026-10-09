@@ -1,1 +1,0 @@
-Garlicoin Core
