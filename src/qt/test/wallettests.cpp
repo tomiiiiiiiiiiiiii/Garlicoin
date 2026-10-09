@@ -10,6 +10,7 @@
 #include <qt/transactiontablemodel.h>
 #include <qt/transactionview.h>
 #include <qt/walletmodel.h>
+#include <base58.h>
 #include <test/test_bitcoin.h>
 #include <validation.h>
 #include <wallet/wallet.h>

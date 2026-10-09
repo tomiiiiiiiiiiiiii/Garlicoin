@@ -3671,7 +3671,7 @@ int test_ecdsa_der_parse(const unsigned char *sig, size_t siglen, int certainly_
     const unsigned char *sigptr;
     unsigned char roundtrip_openssl[2048];
     int len_openssl = 2048;
-    int parsed_openssl, valid_openssl = 0, roundtrips_openssl = 0;
+    int parsed_openssl, parsed_openssl_negative = 0, valid_openssl = 0, roundtrips_openssl = 0;
 #endif
 
     parsed_der = secp256k1_ecdsa_signature_parse_der(ctx, &sig_der, sig, siglen);
@@ -3719,15 +3719,22 @@ int test_ecdsa_der_parse(const unsigned char *sig, size_t siglen, int certainly_
     sigptr = sig;
     parsed_openssl = (d2i_ECDSA_SIG(&sig_openssl, &sigptr, siglen) != NULL);
     if (parsed_openssl) {
-        valid_openssl = !BN_is_negative(sig_openssl->r) && !BN_is_negative(sig_openssl->s) && BN_num_bits(sig_openssl->r) > 0 && BN_num_bits(sig_openssl->r) <= 256 && BN_num_bits(sig_openssl->s) > 0 && BN_num_bits(sig_openssl->s) <= 256;
+        const BIGNUM *openssl_r, *openssl_s;
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+        ECDSA_SIG_get0(sig_openssl, &openssl_r, &openssl_s);
+#else
+        openssl_r = sig_openssl->r;
+        openssl_s = sig_openssl->s;
+#endif
+        valid_openssl = !BN_is_negative(openssl_r) && !BN_is_negative(openssl_s) && BN_num_bits(openssl_r) > 0 && BN_num_bits(openssl_r) <= 256 && BN_num_bits(openssl_s) > 0 && BN_num_bits(openssl_s) <= 256;
         if (valid_openssl) {
             unsigned char tmp[32] = {0};
-            BN_bn2bin(sig_openssl->r, tmp + 32 - BN_num_bytes(sig_openssl->r));
+            BN_bn2bin(openssl_r, tmp + 32 - BN_num_bytes(openssl_r));
             valid_openssl = memcmp(tmp, max_scalar, 32) < 0;
         }
         if (valid_openssl) {
             unsigned char tmp[32] = {0};
-            BN_bn2bin(sig_openssl->s, tmp + 32 - BN_num_bytes(sig_openssl->s));
+            BN_bn2bin(openssl_s, tmp + 32 - BN_num_bytes(openssl_s));
             valid_openssl = memcmp(tmp, max_scalar, 32) < 0;
         }
     }
@@ -3741,7 +3748,30 @@ int test_ecdsa_der_parse(const unsigned char *sig, size_t siglen, int certainly_
     }
     ECDSA_SIG_free(sig_openssl);
 
-    ret |= (parsed_der && !parsed_openssl) << 4;
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    /* OpenSSL 3's ECDSA decoder rejects negative integers, while libsecp
+     * deliberately parses them into an invalid (zero) scalar. Preserve the
+     * ASN.1 cross-check with OpenSSL's general decoder for this exact case;
+     * the validity, roundtrip and ECDSA verification checks below remain. */
+    if (parsed_der && !parsed_openssl) {
+        const unsigned char *asn1ptr = sig;
+        STACK_OF(ASN1_TYPE) *sequence = d2i_ASN1_SEQUENCE_ANY(NULL, &asn1ptr, siglen);
+        if (sequence != NULL && asn1ptr == sig + siglen && sk_ASN1_TYPE_num(sequence) == 2) {
+            ASN1_TYPE *r = sk_ASN1_TYPE_value(sequence, 0);
+            ASN1_TYPE *s = sk_ASN1_TYPE_value(sequence, 1);
+            if (ASN1_TYPE_get(r) == V_ASN1_INTEGER && ASN1_TYPE_get(s) == V_ASN1_INTEGER) {
+                BIGNUM *bn_r = ASN1_INTEGER_to_BN(r->value.integer, NULL);
+                BIGNUM *bn_s = ASN1_INTEGER_to_BN(s->value.integer, NULL);
+                CHECK(bn_r != NULL && bn_s != NULL);
+                parsed_openssl_negative = BN_is_negative(bn_r) || BN_is_negative(bn_s);
+                BN_free(bn_r);
+                BN_free(bn_s);
+            }
+        }
+        sk_ASN1_TYPE_pop_free(sequence, ASN1_TYPE_free);
+    }
+#endif
+    ret |= (parsed_der && !(parsed_openssl || parsed_openssl_negative)) << 4;
     ret |= (valid_der && !valid_openssl) << 5;
     ret |= (roundtrips_openssl && !parsed_der) << 6;
     ret |= (roundtrips_der != roundtrips_openssl) << 7;
@@ -3940,6 +3970,13 @@ static void random_ber_signature(unsigned char *sig, size_t *len, int* certainly
 
 void run_ecdsa_der_parse(void) {
     int i,j;
+    /* Regression for OpenSSL 3's rejection of a negative DER integer. */
+    static const unsigned char negative_der[] = {
+        0x30, 0x1b, 0x02, 0x0f, 0xbe, 0x00, 0xff, 0xff, 0xff, 0xff,
+        0xff, 0x00, 0x00, 0x00, 0x00, 0x60, 0x00, 0x00, 0xfe,
+        0x02, 0x08, 0x00, 0xdf, 0x00, 0xff, 0xff, 0xff, 0x01, 0x00
+    };
+    CHECK(test_ecdsa_der_parse(negative_der, sizeof(negative_der), 1, 0) == 0);
     for (i = 0; i < 200 * count; i++) {
         unsigned char buffer[2048];
         size_t buflen = 0;
