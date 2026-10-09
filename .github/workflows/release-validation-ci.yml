@@ -41,7 +41,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
-            autoconf automake autotools-dev bsdmainutils build-essential \
+            autoconf automake autotools-dev bison bsdmainutils build-essential \
             ca-certificates ccache curl file git libtool pkg-config python3
 
       - name: Cache Linux depends

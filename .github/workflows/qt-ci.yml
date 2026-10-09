@@ -98,6 +98,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             autoconf \
+            bison \
             automake \
             autotools-dev \
             bsdmainutils \
@@ -123,7 +124,7 @@ jobs:
           restore-keys: |
             garlicoin-depends-qt-wallet-${{ matrix.os }}-${{ env.HOST }}-
 
-      - name: Build deterministic Qt 5.9.7 and Berkeley DB 4.8 dependencies
+      - name: Build deterministic Qt 5.15.19 and Berkeley DB 4.8 dependencies
         run: |
           mkdir -p ci-logs
           if make ${MAKEJOBS} -C depends \
