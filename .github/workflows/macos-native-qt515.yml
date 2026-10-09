@@ -103,7 +103,7 @@ jobs:
           grep 'OPENSSL_VERSION_TEXT' "$prefix/include/openssl/opensslv.h" | tee ci-logs/openssl-version.txt
           grep -q 'OpenSSL 3.5.9' ci-logs/openssl-version.txt
           shasum -a 256 "$prefix"/lib/*.a "$prefix"/plugins/platforms/*.a > ci-logs/archive-sha256.txt
-          grep -E '^#define DB_VERSION_(MAJOR|MINOR|PATCH) ' "$prefix/include/db.h" > ci-logs/bdb-version.txt
+          grep -E '^#[[:space:]]*define[[:space:]]+DB_VERSION_(MAJOR|MINOR|PATCH)[[:space:]]+' "$prefix/include/db.h" > ci-logs/bdb-version.txt
 
       - name: Configure Core and GUI
         run: |
