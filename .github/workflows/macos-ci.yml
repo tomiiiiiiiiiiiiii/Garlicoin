@@ -1,26 +1,6 @@
-name: macOS Deterministic CI
+name: macOS legacy deterministic cross-build (manual)
 
 on:
-  push:
-    branches:
-      - master
-    paths:
-      - 'src/**'
-      - 'configure.ac'
-      - 'build-aux/**'
-      - 'depends/**'
-      - 'doc/build-osx.md'
-      - '.github/workflows/macos-ci.yml'
-  pull_request:
-    branches:
-      - master
-    paths:
-      - 'src/**'
-      - 'configure.ac'
-      - 'build-aux/**'
-      - 'depends/**'
-      - 'doc/build-osx.md'
-      - '.github/workflows/macos-ci.yml'
   workflow_dispatch:
 
 permissions:
@@ -32,7 +12,7 @@ concurrency:
 
 jobs:
   darwin-cross-build:
-    name: macOS x86_64 cross-build
+    name: macOS x86_64 legacy cross-build
     runs-on: ubuntu-22.04
     timeout-minutes: 120
 
@@ -46,6 +26,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Legacy workflow notice
+        run: |
+          echo 'This Linux-to-Darwin workflow is retained for historical/manual investigation only.'
+          echo 'The supported Qt 5.15.19 macOS validation path is the native Intel macOS workflow.'
 
       - name: Install Darwin cross-build tools
         run: |
