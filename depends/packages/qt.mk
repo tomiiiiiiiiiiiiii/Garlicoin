@@ -23,7 +23,8 @@ define $(package)_set_vars
 $(package)_config_opts_release = -release
 $(package)_config_opts_debug = -debug
 $(package)_config_opts += -bindir $(build_prefix)/bin
-$(package)_config_opts += -c++std c++11
+# Qt 5.15.19 qlocale_win.cpp uses std::size; only the MinGW Qt build needs C++17.
+$(package)_config_opts += -c++std $(if $(filter mingw32,$(host_os)),c++17,c++11)
 $(package)_config_opts += -confirm-license
 $(package)_config_opts += -dbus-runtime
 $(package)_config_opts += -hostprefix $(build_prefix)
@@ -106,6 +107,9 @@ $(package)_config_opts_x86_64_linux = -xplatform linux-g++-64
 $(package)_config_opts_aarch64_linux = -xplatform linux-aarch64-gnu-g++
 $(package)_config_opts_riscv64_linux = -platform linux-g++ -xplatform bitcoin-linux-g++
 $(package)_config_opts_mingw32  = -no-opengl -xplatform win32-g++ -device-option CROSS_COMPILE="$(host)-"
+# Qt's Windows fallback omits the system libraries required by static OpenSSL.
+# Match OpenSSL mingw-common ex_libs (also exported by its .pc files).
+$(package)_openssl_env_mingw32 = OPENSSL_LIBS="-L$(host_prefix)/lib -lssl -lcrypto -lws2_32 -lgdi32 -lcrypt32"
 $(package)_build_env  = QT_RCC_TEST=1 SOURCE_DATE_EPOCH=1
 $(package)_build_env += QT_RCC_SOURCE_DATE_OVERRIDE=1
 endef
@@ -160,7 +164,7 @@ define $(package)_config_cmds
   export PKG_CONFIG_SYSROOT_DIR=/ && \
   export PKG_CONFIG_LIBDIR=$(host_prefix)/lib/pkgconfig && \
   export PKG_CONFIG_PATH=$(host_prefix)/share/pkgconfig  && \
-  ./configure $($(package)_config_opts) && \
+  $($(package)_openssl_env_$(host_os)) ./configure $($(package)_config_opts) && \
   echo "host_build: QT_CONFIG ~= s/system-zlib/zlib" >> mkspecs/qconfig.pri && \
   echo "CONFIG += force_bootstrap" >> mkspecs/qconfig.pri && \
   $(MAKE) sub-src-clean && \
