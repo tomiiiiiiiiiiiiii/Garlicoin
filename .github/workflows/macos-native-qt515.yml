@@ -127,6 +127,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p artifact/bin
+          exec > >(tee ci-logs/verification.log) 2>&1
           python3 - <<'PY'
           import pathlib, re, shutil, subprocess
           root = pathlib.Path.cwd()
@@ -143,6 +144,7 @@ jobs:
               def run(*args):
                   text = subprocess.check_output(args, text=True, stderr=subprocess.STDOUT)
                   report.append("$ " + " ".join(args) + "\n" + text)
+                  (root / "ci-logs/macho-linkage.txt").write_text("\n".join(report))
                   return text
               kind = run("file", str(binary))
               assert "Mach-O 64-bit executable x86_64" in kind, kind
