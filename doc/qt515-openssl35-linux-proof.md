@@ -248,3 +248,35 @@ block/transaction formats, P2P protocol, addresses/keys, datadir/wallet.dat,
 Berkeley DB version or RPC semantics. No TLS/security checks or test targets were
 removed or disabled. Windows/macOS toolchain/support policy is unvalidated and
 must be reviewed separately before a release.
+
+## Follow-up: doublespend fixture classification (2026-10-09)
+
+The requested isolated `tx_validationcache_tests/tx_mempool_block_doublespend`
+comparison is complete. No repository code or timeout settings were changed.
+Both executions used an external 1200-second limit, the same environment and
+GCC 13 optimization settings, and nonexistent OpenSSL configuration/module paths.
+The unchanged master baseline was built separately at
+`bcd2edb371d4d53dc860c390930ec77f592e9ce9`.
+
+| Build | Result | Wall time | User CPU | System CPU |
+|---|---|---:|---:|---:|
+| Qt 5.15.19 / OpenSSL 3.5.9 branch | PASS, exit 0 | 1146.069 s | 1144.192 s | 0.478 s |
+| Unchanged master / OpenSSL 1.0.1k | PASS, exit 0 | 839.016 s | 837.460 s | 0.328 s |
+
+The faster baseline was investigated with five alternating pairs of 20,000
+scrypt hashes, using the existing production objects, identical inputs and each
+build's actual static libcrypto archive. Median times were 10789.772306 ms and
+10699.953347 ms respectively (+0.84%, overlapping ranges). Hash checksums were
+identical: `28f4361449f89f919546aece355124118cdba212ac7b7779993c156e855a2ee7`.
+The production scrypt object text was byte-identical, SHA256
+`905d80622a5e6fa2fced7b493286099243115c357e30d5879e6110e53e3486c5`.
+Fixture and scrypt source were unchanged. Random coinbase keys change the PoW
+nonce trial count, providing a plausible explanation for the full-fixture gap;
+one pair does not establish equality of all performance.
+
+Classification: **inherited slow fixture; both builds PASS; no demonstrated
+Qt/OpenSSL regression**. This supersedes the pending comparison for this one
+test above. Other Linux limitations remain as recorded; Linux was not rerun
+for the subsequent Windows proof. Full raw logs are retained outside the source
+tree in `proof/logs/doublespend-{modern,baseline}.log`,
+`doublespend-comparison-metadata.txt` and `doublespend-scrypt-timing.log`.
