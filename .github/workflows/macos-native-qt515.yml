@@ -7,6 +7,7 @@ on:
       - '.github/workflows/macos-native-qt515.yml'
       - 'depends/builders/darwin.mk'
       - 'depends/packages/qt.mk'
+      - 'depends/packages/bdb.mk'
       - 'build-aux/m4/bitcoin_qt.m4'
   workflow_dispatch:
 
@@ -89,7 +90,6 @@ jobs:
             OSX_MIN_VERSION="$MACOSX_DEPLOYMENT_TARGET" \
             OSX_SDK_VERSION="$OSX_SDK_VERSION" OSX_SDK="$SDKROOT" \
             darwin_CXX="$(xcrun -f clang++) -mmacosx-version-min=$MACOSX_DEPLOYMENT_TARGET -stdlib=libc++ -Wno-error=enum-constexpr-conversion" \
-            bdb_cflags="-Wno-error=implicit-int -Wno-error=implicit-function-declaration" \
             HOST_ID_SALT=native-xcode16-enum-compat \
             darwin_native_packages= \
             qt_config_opts_darwin="-platform macx-clang -no-framework" \
