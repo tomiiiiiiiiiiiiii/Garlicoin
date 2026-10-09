@@ -67,7 +67,6 @@ jobs:
               --with-gui=qt5 \
               --disable-tests \
               --disable-bench
-          # Use the same version as make dist and the native installers.
           VERSION="$(sed -n 's/^PACKAGE_VERSION = //p' Makefile)"
           [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
@@ -152,7 +151,6 @@ jobs:
               --with-gui=qt5 \
               --disable-tests \
               --disable-bench
-          # Use the same version as make dist and the native installers.
           VERSION="$(sed -n 's/^PACKAGE_VERSION = //p' Makefile)"
           [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
@@ -199,128 +197,150 @@ jobs:
           if-no-files-found: error
 
   macos-release:
-    name: macOS x86_64 release package
-    runs-on: ubuntu-22.04
+    name: macOS x86_64 native release package
+    runs-on: macos-15-intel
     timeout-minutes: 180
+    defaults:
+      run:
+        shell: bash
     env:
-      HOST: x86_64-apple-darwin14
-      OSX_SDK_VERSION: '10.11'
-      SDK_URL: https://bitcoincore.org/depends-sources/sdks
+      MACOSX_DEPLOYMENT_TARGET: '10.13'
+      DEVELOPER_DIR: /Applications/Xcode_16.app/Contents/Developer
+      SOURCE_DATE_EPOCH: '1'
+      QT_RCC_SOURCE_DATE_OVERRIDE: '1'
+      HOMEBREW_NO_AUTO_UPDATE: '1'
+      HOMEBREW_NO_INSTALL_CLEANUP: '1'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Darwin release tools
+      - name: Verify Intel runner, Xcode and SDK
         run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            autoconf automake autotools-dev bsdmainutils build-essential \
-            ca-certificates ccache clang cmake curl file git imagemagick \
-            libbz2-dev libcap-dev librsvg2-bin libtiff-tools libtinfo5 \
-            libtool libz-dev patch pkg-config python3 python3-setuptools xz-utils
+          set -euo pipefail
+          test "$(uname -m)" = x86_64
+          test -d "$DEVELOPER_DIR"
+          xcodebuild -version
+          sdk="$(xcrun --sdk macosx --show-sdk-path)"
+          sdk_version="$(xcrun --sdk macosx --show-sdk-version)"
+          test "$sdk_version" = 15.0
+          echo "SDKROOT=$sdk" >> "$GITHUB_ENV"
+          echo "OSX_SDK_VERSION=$sdk_version" >> "$GITHUB_ENV"
 
-      - name: Cache macOS depends
+      - name: Install macOS release tools
+        run: |
+          brew install autoconf automake libtool pkg-config make
+          gmake --version
+
+      - name: Cache macOS native depends
         uses: actions/cache@v4
         with:
           path: |
             depends/built
             depends/sources
-            depends/sdk-sources
-          key: garlicoin-release-macos-${{ runner.os }}-${{ env.HOST }}-${{ hashFiles('depends/**') }}
+          key: garlicoin-release-macos-native-x64-xcode16.0-sdk15.0-min10.13-${{ hashFiles('depends/**') }}
           restore-keys: |
-            garlicoin-release-macos-${{ runner.os }}-${{ env.HOST }}-
+            garlicoin-release-macos-native-x64-xcode16.0-sdk15.0-min10.13-
 
-      - name: Fetch macOS SDK
+      - name: Build native macOS dependencies
         run: |
-          mkdir -p depends/SDKs depends/sdk-sources
-          sdk_archive="depends/sdk-sources/MacOSX${OSX_SDK_VERSION}.sdk.tar.gz"
-          if [ ! -f "$sdk_archive" ]; then
-            curl --location --fail \
-              "${SDK_URL}/MacOSX${OSX_SDK_VERSION}.sdk.tar.gz" \
-              -o "$sdk_archive"
-          fi
-          rm -rf "depends/SDKs/MacOSX${OSX_SDK_VERSION}.sdk"
-          tar -C depends/SDKs -xf "$sdk_archive"
-          test -d "depends/SDKs/MacOSX${OSX_SDK_VERSION}.sdk"
-
-      - name: Prepare Darwin-only toolchain compatibility
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-
-          native = Path('depends/packages/native_cctools.mk')
-          text = native.read_text()
-          old = "$(package)_cc=$($(package)_extract_dir)/toolchain/bin/clang\n$(package)_cxx=$($(package)_extract_dir)/toolchain/bin/clang++"
-          new = "$(package)_cc=clang\n$(package)_cxx=clang++\n$(package)_cflags+=-fcommon"
-          if old not in text:
-              raise SystemExit('expected native_cctools compiler block not found')
-          text = text.replace(old, new, 1)
-
-          old = "define $(package)_preprocess_cmds\n  cd $($(package)_build_subdir); ./autogen.sh && \\\n  sed -i.old \"/define HAVE_PTHREADS/d\" ld64/src/ld/InputFiles.h"
-          new = "define $(package)_preprocess_cmds\n  sed -i '/#include <sys\\/sysctl.h>/s/^/#ifdef __APPLE__\\n/; /#include <sys\\/sysctl.h>/a #endif' $($(package)_build_subdir)/libstuff/macosx_deployment_target.c && \\\n  sed -i 's/^#ifndef __CYGWIN__/#if !defined(__CYGWIN__) \\&\\& !defined(__linux__)/' $($(package)_build_subdir)/include/foreign/sys/sysctl.h && \\\n  cd $($(package)_build_subdir); ./autogen.sh && \\\n  sed -i.old \"/define HAVE_PTHREADS/d\" ld64/src/ld/InputFiles.h"
-          if old not in text:
-              raise SystemExit('expected native_cctools preprocess block not found')
-          native.write_text(text.replace(old, new, 1))
-
-          boost = Path('depends/packages/boost.mk')
-          text = boost.read_text()
-          old = './bootstrap.sh --without-icu --with-libraries=$($(package)_config_libraries) --with-toolset=$($(package)_toolset_$(host_os))'
-          new = './bootstrap.sh --without-icu --with-libraries=$($(package)_config_libraries) $(if $(filter darwin,$(host_os)),--with-toolset=gcc,--with-toolset=$($(package)_toolset_$(host_os)))'
-          if old not in text:
-              raise SystemExit('expected Boost bootstrap line not found')
-          boost.write_text(text.replace(old, new, 1))
-          PY
-
-      - name: Build deterministic macOS dependencies
-        run: make ${MAKEJOBS} -C depends HOST="${HOST}"
-
-      - name: Add Darwin tools to PATH
-        run: |
-          test -x "$PWD/depends/${HOST}/native/bin/${HOST}-strip"
-          echo "$PWD/depends/${HOST}/native/bin" >> "$GITHUB_PATH"
+          set -euo pipefail
+          host="$(depends/config.guess)"
+          case "$host" in x86_64-apple-darwin*) ;; *) echo "Unexpected native host $host"; exit 1;; esac
+          echo "HOST=$host" >> "$GITHUB_ENV"
+          gmake -j3 -C depends HOST="$host" \
+            OSX_MIN_VERSION="$MACOSX_DEPLOYMENT_TARGET" \
+            OSX_SDK_VERSION="$OSX_SDK_VERSION" OSX_SDK="$SDKROOT" \
+            darwin_CXX="$(xcrun -f clang++) -mmacosx-version-min=$MACOSX_DEPLOYMENT_TARGET -stdlib=libc++ -Wno-error=enum-constexpr-conversion" \
+            HOST_ID_SALT=native-xcode16-enum-compat \
+            darwin_native_packages= \
+            qt_config_opts_darwin="-platform macx-clang -no-framework"
+          prefix="$PWD/depends/$host"
+          test -f "$prefix/lib/libssl.a"
+          test -f "$prefix/lib/libcrypto.a"
+          test -f "$prefix/lib/libdb_cxx-4.8.a"
+          PKG_CONFIG_LIBDIR="$prefix/lib/pkgconfig" pkg-config --modversion Qt5Core | grep -qx '5.15.19'
+          grep -q 'OpenSSL 3.5.9' "$prefix/include/openssl/opensslv.h"
 
       - name: Configure and build macOS release
         run: |
+          set -euo pipefail
           ./autogen.sh
-          CONFIG_SITE="$PWD/depends/${HOST}/share/config.site" \
+          CONFIG_SITE="$PWD/depends/$HOST/share/config.site" \
             ./configure \
               --prefix=/ \
               --enable-wallet \
               --with-gui=qt5 \
               --disable-tests \
               --disable-bench
-          # Use the same version as make dist and the native installers.
           VERSION="$(sed -n 's/^PACKAGE_VERSION = //p' Makefile)"
           [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
-          make ${MAKEJOBS}
+          gmake -j3
 
-      - name: Validate macOS install and Mach-O binaries
+      - name: Validate macOS binaries and package tarball
         run: |
-          rm -rf release-stage release-package artifacts
-          mkdir -p release-stage release-package/garlicoin-${VERSION} artifacts
-          make install-strip DESTDIR="$PWD/release-stage"
-          for binary in garlicoind garlicoin-cli garlicoin-qt; do
-            test -f "release-stage/bin/${binary}"
-            file "release-stage/bin/${binary}" | tee "/tmp/${binary}.file"
-            grep -q 'Mach-O 64-bit x86_64' "/tmp/${binary}.file"
-          done
-          cp -a release-stage/. "release-package/garlicoin-${VERSION}/"
+          set -euo pipefail
+          rm -rf release-package artifacts
+          mkdir -p "release-package/garlicoin-${VERSION}/bin" artifacts
+          python3 - <<'PY'
+          import os, pathlib, re, shutil, subprocess
+          root = pathlib.Path.cwd()
+          out = root / 'release-package' / f"garlicoin-{os.environ['VERSION']}" / 'bin'
+          bins = {
+              'garlicoind': root / 'src/garlicoind',
+              'garlicoin-cli': root / 'src/garlicoin-cli',
+              'garlicoin-tx': root / 'src/garlicoin-tx',
+              'garlicoin-qt': root / 'src/qt/garlicoin-qt',
+          }
+          for name, binary in bins.items():
+              assert binary.is_file(), binary
+              kind = subprocess.check_output(['file', str(binary)], text=True)
+              assert 'Mach-O 64-bit executable x86_64' in kind, kind
+              assert subprocess.check_output(['lipo', '-archs', str(binary)], text=True).strip() == 'x86_64'
+              deps = subprocess.check_output(['otool', '-L', str(binary)], text=True)
+              for line in deps.splitlines()[1:]:
+                  dep = line.strip().split(' (', 1)[0]
+                  assert dep.startswith(('/usr/lib/', '/System/Library/')), dep
+                  assert not re.search(r'(libssl|libcrypto|Qt[0-9]|libdb)', dep, re.I), dep
+              commands = subprocess.check_output(['otool', '-l', str(binary)], text=True)
+              targets = re.findall(r'cmd LC_(?:BUILD_VERSION|VERSION_MIN_MACOSX)\n(?:(?!\nLoad command).)*?\n\s+(?:minos|version)\s+(\S+)', commands, re.S)
+              assert len(targets) == 1 and targets[0] in ('10.13', '10.13.0'), (name, targets)
+              shutil.copy2(binary, out / name)
+          PY
           cp README.md "release-package/garlicoin-${VERSION}/"
           tar -C release-package -czf "artifacts/garlicoin-${VERSION}-osx64.tar.gz" "garlicoin-${VERSION}"
 
-      - name: Build and validate macOS DMG
+      - name: Build and validate macOS app and DMG
         run: |
-          make deploy
-          dmg="$(find . -maxdepth 1 -type f -name '*.dmg' -print -quit)"
-          test -n "$dmg"
-          file "$dmg"
-          cp "$dmg" "artifacts/garlicoin-${VERSION}-osx64.dmg"
+          set -euo pipefail
+          gmake appbundle
+          appbin="Garlicoin-Qt.app/Contents/MacOS/Garlicoin-Qt"
+          test -f "$appbin"
+          file "$appbin" | grep -q 'Mach-O 64-bit executable x86_64'
+          lipo -archs "$appbin" | grep -qx 'x86_64'
+          otool -L "$appbin" | tail -n +2 | while IFS= read -r line; do
+            dep="$(printf '%s\n' "$line" | sed 's/^[[:space:]]*//; s/ (.*$//')"
+            case "$dep" in
+              /usr/lib/*|/System/Library/*) ;;
+              *) echo "Unexpected dynamic dependency: $dep"; exit 1 ;;
+            esac
+          done
+          rm -rf dmg-root
+          mkdir dmg-root
+          cp -R Garlicoin-Qt.app dmg-root/
+          ln -s /Applications dmg-root/Applications
+          hdiutil create \
+            -volname "Garlicoin Core ${VERSION}" \
+            -srcfolder dmg-root \
+            -ov -format UDZO \
+            "artifacts/garlicoin-${VERSION}-osx64.dmg"
+          test -f "artifacts/garlicoin-${VERSION}-osx64.dmg"
+          file "artifacts/garlicoin-${VERSION}-osx64.dmg"
 
       - name: Hash macOS artifacts
         run: |
           cd artifacts
-          sha256sum * | tee SHA256SUMS
+          shasum -a 256 * | tee SHA256SUMS
 
       - name: Upload macOS release artifacts
         uses: actions/upload-artifact@v4
