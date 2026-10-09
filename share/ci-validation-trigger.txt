@@ -1,2 +1,0 @@
-Temporary post-merge validation trigger for Garlicoin Core 0.18.3 GUI refresh.
-This file is intentionally not intended for merge.
