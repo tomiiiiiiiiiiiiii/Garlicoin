@@ -399,6 +399,18 @@ AC_DEFUN([_BITCOIN_QT_FIND_STATIC_PLUGINS],[
              BITCOIN_QT_CHECK(AC_CHECK_LIB([${QT_LIB_PREFIX}DeviceDiscoverySupport],[main],,BITCOIN_QT_FAIL(lib$QT_LIB_PREFIXDeviceDiscoverySupport not found)))
              BITCOIN_QT_CHECK(AC_CHECK_LIB([${QT_LIB_PREFIX}AccessibilitySupport],[main],,BITCOIN_QT_FAIL(lib$QT_LIB_PREFIXAccessibilitySupport not found)))
              QT_LIBS="$QT_LIBS -lversion -ldwmapi -luxtheme"
+             AC_CACHE_CHECK([for Qt >= 5.15], [bitcoin_cv_qt515_windows], [
+               AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <QtCore/qglobal.h>]], [[
+                 #if QT_VERSION < 0x050f00
+                 #error Qt older than 5.15
+                 #endif
+               ]])], [bitcoin_cv_qt515_windows=yes], [bitcoin_cv_qt515_windows=no])
+             ])
+             if test "x$bitcoin_cv_qt515_windows" = xyes; then
+               BITCOIN_QT_CHECK(AC_CHECK_LIB([${QT_LIB_PREFIX}WindowsUIAutomationSupport],[main],,BITCOIN_QT_FAIL(lib${QT_LIB_PREFIX}WindowsUIAutomationSupport not found)))
+               dnl Qt 5.15 static Core/Gui/FontDatabaseSupport and qwindows dependencies.
+               QT_LIBS="$QT_LIBS -lmpr -luserenv -lnetapi32 -lwtsapi32 -ld3d11 -ldxgi -ldxguid -ldwrite -ld2d1"
+             fi
            fi
          fi
        fi
