@@ -107,11 +107,8 @@ The release workflow additionally creates and validates the DMG using native mac
 Verification
 ------------
 
-For release work, do not rely only on a successful compile. The repository's native macOS and release-validation workflows check the Mach-O architecture, deployment target, static dependency linkage, CLI/GUI version output, app bundle, and release packaging.
+For release work, do not rely only on a successful compile. The maintained release-validation workflow checks the Mach-O architecture, deployment target, static dependency linkage, CLI/GUI version output, app bundle, and release packaging.
 
-See:
+See `.github/workflows/release-validation-ci.yml`.
 
-- `.github/workflows/macos-native-qt515.yml`
-- `.github/workflows/release-validation-ci.yml`
-
-Legacy Linux-to-Darwin cross-build notes are intentionally not part of this guide. That path is retained only as a manual historical workflow and is not the supported Qt 5.15.19 macOS release path.
+Legacy Linux-to-Darwin cross-build workflows and the temporary Qt 5.15/OpenSSL 3 macOS proof workflow have been removed from the active GitHub Actions set. The supported macOS release build is native x86_64 through the release-validation workflow.
