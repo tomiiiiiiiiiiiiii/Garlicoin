@@ -157,7 +157,8 @@ jobs:
               commands = run("otool", "-l", str(binary))
               targets = re.findall(r"cmd LC_(?:BUILD_VERSION|VERSION_MIN_MACOSX)\n(?:(?!\nLoad command).)*?\n\s+(?:minos|version)\s+(\S+)", commands, re.S)
               assert len(targets) == 1 and targets[0] in ("10.13", "10.13.0"), f"Unexpected deployment in {name}: {targets}"
-              symbols = run("nm", "-g", str(binary))
+              # Static Qt plugin symbols may be local after Darwin linking.
+              symbols = run("nm", str(binary))
               if name == "garlicoin-qt":
                   assert "_SSL_" in symbols, "No static SSL symbols in GUI"
                   assert "qt_static_plugin_QMinimalIntegrationPlugin" in symbols, "Minimal plugin is not imported"
