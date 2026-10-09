@@ -1,0 +1,191 @@
+Windows proof observed command results, 2026-10-09
+Windows depends final make exit: 0; real 11m39.076s
+Core make -j4 -C src V=1 exit: 0; real 6m23.720s
+secp test executable build exit: 0; real 0m4.274s
+No test executable was run in this Windows follow-up.
+Core redirected log is partial (ends during compilation); final binaries, tool exit status and focused linker-map captures provide completion evidence.
+
+src/.libs/libbitcoinconsensus-0.dll: PE32+ executable (DLL) (console) x86-64, for MS Windows, 21 sections
+SHA256 eea58850ccd7ae21d9a618fdfbeb631f9290be26d48bfdc9fd6ac1c6d02d7438
+Imports: ADVAPI32.dll, KERNEL32.dll, msvcrt.dll
+
+src/garlicoin-cli.exe: PE32+ executable (console) x86-64, for MS Windows, 21 sections
+SHA256 efb7d24f2b64228d36f4b4b5ebdd3422bc64c0c700571cc1675e8e41446757a8
+Imports: ADVAPI32.dll, CRYPT32.dll, KERNEL32.dll, msvcrt.dll, SHELL32.dll, USER32.dll, WS2_32.dll
+
+src/garlicoin-tx.exe: PE32+ executable (console) x86-64, for MS Windows, 22 sections
+SHA256 b848cdc8f2b316f140026a7f14e31c39771e5c3bd87b9136717c00025039c5d1
+Imports: ADVAPI32.dll, CRYPT32.dll, KERNEL32.dll, msvcrt.dll, SHELL32.dll, USER32.dll, WS2_32.dll
+
+src/garlicoind.exe: PE32+ executable (console) x86-64, for MS Windows, 22 sections
+SHA256 68eedbb194663e7bac3b40ce3ee25896611f5bccd069735549125e0426074077
+Imports: ADVAPI32.dll, CRYPT32.dll, IPHLPAPI.DLL, KERNEL32.dll, msvcrt.dll, SHELL32.dll, SHLWAPI.dll, USER32.dll, WS2_32.dll
+
+src/qt/garlicoin-qt.exe: PE32+ executable (GUI) x86-64, for MS Windows, 24 sections
+SHA256 4253d0dd9c88babb80cd8f21d452fd0ca4b928d71674d17da9b19e2fc1ab0d2c
+Imports: ADVAPI32.dll, CRYPT32.dll, dwmapi.dll, GDI32.dll, IMM32.dll, IPHLPAPI.DLL, KERNEL32.dll, msvcrt.dll, NETAPI32.dll, ole32.dll, OLEAUT32.dll, SHELL32.dll, SHLWAPI.dll, USER32.dll, USERENV.dll, VERSION.dll, WINMM.dll, WS2_32.dll, WTSAPI32.dll
+
+src/qt/test/test_garlicoin-qt.exe: PE32+ executable (GUI) x86-64, for MS Windows, 23 sections
+SHA256 e6bf332ba8a913787cd15e85e474038dbfabbacd3f03dfb744c1f3a2363ee0fc
+Imports: ADVAPI32.dll, CRYPT32.dll, dwmapi.dll, GDI32.dll, IMM32.dll, IPHLPAPI.DLL, KERNEL32.dll, msvcrt.dll, NETAPI32.dll, ole32.dll, OLEAUT32.dll, SHELL32.dll, SHLWAPI.dll, USER32.dll, USERENV.dll, VERSION.dll, WINMM.dll, WS2_32.dll, WTSAPI32.dll
+
+src/secp256k1/exhaustive_tests.exe: PE32+ executable (console) x86-64, for MS Windows, 20 sections
+SHA256 7b2b3164014d794ca5477af48179acec35a7817d036229d6fa15c9f964639f9a
+Imports: KERNEL32.dll, msvcrt.dll
+
+src/secp256k1/tests.exe: PE32+ executable (console) x86-64, for MS Windows, 21 sections
+SHA256 f041653bb77abe868f1e188257a41f612acd08f83aa462687b4ba0061c6074da
+Imports: ADVAPI32.dll, CRYPT32.dll, KERNEL32.dll, msvcrt.dll, USER32.dll, WS2_32.dll
+
+src/test/test_garlicoin.exe: PE32+ executable (console) x86-64, for MS Windows, 21 sections
+SHA256 71faf26b28a267456fe5cfadbd911f8fc4bbf8c8b18f893f567dac16582d91b3
+Imports: ADVAPI32.dll, CRYPT32.dll, IPHLPAPI.DLL, KERNEL32.dll, msvcrt.dll, SHELL32.dll, SHLWAPI.dll, USER32.dll, WS2_32.dll
+
+src/test/test_garlicoin_fuzzy.exe: PE32+ executable (console) x86-64, for MS Windows, 21 sections
+SHA256 9712c322d76126e95e9ce73045480d0cd75c7d2697d427943d1d88d7245130ff
+Imports: ADVAPI32.dll, CRYPT32.dll, KERNEL32.dll, msvcrt.dll, SHELL32.dll, USER32.dll, WS2_32.dll
+
+[
+  {
+    "map": "garlicoin-cli.exe.map",
+    "openssl_archives": [
+      [
+        "/workspace/scratch/38f156860da2/proof/windows-src/depends/x86_64-w64-mingw32/share/../lib/libssl.a",
+        "a9fb6ed3f7d881344cb109b10dd618e01c623c7ce1dde3f6e44c5c66b318b717"
+      ],
+      [
+        "/workspace/scratch/38f156860da2/proof/windows-src/depends/x86_64-w64-mingw32/share/../lib/libcrypto.a",
+        "fdc1160f3da82a0aab0941a51c6e52c7cdc9d8dc4847a50939b180be9e6e6d38"
+      ]
+    ]
+  },
+  {
+    "map": "garlicoin-qt.exe.map",
+    "openssl_archives": [
+      [
+        "/workspace/scratch/38f156860da2/proof/windows-src/depends/x86_64-w64-mingw32/share/../lib/libssl.a",
+        "a9fb6ed3f7d881344cb109b10dd618e01c623c7ce1dde3f6e44c5c66b318b717"
+      ],
+      [
+        "/workspace/scratch/38f156860da2/proof/windows-src/depends/x86_64-w64-mingw32/share/../lib/libcrypto.a",
+        "fdc1160f3da82a0aab0941a51c6e52c7cdc9d8dc4847a50939b180be9e6e6d38"
+      ]
+    ]
+  },
+  {
+    "map": "garlicoin-tx.exe.map",
+    "openssl_archives": [
+      [
+        "/workspace/scratch/38f156860da2/proof/windows-src/depends/x86_64-w64-mingw32/share/../lib/libcrypto.a",
+        "fdc1160f3da82a0aab0941a51c6e52c7cdc9d8dc4847a50939b180be9e6e6d38"
+      ]
+    ]
+  },
+  {
+    "map": "garlicoind.exe.map",
+    "openssl_archives": [
+      [
+        "/workspace/scratch/38f156860da2/proof/windows-src/depends/x86_64-w64-mingw32/share/../lib/libssl.a",
+        "a9fb6ed3f7d881344cb109b10dd618e01c623c7ce1dde3f6e44c5c66b318b717"
+      ],
+      [
+        "/workspace/scratch/38f156860da2/proof/windows-src/depends/x86_64-w64-mingw32/share/../lib/libcrypto.a",
+        "fdc1160f3da82a0aab0941a51c6e52c7cdc9d8dc4847a50939b180be9e6e6d38"
+      ]
+    ]
+  }
+]
+
+src/garlicoind.exe
+00000001403f4fe0 T RAND_bytes
+00000001403f3e80 T RAND_event
+00000001403f3ea0 T RAND_screen
+000000014047f8c0 T ossl_default_provider_init
+000000014047fb30 T ossl_legacy_provider_init
+/etc/ssl
+/lib/ossl-modules
+/etc/ssl/ct_log_list.cnf
+src/garlicoin-cli.exe
+000000014005a650 T RAND_bytes
+00000001400594f0 T RAND_event
+0000000140059510 T RAND_screen
+00000001400e4f30 T ossl_default_provider_init
+00000001400e51a0 T ossl_legacy_provider_init
+/etc/ssl
+/lib/ossl-modules
+/etc/ssl/ct_log_list.cnf
+src/garlicoin-tx.exe
+00000001400c49a0 T RAND_bytes
+00000001400c3840 T RAND_event
+00000001400c3860 T RAND_screen
+000000014014f280 T ossl_default_provider_init
+000000014014f4f0 T ossl_legacy_provider_init
+/etc/ssl
+/lib/ossl-modules
+/etc/ssl/ct_log_list.cnf
+src/qt/garlicoin-qt.exe
+00000001406c9fa0 T OpenSSL_version
+00000001406c9f40 T OpenSSL_version_num
+00000001406f94f0 T RAND_bytes
+00000001406f8390 T RAND_event
+00000001406f83b0 T RAND_screen
+00000001405d39c0 T SSL_new
+000000014073d200 T ossl_default_provider_init
+000000014073d470 T ossl_legacy_provider_init
+/etc/ssl/certs/
+/etc/ssl/
+/etc/ssl/ct_log_list.cnf
+OpenSSL 3.5.9 29 Sep 2026
+OPENSSLDIR: "/etc/ssl"
+MODULESDIR: "/lib/ossl-modules"
+/etc/ssl
+/lib/ossl-modules
+src/.libs/libbitcoinconsensus-0.dll
+src/secp256k1/tests.exe
+000000014006d540 T RAND_bytes
+0000000140113150 T ossl_default_provider_init
+00000001401133c0 T ossl_legacy_provider_init
+/etc/ssl
+/lib/ossl-modules
+/etc/ssl/ct_log_list.cnf
+
+src/qt/garlicoin-qt.exe absolute host-path strings: 29
+/workspace/scratch/38f156860da2/proof/windows-src/depends/x86_64-w64-mingw32/share/../include/QtCore/qarraydata.h
+/workspace/scratch/38f156860da2/proof/windows-src/depends/x86_64-w64-mingw32/share/../include/QtCore/qhash.h
+/workspace/scratch/38f156860da2/proof/windows-src/depends/x86_64-w64-mingw32/share/../include/QtCore/qlist.h
+/workspace/scratch/38f156860da2/proof/windows-src/depends/x86_64-w64-mingw32/share/../include/QtCore/qmetatype.h
+/workspace/scratch/38f156860da2/proof/windows-src/depends/x86_64-w64-mingw32/share/../include/QtCore/qstring.h
+/workspace/scratch/38f156860da2/proof/windows-src/depends/x86_64-w64-mingw32/share/../include/QtCore/qstringview.h
+/workspace/scratch/38f156860da2/proof/windows-src/depends/x86_64-w64-mingw32/share/../include/QtCore/qvector.h
+/workspace/scratch/38f156860da2/proof/windows-src/depends/x86_64-w64-mingw32/share/../include/boost/exception/detail/exception_ptr.hpp
+/workspace/scratch/38f156860da2/proof/windows-src/depends/x86_64-w64-mingw32/share/../include/boost/exception/info.hpp
+/workspace/scratch/38f156860da2/proof/windows-src/depends/x86_64-w64-mingw32/share/../include/boost/filesystem/operations.hpp
+/workspace/scratch/38f156860da2/proof/windows-src/depends/x86_64-w64-mingw32/share/../include/boost/filesystem/path.hpp
+/workspace/scratch/38f156860da2/proof/windows-src/depends/x86_64-w64-mingw32/share/../include/boost/filesystem/path_traits.hpp
+Time/Date		Fri Oct  9 14:26:28 2026
+Time/Date stamp 		6ac8dd73
+src/garlicoind.exe absolute host-path strings: 20
+/workspace/scratch/38f156860da2/proof/windows-src/depends/x86_64-w64-mingw32/share/../include/boost/exception/detail/exception_ptr.hpp
+/workspace/scratch/38f156860da2/proof/windows-src/depends/x86_64-w64-mingw32/share/../include/boost/exception/info.hpp
+/workspace/scratch/38f156860da2/proof/windows-src/depends/x86_64-w64-mingw32/share/../include/boost/filesystem/operations.hpp
+/workspace/scratch/38f156860da2/proof/windows-src/depends/x86_64-w64-mingw32/share/../include/boost/filesystem/path.hpp
+/workspace/scratch/38f156860da2/proof/windows-src/depends/x86_64-w64-mingw32/share/../include/boost/filesystem/path_traits.hpp
+/workspace/scratch/38f156860da2/proof/windows-src/depends/x86_64-w64-mingw32/share/../include/boost/optional/optional.hpp
+/workspace/scratch/38f156860da2/proof/windows-src/depends/x86_64-w64-mingw32/share/../include/boost/signals2/connection.hpp
+/workspace/scratch/38f156860da2/proof/windows-src/depends/x86_64-w64-mingw32/share/../include/boost/signals2/detail/auto_buffer.hpp
+/workspace/scratch/38f156860da2/proof/windows-src/depends/x86_64-w64-mingw32/share/../include/boost/signals2/detail/signal_template.hpp
+/workspace/scratch/38f156860da2/proof/windows-src/depends/x86_64-w64-mingw32/share/../include/boost/signals2/detail/slot_groups.hpp
+/workspace/scratch/38f156860da2/proof/windows-src/depends/x86_64-w64-mingw32/share/../include/boost/smart_ptr/intrusive_ptr.hpp
+/workspace/scratch/38f156860da2/proof/windows-src/depends/x86_64-w64-mingw32/share/../include/boost/smart_ptr/scoped_ptr.hpp
+Time/Date		Fri Oct  9 14:26:19 2026
+Time/Date stamp 		6ac8dd6b
+
+Installer build exit 0; existing NSIS wizard BMP warnings 5040 (2).
+{
+  "path": "garlicoin-0.18.2-win64-setup.exe",
+  "size": 18489733,
+  "sha256": "d8d30ad7bdd6453db795ab1705ccec8d030c5aff53f8ca1ca6cbdffe2e958fc2",
+  "file": "garlicoin-0.18.2-win64-setup.exe: PE32 executable (GUI) Intel 80386 (stripped to external PDB), for MS Windows, Nullsoft Installer self-extracting archive, 7 sections"
+}
+
+Proof BUILD_SUFFIX: 23e6dde63-dirty (checkpoint + committed Windows Qt link fix).
