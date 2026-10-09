@@ -166,7 +166,18 @@ jobs:
           PY
           src/garlicoind --version | tee ci-logs/daemon-version.txt
           src/garlicoin-cli --version | tee ci-logs/cli-version.txt
-          src/garlicoin-tx --version | tee ci-logs/tx-version.txt
+          # This legacy utility has no --version option. Preserve the exact
+          # requested probe, then verify startup/version through its help path.
+          python3 - <<'PY'
+          import pathlib, subprocess
+          p = subprocess.run(["src/garlicoin-tx", "--version"], capture_output=True, text=True)
+          text = p.stdout + p.stderr
+          pathlib.Path("ci-logs/tx-version-probe.txt").write_text(f"exit={p.returncode}\n" + text)
+          assert p.returncode == 1 and text.strip() == "error: too few parameters", text
+          PY
+          src/garlicoin-tx -help 2>&1 | tee ci-logs/tx-version.txt
+          grep -q 'garlicoin-tx utility version v0.18.2' ci-logs/tx-version.txt
+          src/garlicoin-tx -create | tee ci-logs/tx-create-smoke.txt
           # Startup without a display verifies the statically linked minimal
           # Qt plugin. Interactive Cocoa/window validation is a separate gate.
           QT_QPA_PLATFORM=minimal src/qt/garlicoin-qt -version 2>&1 | tee ci-logs/gui-version.txt
