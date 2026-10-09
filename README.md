@@ -5,22 +5,42 @@ Garlicoin Core
 [![Ubuntu Toolchain CI](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/ubuntu-toolchain-ci.yml/badge.svg?event=pull_request)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/ubuntu-toolchain-ci.yml)
 [![Qt GUI CI](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/qt-ci.yml/badge.svg?branch=master)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/qt-ci.yml)
 [![Windows MinGW CI](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/windows-ci.yml/badge.svg?branch=master)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/windows-ci.yml)
-[![macOS Deterministic CI](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/macos-ci.yml/badge.svg?branch=master)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/macos-ci.yml)
 [![Release Validation CI](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/release-validation-ci.yml/badge.svg?event=pull_request)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/release-validation-ci.yml)
 ![Maintained 2026](https://img.shields.io/badge/maintained-2026-brightgreen)
-![Version 0.18.2](https://img.shields.io/badge/version-0.18.2-blue)
+![Source 0.18.3](https://img.shields.io/badge/source-0.18.3-blue)
+![Latest release 0.18.2](https://img.shields.io/badge/latest%20release-0.18.2-blue)
 ![License MIT](https://img.shields.io/badge/license-MIT-blue)
 
-This repository is a maintained fork of [GarlicoinOrg/Garlicoin](https://github.com/GarlicoinOrg/Garlicoin), focused on keeping Garlicoin Core **0.18.2** buildable, testable and maintainable on current systems.
+This repository is a maintained fork of [GarlicoinOrg/Garlicoin](https://github.com/GarlicoinOrg/Garlicoin), focused on keeping the Garlicoin Core 0.18.x line buildable, testable and maintainable on current systems.
+
+The current `master` source identifies as **Garlicoin Core 0.18.3**. The latest published binary release is still **v0.18.2** until the 0.18.3 release artifacts are completed and published.
 
 The maintenance line preserves Garlicoin consensus, Allium proof of work, DarkGravityWave, wallet format, address formats, network identity and existing user datadirs. Garlicoin is Litecoin-derived, with Litecoin Core 0.18.1 used as the primary upstream reference for compatible maintenance fixes.
 
 Maintained builds are identified as the **grlc.eu edition (2026)** to distinguish the actively maintained binaries from older upstream builds.
 
-Latest release
---------------
+Current maintenance baseline
+----------------------------
 
-The current maintained release is **Garlicoin Core 0.18.2 - GRLC.eu Maintenance Release**.
+The maintained 0.18.3 source line includes:
+
+- Qt **5.15.19**;
+- OpenSSL **3.5.9**;
+- Berkeley DB **4.8.30** wallet compatibility;
+- Linux x86_64 build and release validation;
+- Windows x86_64 MinGW build and release validation;
+- native macOS x86_64 validation with Xcode 16 / macOS SDK 15.0;
+- Python 3.12+ compatible P2P functional-test transport;
+- removal of the legacy BIP70 Payment Protocol runtime and implementation while keeping normal `garlicoin:` payment URI support;
+- maintained dependency sources, build-system fixes and selected security/robustness backports;
+- refreshed Garlicoin / grlc.eu branding and GUI maintenance work.
+
+These maintenance changes are intended to improve buildability, portability and maintainability without changing the existing Garlicoin network or wallet compatibility.
+
+Latest published release
+------------------------
+
+The latest published release is **Garlicoin Core 0.18.2 - GRLC.eu Maintenance Release**.
 
 [View release notes and all downloads](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/tag/v0.18.2)
 
@@ -34,36 +54,26 @@ Downloads:
 - [Source tarball](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/download/v0.18.2/garlicoin-0.18.2.tar.gz)
 - [SHA256SUMS](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/download/v0.18.2/SHA256SUMS)
 
-The release binaries were produced by the cross-platform Release Validation CI for the `v0.18.2` tag. Verify downloaded files against `SHA256SUMS` before installation.
+Verify downloaded release artifacts against `SHA256SUMS` before installation.
 
-Current status
---------------
+0.18.3 status
+-------------
 
-Validated and maintained:
+The repository source has already been bumped to **0.18.3**, but no public `v0.18.3` GitHub release is published yet.
 
-- Linux builds with wallet, Qt GUI and functional smoke coverage;
-- Ubuntu 22.04 and 24.04 toolchain compatibility;
-- Windows x86_64 MinGW deterministic cross-builds;
-- macOS x86_64 deterministic cross-builds;
-- Qt 5.9.7 GUI + wallet validation;
-- cross-platform release validation for Linux, Windows and macOS;
-- Linux binary/source tarballs, Windows ZIP + NSIS installer, and macOS tarball + DMG;
-- SHA256 manifests for validated release artifacts;
-- Python 3.12+ compatible P2P functional-test transport based on the Litecoin Core 0.18.1 lineage;
-- legacy BIP70 Payment Protocol runtime and implementation removed while normal `garlicoin:` payment URIs remain supported;
-- maintained dependency sources and selected dependency/security fixes;
-- Garlicoin branding cleanup in GUI, translations and runtime-facing messages.
+See [`doc/release-notes-0.18.3.md`](doc/release-notes-0.18.3.md) for the current maintenance-release notes. Final downloadable binaries should be taken from the tagged GitHub release once it is published, not from intermediate validation artifacts.
 
 Building
 --------
 
-Start with [INSTALL.md](INSTALL.md).
+Start with [INSTALL.md](INSTALL.md) and the maintained documentation index in [`doc/README.md`](doc/README.md).
 
 Platform notes:
 
-- Linux / Ubuntu: [`doc/ubuntu-toolchain.md`](doc/ubuntu-toolchain.md)
-- Windows: [`doc/build-windows.md`](doc/build-windows.md)
-- macOS: [`doc/build-osx.md`](doc/build-osx.md)
+- Linux / Unix: [`doc/build-unix.md`](doc/build-unix.md)
+- Ubuntu toolchain validation: [`doc/ubuntu-toolchain.md`](doc/ubuntu-toolchain.md)
+- Windows x86_64: [`doc/build-windows.md`](doc/build-windows.md)
+- macOS x86_64: [`doc/build-osx.md`](doc/build-osx.md)
 
 Testing
 -------
@@ -75,6 +85,13 @@ python3 test/functional/test_runner.py
 
 See [`src/test/README.md`](src/test/README.md) and [`test/functional/`](test/functional/) for details.
 
+Documentation
+-------------
+
+The maintained documentation lives in [`doc/`](doc/) and is indexed in [`doc/README.md`](doc/README.md).
+
+Historical Bitcoin and Litecoin documentation inherited from upstream is not kept in the maintained documentation tree when it does not describe the current Garlicoin line. Older material remains available through Git history and the respective upstream projects.
+
 Development
 -----------
 
@@ -82,7 +99,7 @@ The `master` branch is the maintained integration branch. Maintenance changes sh
 
 See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-Official Garlicoin release tags remain available in the [upstream repository](https://github.com/GarlicoinOrg/Garlicoin/tags).
+Official historical Garlicoin release tags remain available in the [upstream repository](https://github.com/GarlicoinOrg/Garlicoin/tags).
 
 Community discussion: [Discord](https://discord.gg/mmAb4ewGb6)
 
