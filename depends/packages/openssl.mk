@@ -1,47 +1,21 @@
 package=openssl
-$(package)_version=1.0.1k
+$(package)_version=3.5.9
 $(package)_download_path=https://www.openssl.org/source
 $(package)_file_name=$(package)-$($(package)_version).tar.gz
-$(package)_sha256_hash=8f9faeaebad088e772f4ef5e38252d472be4d878c6b3a2718c10a4fcebe7a41c
+$(package)_sha256_hash=603f5602e2eef00d77fbd429d34dcd5822bb301757a1bc9cdb24c670f1eb859a
+$(package)_patches=build-info-prefix.patch
 
 define $(package)_set_vars
-$(package)_config_env=AR="$($(package)_ar)" RANLIB="$($(package)_ranlib)" CC="$($(package)_cc)"
-$(package)_config_opts=--prefix=$(host_prefix) --openssldir=$(host_prefix)/etc/openssl
-$(package)_config_opts+=no-camellia
-$(package)_config_opts+=no-capieng
-$(package)_config_opts+=no-cast
-$(package)_config_opts+=no-comp
-$(package)_config_opts+=no-dso
-$(package)_config_opts+=no-dtls1
-$(package)_config_opts+=no-ec_nistp_64_gcc_128
-$(package)_config_opts+=no-gost
-$(package)_config_opts+=no-gmp
-$(package)_config_opts+=no-heartbeats
-$(package)_config_opts+=no-idea
-$(package)_config_opts+=no-jpake
-$(package)_config_opts+=no-krb5
-$(package)_config_opts+=no-libunbound
-$(package)_config_opts+=no-md2
-$(package)_config_opts+=no-mdc2
-$(package)_config_opts+=no-rc4
-$(package)_config_opts+=no-rc5
-$(package)_config_opts+=no-rdrand
-$(package)_config_opts+=no-rfc3779
-$(package)_config_opts+=no-rsax
-$(package)_config_opts+=no-sctp
-$(package)_config_opts+=no-seed
-$(package)_config_opts+=no-sha0
-$(package)_config_opts+=no-shared
-$(package)_config_opts+=no-ssl-trace
-$(package)_config_opts+=no-ssl2
-$(package)_config_opts+=no-ssl3
-$(package)_config_opts+=no-static_engine
-$(package)_config_opts+=no-store
-$(package)_config_opts+=no-unit-test
-$(package)_config_opts+=no-weak-ssl-ciphers
-$(package)_config_opts+=no-whirlpool
-$(package)_config_opts+=no-zlib
-$(package)_config_opts+=no-zlib-dynamic
+$(package)_config_env=CC="$($(package)_cc)" CXX="$($(package)_cxx)" AR="$($(package)_ar)" RANLIB="$($(package)_ranlib)" SOURCE_DATE_EPOCH=1
+$(package)_build_env=SOURCE_DATE_EPOCH=1 OPENSSL_BUILD_PREFIX=$(host_prefix)
+$(package)_config_opts=--prefix=$(host_prefix) --libdir=lib --openssldir=/etc/ssl
+# Providers are built into libcrypto; no runtime modules/engines or user config.
+$(package)_config_opts+=no-shared no-module no-dso no-engine no-autoload-config
+# Preserve applicable exclusions from the old recipe. Removed options no longer
+# exist in the unified build; default TLS security checks remain enabled.
+$(package)_config_opts+=no-camellia no-cast no-comp no-dtls1 no-idea no-md2 no-mdc2
+$(package)_config_opts+=no-rc4 no-rc5 no-rfc3779 no-sctp no-seed no-ssl3
+$(package)_config_opts+=no-ssl-trace no-weak-ssl-ciphers no-whirlpool no-zlib
 $(package)_config_opts+=$($(package)_cflags) $($(package)_cppflags)
 $(package)_config_opts_linux=-fPIC -Wa,--noexecstack
 $(package)_config_opts_x86_64_linux=linux-x86_64
@@ -57,8 +31,7 @@ $(package)_config_opts_i686_mingw32=mingw
 endef
 
 define $(package)_preprocess_cmds
-  sed -i.old "/define DATE/d" util/mkbuildinf.pl && \
-  sed -i.old "s|engines apps test|engines|" Makefile.org
+  patch -p1 -i $($(package)_patch_dir)/build-info-prefix.patch
 endef
 
 define $(package)_config_cmds
@@ -66,13 +39,13 @@ define $(package)_config_cmds
 endef
 
 define $(package)_build_cmds
-  $(MAKE) -j1 build_libs libcrypto.pc libssl.pc openssl.pc
+  $(MAKE) ENGINESDIR=/lib/engines-3 MODULESDIR=/lib/ossl-modules build_libs
 endef
 
 define $(package)_stage_cmds
-  $(MAKE) INSTALL_PREFIX=$($(package)_staging_dir) -j1 install_sw
+  $(MAKE) DESTDIR=$($(package)_staging_dir) install_dev
 endef
 
 define $(package)_postprocess_cmds
-  rm -rf share bin etc
+  rm -rf share bin lib/cmake
 endef

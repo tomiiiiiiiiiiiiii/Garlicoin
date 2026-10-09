@@ -1,0 +1,13 @@
+Normalize only the depends prefix in compiler metadata. Cryptographic code is
+unchanged; upstream SOURCE_DATE_EPOCH support handles the timestamp.
+--- a/util/mkbuildinf.pl
++++ b/util/mkbuildinf.pl
+@@ -11,6 +11,8 @@
+ 
+ my $platform = pop @ARGV;
+ my $cflags = join(' ', @ARGV);
++my $prefix = $ENV{OPENSSL_BUILD_PREFIX};
++$cflags =~ s/\Q$prefix\E/\/depends/g if defined $prefix;
+ $cflags =~ s(\\)(\\\\)g;
+ $cflags = "compiler: $cflags";
+ 
