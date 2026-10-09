@@ -1,0 +1,492 @@
+/* Garlicoin Core 0.18.3 visual refresh
+ * Presentation-only theme. No wallet or node behaviour is changed here.
+ * Warm GRLC.eu palette: cream, charcoal and restrained gold accents.
+ */
+
+QWidget {
+    color: #262722;
+    font-family: "Segoe UI";
+    font-size: 10pt;
+}
+
+QMainWindow,
+QDialog,
+QWidget#OverviewPage,
+QWidget#SendCoinsDialog,
+QWidget#ReceiveCoinsDialog,
+TransactionView {
+    background-color: #f4f1e8;
+}
+
+QMenuBar {
+    background: #fbfaf6;
+    border-bottom: 1px solid #ded9cc;
+    padding: 2px 6px;
+    font-size: 9.5pt;
+}
+
+QMenuBar::item {
+    background: transparent;
+    padding: 5px 9px;
+    border-radius: 4px;
+}
+
+QMenuBar::item:selected {
+    background: #eee9dd;
+}
+
+QMenu {
+    background: #fffdfa;
+    border: 1px solid #d8d2c5;
+    padding: 5px;
+    font-size: 9.5pt;
+}
+
+QMenu::item {
+    padding: 6px 26px 6px 9px;
+    border-radius: 4px;
+}
+
+QMenu::item:selected {
+    background: #f1dfa6;
+    color: #23241f;
+}
+
+QToolBar {
+    background: #fbfaf6;
+    border: none;
+    border-bottom: 1px solid #ddd8cb;
+    padding: 8px 10px;
+    spacing: 6px;
+}
+
+QToolBar QToolButton {
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    color: #3f413b;
+    font-weight: 600;
+    font-size: 10pt;
+    min-height: 30px;
+    padding: 5px 11px;
+}
+
+QToolBar QToolButton:hover {
+    background: #efebe1;
+    color: #1f211d;
+}
+
+QToolBar QToolButton:checked {
+    background: #f3e2aa;
+    border-color: #ddc36d;
+    color: #22231f;
+}
+
+QStatusBar {
+    background: #fbfaf6;
+    border-top: 1px solid #ddd8cb;
+    color: #6f6c64;
+    font-size: 9pt;
+    min-height: 24px;
+}
+
+QStatusBar::item {
+    border: none;
+}
+
+/* Cards are scoped so generic QFrame names in other dialogs are not styled. */
+QWidget#OverviewPage QFrame#frame,
+QWidget#OverviewPage QFrame#frame_2,
+QDialog#SendCoinsDialog QFrame#frameCoinControl {
+    background: #fffdfa;
+    border: 1px solid #ddd7ca;
+    border-radius: 7px;
+}
+
+QWidget#OverviewPage QFrame#frame,
+QWidget#OverviewPage QFrame#frame_2 {
+    padding: 7px;
+}
+
+QWidget#OverviewPage QLabel#label_5,
+QWidget#OverviewPage QLabel#label_4 {
+    color: #252621;
+    font-size: 11pt;
+    font-weight: 700;
+}
+
+QWidget#OverviewPage QLabel#labelBalance {
+    color: #9b7200;
+    font-size: 14pt;
+    font-weight: 700;
+}
+
+QWidget#OverviewPage QLabel#labelTotal,
+QWidget#OverviewPage QLabel#labelWatchTotal {
+    color: #252621;
+    font-size: 10.5pt;
+    font-weight: 700;
+}
+
+QWidget#OverviewPage QLabel#labelBalanceText,
+QWidget#OverviewPage QLabel#labelPendingText,
+QWidget#OverviewPage QLabel#labelImmatureText,
+QWidget#OverviewPage QLabel#labelTotalText,
+QWidget#OverviewPage QLabel#labelSpendable,
+QWidget#OverviewPage QLabel#labelWatchonly {
+    color: #77736a;
+}
+
+QWidget#OverviewPage QLabel#labelAlerts {
+    background: #fff5d5;
+    color: #6d5609;
+    border: 1px solid #e8d58f;
+    border-radius: 6px;
+    padding: 7px 10px;
+}
+
+QPushButton,
+QToolButton {
+    min-height: 22px;
+    font-size: 9.5pt;
+}
+
+QPushButton {
+    background: #fffdfa;
+    color: #292a25;
+    border: 1px solid #cec8bc;
+    border-radius: 5px;
+    padding: 4px 10px;
+    font-weight: 600;
+}
+
+QPushButton:hover {
+    background: #f4f0e7;
+    border-color: #aaa396;
+}
+
+QPushButton:pressed {
+    background: #e9e4d8;
+}
+
+QPushButton:default {
+    background: #e2b93e;
+    color: #1d1f1b;
+    border-color: #cca52e;
+}
+
+QPushButton:default:hover {
+    background: #ebc655;
+}
+
+QPushButton:disabled {
+    background: #eeeae1;
+    color: #a09b90;
+    border-color: #ddd7cb;
+}
+
+QWidget#OverviewPage QPushButton#labelWalletStatus,
+QWidget#OverviewPage QPushButton#labelTransactionsStatus {
+    background: transparent;
+    border: none;
+    padding: 0;
+    min-height: 0;
+}
+
+QLineEdit,
+QPlainTextEdit,
+QTextEdit,
+QAbstractSpinBox,
+QComboBox {
+    background: #fffdfa;
+    color: #272823;
+    border: 1px solid #c8c1b4;
+    border-radius: 5px;
+    padding: 4px 6px;
+    min-height: 22px;
+    font-size: 10pt;
+    selection-background-color: #e2b93e;
+    selection-color: #1d1f1b;
+}
+
+QLineEdit:focus,
+QPlainTextEdit:focus,
+QTextEdit:focus,
+QAbstractSpinBox:focus,
+QComboBox:focus {
+    border: 1px solid #b88c1f;
+}
+
+/* Spin boxes own the frame; their embedded editor must not get a second one. */
+QAbstractSpinBox QLineEdit,
+QAbstractSpinBox QLineEdit:focus {
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    min-height: 0;
+    background: transparent;
+}
+
+QLineEdit:disabled,
+QAbstractSpinBox:disabled,
+QComboBox:disabled {
+    color: #827d73;
+    background: #eeeae1;
+}
+
+QComboBox::drop-down {
+    border: none;
+    width: 22px;
+}
+
+QAbstractSpinBox::up-button,
+QAbstractSpinBox::down-button {
+    width: 18px;
+}
+
+QCheckBox,
+QRadioButton {
+    spacing: 7px;
+    font-size: 9.5pt;
+}
+
+QCheckBox::indicator,
+QRadioButton::indicator {
+    width: 16px;
+    height: 16px;
+}
+
+QTableView,
+QTreeView,
+QListView {
+    background: #fffdfa;
+    alternate-background-color: #f8f5ee;
+    border: 1px solid #ddd7ca;
+    border-radius: 5px;
+    gridline-color: #ece7dc;
+    selection-background-color: #f2e2ab;
+    selection-color: #252621;
+    font-size: 9.5pt;
+}
+
+/* Reserve the focus border so keyboard selection does not elide cell text. */
+QTableView::item,
+QTreeView::item {
+    border: 1px solid transparent;
+}
+
+QTableView::item:hover:!selected,
+QTreeView::item:hover:!selected {
+    background: #f4f0e7;
+}
+
+QTableView::item:focus,
+QTreeView::item:focus {
+    border: 1px solid #b88c1f;
+}
+
+QWidget#OverviewPage QListView#listTransactions {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+}
+
+QHeaderView {
+    background: #efece4;
+}
+
+QHeaderView::section {
+    background: #efece4;
+    color: #575950;
+    border: none;
+    border-bottom: 1px solid #d8d2c6;
+    padding: 6px 13px 6px 7px;
+    font-size: 9pt;
+    font-weight: 600;
+}
+
+QHeaderView::up-arrow {
+    image: url(:/styles/sort-up);
+}
+
+QHeaderView::down-arrow {
+    image: url(:/styles/sort-down);
+}
+
+QHeaderView::up-arrow,
+QHeaderView::down-arrow {
+    subcontrol-position: center right;
+    width: 7px;
+    height: 5px;
+    margin-right: 4px;
+}
+
+QTableCornerButton::section {
+    background: #efece4;
+    border: none;
+    border-bottom: 1px solid #d8d2c6;
+}
+
+QTabWidget::pane {
+    background: #fffdfa;
+    border: 1px solid #ddd7ca;
+    border-radius: 5px;
+    top: -1px;
+}
+
+QTabBar::tab {
+    background: #ece8de;
+    color: #5f5d56;
+    border: 1px solid #d7d1c4;
+    padding: 6px 11px;
+    margin-right: 2px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    font-size: 9.5pt;
+}
+
+QTabBar::tab:selected {
+    background: #fffdfa;
+    color: #7d5c00;
+    font-weight: 600;
+}
+
+QScrollBar:vertical {
+    background: #e5e0d5;
+    width: 14px;
+    margin: 0;
+    border-left: 1px solid #d4cdbf;
+}
+
+QScrollBar::handle:vertical {
+    background: #958e82;
+    min-height: 36px;
+    margin: 2px;
+    border-radius: 4px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: #777168;
+}
+
+QScrollBar:horizontal {
+    background: #e5e0d5;
+    height: 14px;
+    margin: 0;
+    border-top: 1px solid #d4cdbf;
+}
+
+QScrollBar::handle:horizontal {
+    background: #958e82;
+    min-width: 36px;
+    margin: 2px;
+    border-radius: 4px;
+}
+
+QScrollBar::handle:horizontal:hover {
+    background: #777168;
+}
+
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical,
+QScrollBar::add-line:horizontal,
+QScrollBar::sub-line:horizontal {
+    background: transparent;
+    border: none;
+    width: 0;
+    height: 0;
+}
+
+QScrollBar::add-page:vertical,
+QScrollBar::sub-page:vertical,
+QScrollBar::add-page:horizontal,
+QScrollBar::sub-page:horizontal {
+    background: transparent;
+}
+
+QAbstractScrollArea::corner {
+    background: #e5e0d5;
+}
+
+QProgressBar {
+    background: #e5e0d5;
+    border: none;
+    border-radius: 5px;
+    text-align: center;
+    min-height: 12px;
+    font-size: 9pt;
+}
+
+QProgressBar::chunk {
+    background: #d4aa35;
+    border-radius: 5px;
+}
+
+/* About/help dialog polishing. */
+QDialog#HelpMessageDialog {
+    background: #f4f1e8;
+}
+
+QDialog#HelpMessageDialog QLabel#aboutLogo {
+    background: transparent;
+    border: none;
+    padding: 2px;
+}
+
+QDialog#HelpMessageDialog QScrollArea#scrollArea {
+    background: #fffdfa;
+    border: 1px solid #ddd7ca;
+    border-radius: 7px;
+}
+
+QDialog#HelpMessageDialog QScrollArea#scrollArea > QWidget,
+QDialog#HelpMessageDialog QWidget#scrollAreaWidgetContents {
+    background: #fffdfa;
+}
+
+QDialog#HelpMessageDialog QLabel#aboutMessage {
+    background: transparent;
+    color: #2c2d28;
+    padding: 8px;
+    font-size: 9.5pt;
+}
+
+QDialog#HelpMessageDialog QTextEdit#helpMessage {
+    background: #fffdfa;
+    border: 1px solid #ddd7ca;
+    border-radius: 7px;
+    padding: 8px;
+}
+
+QDialog#HelpMessageDialog QDialogButtonBox QPushButton {
+    min-width: 76px;
+}
+
+/* Keep dense wallet forms readable without making the whole UI oversized. */
+QDialog#SendCoinsDialog QLabel,
+QDialog#ReceiveCoinsDialog QLabel,
+QWidget#ReceiveCoinsDialog QLabel {
+    font-size: 9.75pt;
+}
+
+QDialog#SendCoinsDialog QFrame#frameCoinControl {
+    padding: 4px;
+}
+
+/* The compact icon-only filter needs room for its icon and native arrow. */
+TransactionView QComboBox#watchOnlyFilter {
+    padding: 4px 2px;
+}
+
+QStatusBar QToolButton {
+    min-height: 0;
+    padding: 0;
+}
+
+QToolTip {
+    background: #232520;
+    color: #f8f5ed;
+    border: 1px solid #3b3d36;
+    padding: 5px 7px;
+    font-size: 9.5pt;
+}
