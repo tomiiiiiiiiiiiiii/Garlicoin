@@ -69,6 +69,9 @@ Q_IMPORT_PLUGIN(QXcbIntegrationPlugin);
 Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin);
 #elif defined(QT_QPA_PLATFORM_COCOA)
 Q_IMPORT_PLUGIN(QCocoaIntegrationPlugin);
+#if defined(QT_QPA_PLATFORM_MINIMAL)
+Q_IMPORT_PLUGIN(QMinimalIntegrationPlugin);
+#endif
 #endif
 #endif
 #endif

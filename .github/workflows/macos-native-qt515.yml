@@ -9,6 +9,7 @@ on:
       - 'depends/packages/qt.mk'
       - 'depends/packages/bdb.mk'
       - 'build-aux/m4/bitcoin_qt.m4'
+      - 'src/qt/bitcoin.cpp'
   workflow_dispatch:
 
 permissions:
@@ -157,6 +158,8 @@ jobs:
               symbols = run("nm", "-g", str(binary))
               if name == "garlicoin-qt":
                   assert "_SSL_" in symbols, "No static SSL symbols in GUI"
+                  assert "qt_static_plugin_QMinimalIntegrationPlugin" in symbols, "Minimal plugin is not imported"
+                  assert "qt_static_plugin_QCocoaIntegrationPlugin" in symbols, "Cocoa plugin is not imported"
               shutil.copy2(binary, root / "artifact/bin" / name)
           (root / "ci-logs/macho-linkage.txt").write_text("\n".join(report))
           build_log = (root / "ci-logs/build.log").read_text()
