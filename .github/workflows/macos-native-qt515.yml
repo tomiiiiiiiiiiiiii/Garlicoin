@@ -88,6 +88,8 @@ jobs:
           gmake -j2 -C depends HOST="$host" \
             OSX_MIN_VERSION="$MACOSX_DEPLOYMENT_TARGET" \
             OSX_SDK_VERSION="$OSX_SDK_VERSION" OSX_SDK="$SDKROOT" \
+            darwin_CXX="$(xcrun -f clang++) -mmacosx-version-min=$MACOSX_DEPLOYMENT_TARGET -stdlib=libc++ -Wno-error=enum-constexpr-conversion" \
+            HOST_ID_SALT=native-xcode16-enum-compat \
             darwin_native_packages= \
             qt_config_opts_darwin="-platform macx-clang -no-framework" \
             2>&1 | tee ci-logs/depends.log
