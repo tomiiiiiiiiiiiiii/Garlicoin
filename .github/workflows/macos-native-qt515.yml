@@ -85,7 +85,7 @@ jobs:
           printf 'HOST=%s\n' "$host" >> "$GITHUB_ENV"
           # Native packaging-only Python packages
           # are omitted: this gate produces binaries, not a DMG.
-          gmake -j2 -C depends HOST="$host" \
+          gmake -j3 -C depends HOST="$host" \
             OSX_MIN_VERSION="$MACOSX_DEPLOYMENT_TARGET" \
             OSX_SDK_VERSION="$OSX_SDK_VERSION" OSX_SDK="$SDKROOT" \
             darwin_CXX="$(xcrun -f clang++) -mmacosx-version-min=$MACOSX_DEPLOYMENT_TARGET -stdlib=libc++ -Wno-error=enum-constexpr-conversion" \
@@ -118,7 +118,7 @@ jobs:
       - name: Build Core and GUI
         run: |
           set -euo pipefail
-          gmake -j2 V=1 2>&1 | tee ci-logs/build.log
+          gmake -j3 V=1 2>&1 | tee ci-logs/build.log
 
       - name: Verify Mach-O, deployment target and static linkage
         run: |
@@ -150,8 +150,8 @@ jobs:
                   assert dep.startswith(("/usr/lib/", "/System/Library/")), f"Non-system dependency: {dep}"
                   assert not re.search(r"(libssl|libcrypto|Qt[0-9]|libdb)", dep, re.I), dep
               commands = run("otool", "-l", str(binary))
-              targets = re.findall(r"\b(?:minos|version)\s+(10\.13(?:\.0)?)\b", commands)
-              assert targets, f"Expected macOS deployment 10.13 in {name}"
+              targets = re.findall(r"cmd LC_(?:BUILD_VERSION|VERSION_MIN_MACOSX)\n(?:(?!\nLoad command).)*?\n\s+(?:minos|version)\s+(\S+)", commands, re.S)
+              assert len(targets) == 1 and targets[0] in ("10.13", "10.13.0"), f"Unexpected deployment in {name}: {targets}"
               symbols = run("nm", "-g", str(binary))
               if name == "garlicoin-qt":
                   assert "_SSL_" in symbols, "No static SSL symbols in GUI"
