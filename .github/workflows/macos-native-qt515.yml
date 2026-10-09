@@ -1,0 +1,205 @@
+name: macOS native Qt 5.15 OpenSSL 3.5
+
+on:
+  push:
+    branches: [maintenance/qt515-openssl35]
+    paths:
+      - '.github/workflows/macos-native-qt515.yml'
+      - 'depends/builders/darwin.mk'
+      - 'depends/packages/qt.mk'
+      - 'build-aux/m4/bitcoin_qt.m4'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: macos-native-qt515-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  native-x86_64:
+    runs-on: macos-15-intel
+    timeout-minutes: 180
+    defaults:
+      run:
+        shell: bash
+    env:
+      MACOSX_DEPLOYMENT_TARGET: '10.13'
+      DEVELOPER_DIR: /Applications/Xcode_16.app/Contents/Developer
+      GARLICOIN_SCRYPT: '1'
+      SOURCE_DATE_EPOCH: '1'
+      QT_RCC_SOURCE_DATE_OVERRIDE: '1'
+      HOMEBREW_NO_AUTO_UPDATE: '1'
+      HOMEBREW_NO_INSTALL_CLEANUP: '1'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify Intel runner, Xcode and SDK
+        run: |
+          set -euo pipefail
+          mkdir -p ci-logs
+          {
+            sw_vers
+            uname -a
+            test "$(uname -m)" = x86_64
+            test -d "$DEVELOPER_DIR"
+            xcodebuild -version
+            xcodebuild -showsdks
+            xcrun clang --version
+            xcrun ld -version_details
+            sdk=$(xcrun --sdk macosx --show-sdk-path)
+            sdk_version=$(xcrun --sdk macosx --show-sdk-version)
+            test "$sdk_version" = 15.0
+            printf 'SDKROOT=%s\n' "$sdk" >> "$GITHUB_ENV"
+            printf 'OSX_SDK_VERSION=%s\n' "$sdk_version" >> "$GITHUB_ENV"
+            printf 'deployment=%s\nSDK=%s\n' "$MACOSX_DEPLOYMENT_TARGET" "$sdk"
+            git rev-parse HEAD
+            df -h .
+          } 2>&1 | tee ci-logs/environment.log
+
+      - name: Install build tools
+        run: |
+          set -euo pipefail
+          brew install autoconf automake libtool pkg-config make
+          gmake --version
+          autoconf --version
+          pkg-config --version
+
+      - name: Cache native depends
+        uses: actions/cache@v4
+        with:
+          path: |
+            depends/built
+            depends/sources
+          key: macos-native-qt515-x64-xcode16.0-sdk15.0-min10.13-${{ hashFiles('depends/**') }}
+
+      - name: Build native depends
+        run: |
+          set -euo pipefail
+          host=$(depends/config.guess)
+          case "$host" in x86_64-apple-darwin*) ;; *) echo "Unexpected native host $host"; exit 1;; esac
+          printf 'HOST=%s\n' "$host" >> "$GITHUB_ENV"
+          # Override the legacy native-builder ': =' typos without touching
+          # Linux/Darwin cross-builds. Native packaging-only Python packages
+          # are omitted: this gate produces binaries, not a DMG.
+          gmake -j2 -C depends HOST="$host" \
+            OSX_MIN_VERSION="$MACOSX_DEPLOYMENT_TARGET" \
+            OSX_SDK_VERSION="$OSX_SDK_VERSION" OSX_SDK="$SDKROOT" \
+            build_darwin_CC="$(xcrun -f clang)" \
+            build_darwin_CXX="$(xcrun -f clang++)" \
+            build_darwin_AR="$(xcrun -f ar)" \
+            build_darwin_RANLIB="$(xcrun -f ranlib)" \
+            build_darwin_STRIP="$(xcrun -f strip)" \
+            build_darwin_NM="$(xcrun -f nm)" \
+            darwin_native_packages= \
+            qt_config_opts_darwin="-platform macx-clang -no-framework" \
+            2>&1 | tee ci-logs/depends.log
+          prefix="$PWD/depends/$host"
+          test -f "$prefix/lib/libssl.a"
+          test -f "$prefix/lib/libcrypto.a"
+          test -f "$prefix/lib/libdb_cxx-4.8.a"
+          PKG_CONFIG_LIBDIR="$prefix/lib/pkgconfig" pkg-config --modversion Qt5Core | tee ci-logs/qt-version.txt
+          grep -qx '5.15.19' ci-logs/qt-version.txt
+          grep 'OPENSSL_VERSION_TEXT' "$prefix/include/openssl/opensslv.h" | tee ci-logs/openssl-version.txt
+          grep -q 'OpenSSL 3.5.9' ci-logs/openssl-version.txt
+          shasum -a 256 "$prefix/lib/libssl.a" "$prefix/lib/libcrypto.a" "$prefix/lib/libdb_cxx-4.8.a" > ci-logs/archive-sha256.txt
+
+      - name: Configure Core and GUI
+        run: |
+          set -euo pipefail
+          ./autogen.sh 2>&1 | tee ci-logs/autogen.log
+          CONFIG_SITE="$PWD/depends/$HOST/share/config.site" \
+            ./configure --enable-wallet --with-gui=qt5 \
+              --disable-tests --disable-bench \
+              LDFLAGS="-Wl,-t" \
+            2>&1 | tee ci-logs/configure.log
+          cp config.log ci-logs/core-config.log
+          grep -q 'whether to build.*GUI.*yes' ci-logs/configure.log
+
+      - name: Build Core and GUI
+        run: |
+          set -euo pipefail
+          gmake -j2 V=1 2>&1 | tee ci-logs/build.log
+
+      - name: Verify Mach-O, deployment target and static linkage
+        run: |
+          set -euo pipefail
+          mkdir -p artifact/bin
+          python3 - <<'PY'
+          import pathlib, re, shutil, subprocess
+          root = pathlib.Path.cwd()
+          report = []
+          bins = {
+              "garlicoind": "src/garlicoind",
+              "garlicoin-cli": "src/garlicoin-cli",
+              "garlicoin-tx": "src/garlicoin-tx",
+              "garlicoin-qt": "src/qt/garlicoin-qt",
+          }
+          for name, relative in bins.items():
+              binary = root / relative
+              assert binary.is_file(), f"Missing {binary}"
+              def run(*args):
+                  text = subprocess.check_output(args, text=True, stderr=subprocess.STDOUT)
+                  report.append("$ " + " ".join(args) + "\n" + text)
+                  return text
+              kind = run("file", str(binary))
+              assert "Mach-O 64-bit executable x86_64" in kind, kind
+              assert run("lipo", "-archs", str(binary)).strip() == "x86_64"
+              deps = run("otool", "-L", str(binary))
+              for line in deps.splitlines()[1:]:
+                  dep = line.strip().split(" (", 1)[0]
+                  assert dep.startswith(("/usr/lib/", "/System/Library/")), f"Non-system dependency: {dep}"
+                  assert not re.search(r"(libssl|libcrypto|Qt[0-9]|libdb)", dep, re.I), dep
+              commands = run("otool", "-l", str(binary))
+              targets = re.findall(r"\b(?:minos|version)\s+(10\.13(?:\.0)?)\b", commands)
+              assert targets, f"Expected macOS deployment 10.13 in {name}"
+              symbols = run("nm", "-g", str(binary))
+              if name == "garlicoin-qt":
+                  assert "_SSL_" in symbols, "No static SSL symbols in GUI"
+              shutil.copy2(binary, root / "artifact/bin" / name)
+          (root / "ci-logs/macho-linkage.txt").write_text("\n".join(report))
+          build_log = (root / "ci-logs/build.log").read_text()
+          prefix = str(root / "depends" / __import__("os").environ["HOST"])
+          for archive in ("libcrypto.a", "libssl.a"):
+              assert prefix + "/lib/" + archive in build_log, f"No depends archive trace: {archive}"
+          PY
+          src/garlicoind --version | tee ci-logs/daemon-version.txt
+          src/garlicoin-cli --version | tee ci-logs/cli-version.txt
+          src/garlicoin-tx --version | tee ci-logs/tx-version.txt
+          # Startup without a display verifies the statically linked minimal
+          # Qt plugin. Interactive Cocoa/window validation is a separate gate.
+          QT_QPA_PLATFORM=minimal src/qt/garlicoin-qt -version 2>&1 | tee ci-logs/gui-version.txt
+          cp -R ci-logs artifact/evidence
+          tar -czf garlicoin-macos-x86_64-qt515-openssl35.tar.gz -C artifact .
+          shasum -a 256 garlicoin-macos-x86_64-qt515-openssl35.tar.gz > garlicoin-macos-x86_64-qt515-openssl35.sha256
+
+      - name: Upload verified macOS binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: garlicoin-macos-x86_64-qt515-openssl35
+          path: |
+            garlicoin-macos-x86_64-qt515-openssl35.tar.gz
+            garlicoin-macos-x86_64-qt515-openssl35.sha256
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Preserve failure and build evidence
+        if: always()
+        run: |
+          mkdir -p ci-logs/configs
+          test ! -f config.log || cp config.log ci-logs/configs/core-config.log
+          find depends/work -name config.log -o -name config.summary -o -name bootstrap.log | while IFS= read -r log; do
+            target="ci-logs/configs/$log"
+            mkdir -p "$(dirname "$target")"
+            cp "$log" "$target"
+          done
+
+      - name: Upload macOS logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-native-qt515-logs
+          path: ci-logs/
+          if-no-files-found: error
+          retention-days: 30
