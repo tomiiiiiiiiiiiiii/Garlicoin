@@ -5,6 +5,7 @@ on:
     branches: [maintenance/qt515-openssl35]
     paths:
       - '.github/workflows/macos-native-qt515.yml'
+      - 'configure.ac'
       - 'depends/builders/darwin.mk'
       - 'depends/packages/qt.mk'
       - 'depends/packages/bdb.mk'
@@ -85,8 +86,6 @@ jobs:
           host=$(depends/config.guess)
           case "$host" in x86_64-apple-darwin*) ;; *) echo "Unexpected native host $host"; exit 1;; esac
           printf 'HOST=%s\n' "$host" >> "$GITHUB_ENV"
-          # Native packaging-only Python packages
-          # are omitted: this gate produces binaries, not a DMG.
           gmake -j3 -C depends HOST="$host" \
             OSX_MIN_VERSION="$MACOSX_DEPLOYMENT_TARGET" \
             OSX_SDK_VERSION="$OSX_SDK_VERSION" OSX_SDK="$SDKROOT" \
@@ -117,6 +116,9 @@ jobs:
             2>&1 | tee ci-logs/configure.log
           cp config.log ci-logs/core-config.log
           grep -q 'whether to build.*GUI.*yes' ci-logs/configure.log
+          version="$(sed -n 's/^PACKAGE_VERSION = //p' Makefile)"
+          [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          echo "VERSION=$version" >> "$GITHUB_ENV"
 
       - name: Build Core and GUI
         run: |
@@ -157,7 +159,6 @@ jobs:
               commands = run("otool", "-l", str(binary))
               targets = re.findall(r"cmd LC_(?:BUILD_VERSION|VERSION_MIN_MACOSX)\n(?:(?!\nLoad command).)*?\n\s+(?:minos|version)\s+(\S+)", commands, re.S)
               assert len(targets) == 1 and targets[0] in ("10.13", "10.13.0"), f"Unexpected deployment in {name}: {targets}"
-              # Static Qt plugin symbols may be local after Darwin linking.
               symbols = run("nm", str(binary))
               if name == "garlicoin-qt":
                   assert "_SSL_" in symbols, "No static SSL symbols in GUI"
@@ -172,8 +173,8 @@ jobs:
           PY
           src/garlicoind --version | tee ci-logs/daemon-version.txt
           src/garlicoin-cli --version | tee ci-logs/cli-version.txt
-          # This legacy utility has no --version option. Preserve the exact
-          # requested probe, then verify startup/version through its help path.
+          grep -q "version v${VERSION}" ci-logs/daemon-version.txt
+          grep -q "version v${VERSION}" ci-logs/cli-version.txt
           python3 - <<'PY'
           import pathlib, subprocess
           p = subprocess.run(["src/garlicoin-tx", "--version"], capture_output=True, text=True)
@@ -182,11 +183,10 @@ jobs:
           assert p.returncode == 1 and text.strip() == "error: too few parameters", text
           PY
           src/garlicoin-tx -help 2>&1 | tee ci-logs/tx-version.txt
-          grep -q 'garlicoin-tx utility version v0.18.2' ci-logs/tx-version.txt
+          grep -q "garlicoin-tx utility version v${VERSION}" ci-logs/tx-version.txt
           src/garlicoin-tx -create | tee ci-logs/tx-create-smoke.txt
-          # Startup without a display verifies the statically linked minimal
-          # Qt plugin. Interactive Cocoa/window validation is a separate gate.
           QT_QPA_PLATFORM=minimal src/qt/garlicoin-qt -version 2>&1 | tee ci-logs/gui-version.txt
+          grep -q "version v${VERSION}" ci-logs/gui-version.txt
           cp -R ci-logs artifact/evidence
           tar -czf garlicoin-macos-x86_64-qt515-openssl35.tar.gz -C artifact .
           shasum -a 256 garlicoin-macos-x86_64-qt515-openssl35.tar.gz > garlicoin-macos-x86_64-qt515-openssl35.sha256
@@ -207,7 +207,6 @@ jobs:
           mkdir -p ci-logs/configs
           test ! -f config.log || cp config.log ci-logs/configs/core-config.log
           test -d depends/work || exit 0
-          # Expose failed legacy configure probes in the job log as well.
           find depends/work -path "*/bdb/*/config.log" -exec cat {} \;
           find depends/work -name config.log -o -name config.summary -o -name bootstrap.log | while IFS= read -r log; do
             target="ci-logs/configs/$log"
