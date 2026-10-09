@@ -17,6 +17,25 @@ The maintenance line preserves Garlicoin consensus, Allium proof of work, DarkGr
 
 Maintained builds are identified as the **grlc.eu edition (2026)** to distinguish the actively maintained binaries from older upstream builds.
 
+Latest release
+--------------
+
+The current maintained release is **Garlicoin Core 0.18.2 - GRLC.eu Maintenance Release**.
+
+[View release notes and all downloads](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/tag/v0.18.2)
+
+Downloads:
+
+- [Windows installer (x86_64)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/download/v0.18.2/garlicoin-0.18.2-win64-setup.exe)
+- [Windows ZIP (x86_64)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/download/v0.18.2/garlicoin-0.18.2-win64.zip)
+- [Linux tarball (x86_64)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/download/v0.18.2/garlicoin-0.18.2-linux-x86_64.tar.gz)
+- [macOS DMG (x86_64)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/download/v0.18.2/garlicoin-0.18.2-osx64.dmg)
+- [macOS tarball (x86_64)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/download/v0.18.2/garlicoin-0.18.2-osx64.tar.gz)
+- [Source tarball](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/download/v0.18.2/garlicoin-0.18.2.tar.gz)
+- [SHA256SUMS](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/download/v0.18.2/SHA256SUMS)
+
+The release binaries were produced by the cross-platform Release Validation CI for the `v0.18.2` tag. Verify downloaded files against `SHA256SUMS` before installation.
+
 Current status
 --------------
 
