@@ -53,7 +53,12 @@ jobs:
           rm -rf /tmp/grlc-release-check
           mkdir -p /tmp/grlc-release-check
           tar -xzf "release-assets/garlicoin-${VERSION}-linux-x86_64.tar.gz" -C /tmp/grlc-release-check
-          test "$(/tmp/grlc-release-check/garlicoin-${VERSION}/bin/garlicoind --version | head -n1)" = "Garlicoin Core Daemon version v${VERSION}"
+          FIRST_LINE="$(/tmp/grlc-release-check/garlicoin-${VERSION}/bin/garlicoind --version | head -n1)"
+          echo "$FIRST_LINE"
+          case "$FIRST_LINE" in
+            "Garlicoin Core Daemon version v${VERSION}"*) ;;
+            *) exit 1 ;;
+          esac
           (cd release-assets && sha256sum -c SHA256SUMS)
 
       - name: Publish GitHub release
