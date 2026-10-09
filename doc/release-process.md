@@ -74,4 +74,4 @@ After publication
 Legacy build paths
 ------------------
 
-The old Gitian release process and Linux-to-Darwin cross-build are not the maintained release path for the current Qt 5.15/OpenSSL 3.5 line. The legacy Darwin workflow remains available only for manual historical investigation; the supported macOS release build is native x86_64.
+The old Gitian release process and Linux-to-Darwin cross-build are not the maintained release path for the current Qt 5.15/OpenSSL 3.5 line. Their dedicated GitHub Actions workflows have been removed from the active workflow set. The supported macOS release build is native x86_64 through `.github/workflows/release-validation-ci.yml`.
