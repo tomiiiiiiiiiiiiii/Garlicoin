@@ -67,12 +67,15 @@ jobs:
           pkg-config --version
 
       - name: Cache native depends
-        uses: actions/cache@v4
+        id: depends-cache
+        uses: actions/cache/restore@v4
         with:
           path: |
             depends/built
             depends/sources
-          key: macos-native-qt515-x64-xcode16.0-sdk15.0-min10.13-${{ hashFiles('depends/**') }}
+          key: macos-native-qt515-x64-xcode16.0-sdk15.0-min10.13-${{ hashFiles('depends/**') }}-${{ github.run_id }}
+          restore-keys: |
+            macos-native-qt515-x64-xcode16.0-sdk15.0-min10.13-
 
       - name: Build native depends
         run: |
@@ -80,18 +83,11 @@ jobs:
           host=$(depends/config.guess)
           case "$host" in x86_64-apple-darwin*) ;; *) echo "Unexpected native host $host"; exit 1;; esac
           printf 'HOST=%s\n' "$host" >> "$GITHUB_ENV"
-          # Override the legacy native-builder ': =' typos without touching
-          # Linux/Darwin cross-builds. Native packaging-only Python packages
+          # Native packaging-only Python packages
           # are omitted: this gate produces binaries, not a DMG.
           gmake -j2 -C depends HOST="$host" \
             OSX_MIN_VERSION="$MACOSX_DEPLOYMENT_TARGET" \
             OSX_SDK_VERSION="$OSX_SDK_VERSION" OSX_SDK="$SDKROOT" \
-            build_darwin_CC="$(xcrun -f clang)" \
-            build_darwin_CXX="$(xcrun -f clang++)" \
-            build_darwin_AR="$(xcrun -f ar)" \
-            build_darwin_RANLIB="$(xcrun -f ranlib)" \
-            build_darwin_STRIP="$(xcrun -f strip)" \
-            build_darwin_NM="$(xcrun -f nm)" \
             darwin_native_packages= \
             qt_config_opts_darwin="-platform macx-clang -no-framework" \
             2>&1 | tee ci-logs/depends.log
@@ -189,11 +185,21 @@ jobs:
         run: |
           mkdir -p ci-logs/configs
           test ! -f config.log || cp config.log ci-logs/configs/core-config.log
+          test -d depends/work || exit 0
           find depends/work -name config.log -o -name config.summary -o -name bootstrap.log | while IFS= read -r log; do
             target="ci-logs/configs/$log"
             mkdir -p "$(dirname "$target")"
             cp "$log" "$target"
           done
+
+      - name: Save completed native dependency packages
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            depends/built
+            depends/sources
+          key: ${{ steps.depends-cache.outputs.cache-primary-key }}
 
       - name: Upload macOS logs
         if: always()
