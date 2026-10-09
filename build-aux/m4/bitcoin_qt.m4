@@ -132,6 +132,11 @@ AC_DEFUN([BITCOIN_QT_CONFIGURE],[
       AC_DEFINE(QT_QPA_PLATFORM_XCB, 1, [Define this symbol if the qt platform is xcb])
     elif test "x$TARGET_OS" = xdarwin; then
       AX_CHECK_LINK_FLAG([[-framework IOKit]],[QT_LIBS="$QT_LIBS -framework IOKit"],[AC_MSG_ERROR(could not iokit framework)])
+      dnl Qt 5.15 Cocoa uses display links, Carbon input, Core Animation
+      dnl and IOSurface buffers. These are system framework dependencies.
+      if $PKG_CONFIG --atleast-version=5.15 Qt5Core; then
+        QT_LIBS="$QT_LIBS -framework CoreVideo -framework Carbon -framework QuartzCore -framework IOSurface"
+      fi
       _BITCOIN_QT_CHECK_STATIC_PLUGINS([Q_IMPORT_PLUGIN(QCocoaIntegrationPlugin)],[-lqcocoa])
       AC_DEFINE(QT_QPA_PLATFORM_COCOA, 1, [Define this symbol if the qt platform is cocoa])
     fi

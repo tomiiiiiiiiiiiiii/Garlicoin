@@ -102,7 +102,8 @@ jobs:
           grep -qx '5.15.19' ci-logs/qt-version.txt
           grep 'OPENSSL_VERSION_TEXT' "$prefix/include/openssl/opensslv.h" | tee ci-logs/openssl-version.txt
           grep -q 'OpenSSL 3.5.9' ci-logs/openssl-version.txt
-          shasum -a 256 "$prefix/lib/libssl.a" "$prefix/lib/libcrypto.a" "$prefix/lib/libdb_cxx-4.8.a" > ci-logs/archive-sha256.txt
+          shasum -a 256 "$prefix"/lib/*.a "$prefix"/plugins/platforms/*.a > ci-logs/archive-sha256.txt
+          grep -E '^#define DB_VERSION_(MAJOR|MINOR|PATCH) ' "$prefix/include/db.h" > ci-logs/bdb-version.txt
 
       - name: Configure Core and GUI
         run: |
@@ -160,7 +161,7 @@ jobs:
           (root / "ci-logs/macho-linkage.txt").write_text("\n".join(report))
           build_log = (root / "ci-logs/build.log").read_text()
           prefix = str(root / "depends" / __import__("os").environ["HOST"])
-          for archive in ("libcrypto.a", "libssl.a"):
+          for archive in ("libcrypto.a", "libssl.a", "libdb_cxx-4.8.a", "libQt5Core.a", "libQt5Gui.a", "libQt5Widgets.a"):
               assert prefix + "/lib/" + archive in build_log, f"No depends archive trace: {archive}"
           PY
           src/garlicoind --version | tee ci-logs/daemon-version.txt
