@@ -188,6 +188,8 @@ jobs:
           mkdir -p ci-logs/configs
           test ! -f config.log || cp config.log ci-logs/configs/core-config.log
           test -d depends/work || exit 0
+          # Expose failed legacy configure probes in the job log as well.
+          find depends/work -path "*/bdb/*/config.log" -exec cat {} \;
           find depends/work -name config.log -o -name config.summary -o -name bootstrap.log | while IFS= read -r log; do
             target="ci-logs/configs/$log"
             mkdir -p "$(dirname "$target")"
