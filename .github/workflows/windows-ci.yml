@@ -120,6 +120,7 @@ jobs:
           for binary in \
             src/garlicoind.exe \
             src/garlicoin-cli.exe \
+            src/garlicoin-tx.exe \
             src/qt/garlicoin-qt.exe
           do
             test -f "$binary"
@@ -135,6 +136,17 @@ jobs:
             x86_64-w64-mingw32-objdump -f "$binary" | tee /tmp/pe-header.txt
             grep -q 'file format pei-x86-64' /tmp/pe-header.txt
           done
+
+      - name: Upload Windows binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: garlicoin-windows-qt515-openssl359
+          path: |
+            src/garlicoind.exe
+            src/garlicoin-cli.exe
+            src/garlicoin-tx.exe
+            src/qt/garlicoin-qt.exe
+          if-no-files-found: error
 
       - name: Upload Windows build logs
         if: always()
