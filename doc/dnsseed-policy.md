@@ -1,54 +1,23 @@
-Expectations for DNS Seed operators
-====================================
+Expectations for DNS seed operators
+===================================
 
-Garlicoin Core attempts to minimize the level of trust in DNS seeds,
-but DNS seeds still pose a small amount of risk for the network.
-As such, DNS seeds must be run by entities which have some minimum
-level of trust within the Garlicoin community.
+Garlicoin Core attempts to minimize trust in DNS seeds, but DNS seeds remain part of initial peer discovery and therefore carry some operational responsibility.
 
-Other implementations of Garlicoin software may also use the same
-seeds and may be more exposed. In light of this exposure, this
-document establishes some basic expectations for operating dnsseeds.
+These expectations apply to operators of DNS seeds used by Garlicoin software.
 
-0. A DNS seed operating organization or person is expected to follow good
-host security practices, maintain control of applicable infrastructure,
-and not sell or transfer control of the DNS seed. Any hosting services
-contracted by the operator are equally expected to uphold these expectations.
+1. Seed results should contain only reasonably selected, reachable Garlicoin nodes from the public network to the best of the operator's knowledge and capability.
+2. Results may be randomized, but operators should not selectively return different peer populations except for a documented technical reason.
+3. DNS responses should not use a TTL shorter than one minute without a specific operational reason.
+4. Query logging should be limited to what is necessary for operation or urgent network-health investigation and should not be retained longer than necessary.
+5. Data gathered by public-node crawling may be retained or published, provided the crawler does not deliberately bias connectivity to make that dataset artificially complete.
+6. Operators are encouraged to document relevant operating practices.
+7. A reachable contact method should be available for operational or security reports concerning the seed.
+8. Control of a seed should not be silently sold or transferred to an unrelated operator. If responsibility changes, the Garlicoin maintainers should be informed so the seed can be reviewed.
 
-1. The DNS seed results must consist exclusively of fairly selected and
-functioning Garlicoin nodes from the public network to the best of the
-operator's understanding and capability.
+If an operator can no longer meet these expectations, the seed should be withdrawn or the active Garlicoin maintainers should be contacted.
 
-2. For the avoidance of doubt, the results may be randomized but must not
-single-out any group of hosts to receive different results unless due to an
-urgent technical necessity and disclosed.
+For issues concerning seeds used by this maintained source tree, open an issue in the maintained repository:
 
-3. The results may not be served with a DNS TTL of less than one minute.
+https://github.com/tomiiiiiiiiiiiiii/Garlicoin/issues
 
-4. Any logging of DNS queries should be only that which is necessary
-for the operation of the service or urgent health of the Garlicoin
-network and must not be retained longer than necessary nor disclosed
-to any third party.
-
-5. Information gathered as a result of the operators node-spidering
-(not from DNS queries) may be freely published or retained, but only
-if this data was not made more complete by biasing node connectivity
-(a violation of expectation (1)).
-
-6. Operators are encouraged, but not required, to publicly document the
-details of their operating practices.
-
-7. A reachable email contact address must be published for inquiries
-related to the DNS seed operation.
-
-If these expectations cannot be satisfied the operator should
-discontinue providing services and contact the active Garlicoin
-Core development team as well as posting on
-[garlicoin-dev](https://groups.google.com/forum/#!forum/garlicoin-dev).
-
-Behavior outside of these expectations may be reasonable in some
-situations but should be discussed in public in advance.
-
-See also
-----------
-- [garlicoin-seeder](https://github.com/pooler/garlicoin-seeder) is a reference implementation of a DNS seed.
+The actual seed list used by a release is defined in `src/chainparams.cpp`; that source file is authoritative.
