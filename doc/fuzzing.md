@@ -1,69 +1,34 @@
 Fuzz-testing Garlicoin Core
-entry point for fuzzers and the like. In this document we'll describe how to
-use it with AFL.
+===========================
 
-Building AFL
--------------
+Garlicoin Core includes the `test/test_garlicoin_fuzzy` fuzzing target. The target is built as a non-installed test program and can be used with AFL-compatible instrumentation.
 
-It is recommended to always use the latest version of afl:
-```
-wget http://lcamtuf.coredump.cx/afl/releases/afl-latest.tgz
-tar -zxvf afl-latest.tgz
-cd afl-<version>
-make
-export AFLPATH=$PWD
-```
+Build with AFL
+--------------
 
-Instrumentation
-----------------
+Install AFL or AFL++ using your operating system's package manager, then configure the tree with the AFL compiler wrappers. For example:
 
-To build Garlicoin Core using AFL instrumentation (this assumes that the
-`AFLPATH` was set as above):
-```
-./configure --disable-ccache --disable-shared --enable-tests CC=${AFLPATH}/afl-gcc CXX=${AFLPATH}/afl-g++
-export AFL_HARDEN=1
-cd src/
-make test/test_garlicoin_fuzzy
-```
-We disable ccache because we don't want to pollute the ccache with instrumented
-objects, and similarly don't want to use non-instrumented cached objects linked
-in.
-
-The fuzzing can be sped up significantly (~200x) by using `afl-clang-fast` and
-`afl-clang-fast++` in place of `afl-gcc` and `afl-g++` when compiling. When
-compiling using `afl-clang-fast`/`afl-clang-fast++` the resulting
-`test_litecoin_fuzzy` binary will be instrumented in such a way that the AFL
-features "persistent mode" and "deferred forkserver" can be used. See
-https://github.com/mcarpenter/afl/tree/master/llvm_mode for details.
-
-Preparing fuzzing
-------------------
-
-AFL needs an input directory with examples, and an output directory where it
-will place examples that it found. These can be anywhere in the file system,
-we'll define environment variables to make it easy to reference them.
-
-```
-mkdir inputs
-AFLIN=$PWD/inputs
-mkdir outputs
-AFLOUT=$PWD/outputs
+```sh
+./configure --disable-ccache --disable-shared --enable-tests \
+    CC=afl-clang-fast CXX=afl-clang-fast++
+make -C src test/test_garlicoin_fuzzy
 ```
 
-Example inputs are available from:
+`ccache` is disabled for instrumented builds so normal cached objects are not mixed with fuzz-instrumented objects.
 
-- https://download.visucore.com/bitcoin/bitcoin_fuzzy_in.tar.xz
-- http://strateman.ninja/fuzzing.tar.xz
+Run
+---
 
-Extract these (or other starting inputs) into the `inputs` directory before starting fuzzing.
+Create input and output directories and provide a small corpus appropriate for the parser or data path being exercised:
 
-Fuzzing
---------
-
-To start the actual fuzzing use:
-```
-$AFLPATH/afl-fuzz -i ${AFLIN} -o ${AFLOUT} -m52 -- test/test_garlicoin_fuzzy
+```sh
+mkdir -p inputs outputs
+afl-fuzz -i inputs -o outputs -- src/test/test_garlicoin_fuzzy
 ```
 
-You may have to change a few kernel parameters to test optimally - `afl-fuzz`
-will print an error and suggestion if so.
+The exact AFL/AFL++ options depend on the installed version and host system. Follow the documentation shipped with the fuzzer for current tuning, persistent-mode, memory-limit, and kernel recommendations.
+
+Source of truth
+---------------
+
+The current fuzz target definition is in `src/Makefile.test.include`, and its implementation is in `src/test/test_bitcoin_fuzzy.cpp`. The historical source filename is retained from upstream; the built target in this repository is `test_garlicoin_fuzzy`.
