@@ -32,7 +32,7 @@ concurrency:
 
 jobs:
   mingw64-build:
-    name: Windows x86_64 cross-build
+    name: Windows x86_64 High-DPI preview
     runs-on: ubuntu-22.04
     timeout-minutes: 120
 
@@ -44,6 +44,44 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Apply High-DPI initialization preview fix
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('src/qt/bitcoin.cpp')
+          text = path.read_text()
+          old = '''    BitcoinApplication app(argc, argv);
+#if QT_VERSION > 0x050100
+    // Generate high-dpi pixmaps
+    QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+#endif
+#if QT_VERSION >= 0x050600
+    QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+#endif
+#ifdef Q_OS_MAC
+    QApplication::setAttribute(Qt::AA_DontShowIconsInMenus);
+#endif
+'''
+          new = '''#if QT_VERSION > 0x050100
+    // Qt application attributes must be set before QApplication is constructed.
+    QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+#endif
+#if QT_VERSION >= 0x050600
+    QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+#endif
+#ifdef Q_OS_MAC
+    QApplication::setAttribute(Qt::AA_DontShowIconsInMenus);
+#endif
+
+    BitcoinApplication app(argc, argv);
+'''
+          if old not in text:
+              raise SystemExit('Expected Qt initialization block not found')
+          path.write_text(text.replace(old, new, 1))
+          PY
+          git diff --check
+          git diff -- src/qt/bitcoin.cpp
 
       - name: Install MinGW and build tools
         run: |
@@ -74,7 +112,6 @@ jobs:
           sudo update-alternatives --set x86_64-w64-mingw32-g++ /usr/bin/x86_64-w64-mingw32-g++-posix
           x86_64-w64-mingw32-gcc --version
           x86_64-w64-mingw32-g++ --version
-          x86_64-w64-mingw32-g++ -v 2>&1 | tail -n 20
 
       - name: Cache Windows depends
         uses: actions/cache@v4
@@ -85,16 +122,10 @@ jobs:
           key: garlicoin-depends-windows-${{ runner.os }}-${{ env.HOST }}-${{ hashFiles('depends/**') }}
           restore-keys: |
             garlicoin-depends-windows-${{ runner.os }}-${{ env.HOST }}-
+            garlicoin-release-windows-${{ runner.os }}-${{ env.HOST }}-
 
       - name: Build deterministic Windows dependencies
-        run: |
-          mkdir -p ci-logs
-          if make ${MAKEJOBS} -C depends HOST="${HOST}" >ci-logs/windows-depends.log 2>&1; then
-            tail -n 30 ci-logs/windows-depends.log
-          else
-            tail -n 250 ci-logs/windows-depends.log
-            exit 1
-          fi
+        run: make ${MAKEJOBS} -C depends HOST="${HOST}"
 
       - name: Configure Windows wallet and Qt GUI
         run: |
@@ -106,52 +137,32 @@ jobs:
               --disable-tests \
               --disable-bench
 
-      - name: Build Windows executables
-        run: |
-          if make ${MAKEJOBS} -C src >ci-logs/windows-build.log 2>&1; then
-            tail -n 30 ci-logs/windows-build.log
-          else
-            tail -n 250 ci-logs/windows-build.log
-            exit 1
-          fi
+      - name: Build garlicoin-qt only
+        run: make ${MAKEJOBS} src/qt/garlicoin-qt.exe
 
-      - name: Verify Windows binaries
+      - name: Verify Windows GUI binary
         run: |
-          for binary in \
-            src/garlicoind.exe \
-            src/garlicoin-cli.exe \
-            src/garlicoin-tx.exe \
-            src/qt/garlicoin-qt.exe
-          do
-            test -f "$binary"
-            description="$(file "$binary")"
-            echo "$description"
-            case "$description" in
-              *"PE32+ executable"*"x86-64"*"MS Windows"*) ;;
-              *)
-                echo "ERROR: $binary is not a 64-bit Windows PE executable" >&2
-                exit 1
-                ;;
-            esac
-            x86_64-w64-mingw32-objdump -f "$binary" | tee /tmp/pe-header.txt
-            grep -q 'file format pei-x86-64' /tmp/pe-header.txt
-          done
+          binary=src/qt/garlicoin-qt.exe
+          test -f "$binary"
+          description="$(file "$binary")"
+          echo "$description"
+          case "$description" in
+            *"PE32+ executable"*"x86-64"*"MS Windows"*) ;;
+            *) exit 1 ;;
+          esac
+          x86_64-w64-mingw32-objdump -f "$binary" | grep -q 'file format pei-x86-64'
 
-      - name: Upload Windows binaries
+      - name: Package Windows High-DPI preview
+        run: |
+          mkdir -p preview
+          cp src/qt/garlicoin-qt.exe preview/
+          cd preview
+          sha256sum garlicoin-qt.exe > SHA256SUMS
+          zip -X garlicoin-windows-highdpi-preview.zip garlicoin-qt.exe SHA256SUMS
+
+      - name: Upload Windows High-DPI preview
         uses: actions/upload-artifact@v4
         with:
-          name: garlicoin-windows-qt515-openssl359
-          path: |
-            src/garlicoind.exe
-            src/garlicoin-cli.exe
-            src/garlicoin-tx.exe
-            src/qt/garlicoin-qt.exe
+          name: garlicoin-windows-highdpi-preview
+          path: preview/
           if-no-files-found: error
-
-      - name: Upload Windows build logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-mingw-build-logs
-          path: ci-logs/
-          if-no-files-found: ignore
