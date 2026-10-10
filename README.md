@@ -1,11 +1,11 @@
 Garlicoin Core
 ==============
 
-[![Linux CI](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/linux-ci.yml/badge.svg?branch=master)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/linux-ci.yml)
-[![Ubuntu Toolchain CI](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/ubuntu-toolchain-ci.yml/badge.svg?branch=master)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/ubuntu-toolchain-ci.yml)
-[![Qt GUI CI](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/qt-ci.yml/badge.svg?branch=master)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/qt-ci.yml)
-[![Windows MinGW CI](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/windows-ci.yml/badge.svg?branch=master)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/windows-ci.yml)
-[![Release Validation 0.18.4](https://img.shields.io/badge/release%20validation-0.18.4%20passed-brightgreen)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/runs/38043659670)
+[![Linux CI](https://github.com/garlicoin/Garlicoin/actions/workflows/linux-ci.yml/badge.svg?branch=master)](https://github.com/garlicoin/Garlicoin/actions/workflows/linux-ci.yml)
+[![Ubuntu Toolchain CI](https://github.com/garlicoin/Garlicoin/actions/workflows/ubuntu-toolchain-ci.yml/badge.svg?branch=master)](https://github.com/garlicoin/Garlicoin/actions/workflows/ubuntu-toolchain-ci.yml)
+[![Qt GUI CI](https://github.com/garlicoin/Garlicoin/actions/workflows/qt-ci.yml/badge.svg?branch=master)](https://github.com/garlicoin/Garlicoin/actions/workflows/qt-ci.yml)
+[![Windows MinGW CI](https://github.com/garlicoin/Garlicoin/actions/workflows/windows-ci.yml/badge.svg?branch=master)](https://github.com/garlicoin/Garlicoin/actions/workflows/windows-ci.yml)
+[![Release Validation 0.18.4](https://img.shields.io/badge/release%20validation-0.18.4%20passed-brightgreen)](https://github.com/garlicoin/Garlicoin/actions/runs/38043659670)
 ![Maintained 2026](https://img.shields.io/badge/maintained-2026-brightgreen)
 ![Source 0.18.4](https://img.shields.io/badge/source-0.18.4-blue)
 ![Latest release 0.18.4](https://img.shields.io/badge/latest%20release-0.18.4-blue)
@@ -42,17 +42,17 @@ Latest published release
 
 The latest published release is **Garlicoin Core 0.18.4 - GRLC.eu Maintenance Release**.
 
-[View release notes and all downloads](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/tag/v0.18.4)
+[View release notes and all downloads](https://github.com/garlicoin/Garlicoin/releases/tag/v0.18.4)
 
 Downloads:
 
-- [Windows installer (x86_64)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/download/v0.18.4/garlicoin-0.18.4-win64-setup.exe)
-- [Windows ZIP (x86_64)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/download/v0.18.4/garlicoin-0.18.4-win64.zip)
-- [Linux tarball (x86_64)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/download/v0.18.4/garlicoin-0.18.4-linux-x86_64.tar.gz)
-- [macOS DMG (x86_64)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/download/v0.18.4/garlicoin-0.18.4-osx64.dmg)
-- [macOS tarball (x86_64)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/download/v0.18.4/garlicoin-0.18.4-osx64.tar.gz)
-- [Source tarball](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/download/v0.18.4/garlicoin-0.18.4.tar.gz)
-- [SHA256SUMS](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/download/v0.18.4/SHA256SUMS)
+- [Windows installer (x86_64)](https://github.com/garlicoin/Garlicoin/releases/download/v0.18.4/garlicoin-0.18.4-win64-setup.exe)
+- [Windows ZIP (x86_64)](https://github.com/garlicoin/Garlicoin/releases/download/v0.18.4/garlicoin-0.18.4-win64.zip)
+- [Linux tarball (x86_64)](https://github.com/garlicoin/Garlicoin/releases/download/v0.18.4/garlicoin-0.18.4-linux-x86_64.tar.gz)
+- [macOS DMG (x86_64)](https://github.com/garlicoin/Garlicoin/releases/download/v0.18.4/garlicoin-0.18.4-osx64.dmg)
+- [macOS tarball (x86_64)](https://github.com/garlicoin/Garlicoin/releases/download/v0.18.4/garlicoin-0.18.4-osx64.tar.gz)
+- [Source tarball](https://github.com/garlicoin/Garlicoin/releases/download/v0.18.4/garlicoin-0.18.4.tar.gz)
+- [SHA256SUMS](https://github.com/garlicoin/Garlicoin/releases/download/v0.18.4/SHA256SUMS)
 
 Verify downloaded release artifacts against `SHA256SUMS` before installation.
 
@@ -61,7 +61,7 @@ Verify downloaded release artifacts against `SHA256SUMS` before installation.
 
 Garlicoin Core **v0.18.4** is published with validated Linux, Windows and macOS x86_64 artifacts, source code and SHA256 checksums.
 
-See the [v0.18.4 GitHub release](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/tag/v0.18.4) for the current maintenance-release notes and final binaries.
+See the [v0.18.4 GitHub release](https://github.com/garlicoin/Garlicoin/releases/tag/v0.18.4) for the current maintenance-release notes and final binaries.
 
 Building
 --------
