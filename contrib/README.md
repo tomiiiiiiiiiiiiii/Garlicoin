@@ -1,50 +1,34 @@
-Repository Tools
----------------------
+Garlicoin Core contrib tools
+============================
 
-### [Developer tools](/contrib/devtools) ###
-Specific tools for developers working on this repository.
-Contains the script `github-merge.py` for merging GitHub pull requests securely and signing them using GPG.
+This directory contains auxiliary developer, build, packaging and node-operator tools. The normal Garlicoin Core compile does not use most of these files directly.
 
-### [Verify-Commits](/contrib/verify-commits) ###
-Tool to verify that every merge commit was signed by a developer using the above `github-merge.py` script.
+Actively used by the maintained 0.18.x build/release path
+---------------------------------------------------------
 
-### [Linearize](/contrib/linearize) ###
-Construct a linear, no-fork, best version of the blockchain.
+- `devtools/` - developer and binary validation helpers. `symbol-check.py` and `security-check.py` are referenced by the build system.
+- `macdeploy/` - required by the maintained macOS application bundle and DMG packaging path.
+- `filter-lcov.py` - LCOV coverage filtering helper.
+- `install_db4.sh` - helper for building Berkeley DB 4.8 for wallet compatibility.
 
-### [Qos](/contrib/qos) ###
+Useful maintenance utilities
+----------------------------
 
-A Linux bash script that will set up traffic control (tc) to limit the outgoing bandwidth for connections to the Garlicoin network. This means one can have an always-on garlicoind instance running, and another local garlicoind/garlicoin-qt instance which connects to this node and receives blocks from it.
+- `seeds/` - fixed-seed generation utilities and node lists.
+- `testgen/` - generators for data-driven test vectors.
+- `linearize/` - tools for producing a linearized blockchain data set.
+- `qos/` - optional Linux traffic-control helper for node operators.
+- `zmq/` - ZeroMQ subscriber examples used with the ZMQ interface.
 
-### [Seeds](/contrib/seeds) ###
-Utility to generate the pnSeed[] array that is compiled into the client.
+Packaging material
+------------------
 
-Build Tools and Keys
----------------------
+- `debian/` - historical Debian packaging metadata and asset/copyright attribution. It is not the current GitHub Actions release path.
+- `init/`, `rpm/` and the legacy bash-completion files are retained for the moment because they are still referenced by `Makefile.am` source-distribution metadata. They should only be removed together with the corresponding `Makefile.am` cleanup.
 
-### [Debian](/contrib/debian) ###
-Contains files used to package garlicoind/garlicoin-qt
-for Debian-based Linux systems. If you compile garlicoind/garlicoin-qt yourself, there are some useful files here.
+Removed legacy tooling
+----------------------
 
-### [Gitian-descriptors](/contrib/gitian-descriptors) ###
-Files used during the gitian build process. For more information about gitian, see the [the Bitcoin Core documentation repository](https://github.com/bitcoin-core/docs).
+The maintained release process no longer uses Gitian, the old Bitcoin binary-verification scripts, the inherited commit-signature trust set, or the obsolete Python 2 `spendfrom` utility. These were removed rather than left as misleading maintenance paths.
 
-### [Gitian-keys](/contrib/gitian-keys)
-PGP keys used for signing Garlicoin Core [Gitian release](/doc/release-process.md) results.
-
-### [MacDeploy](/contrib/macdeploy) ###
-Scripts and notes for Mac builds. 
-
-### [RPM](/contrib/rpm) ###
-RPM spec file for building garlicoin-core on RPM based distributions
-
-### [Gitian-build](/contrib/gitian-build.sh) ###
-Script for running full Gitian builds.
-
-Test and Verify Tools 
----------------------
-
-### [TestGen](/contrib/testgen) ###
-Utilities to generate test vectors for the data-driven Garlicoin tests.
-
-### [Verify Binaries](/contrib/verifybinaries) ###
-This script attempts to download and verify the signature file SHA256SUMS.asc from garlicoin.io.
+The supported release process is documented in `doc/release-process.md` and implemented by the repository GitHub Actions workflows.
