@@ -1,0 +1,69 @@
+name: Promote High-DPI source fix
+
+on:
+  push:
+    branches:
+      - preview/windows-highdpi-ci
+    paths:
+      - '.github/workflows/promote-highdpi-fix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  promote:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Apply accepted High-DPI initialization fix
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('src/qt/bitcoin.cpp')
+          text = path.read_text()
+          old = "\n".join([
+              "    BitcoinApplication app(argc, argv);",
+              "#if QT_VERSION > 0x050100",
+              "    // Generate high-dpi pixmaps",
+              "    QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);",
+              "#endif",
+              "#if QT_VERSION >= 0x050600",
+              "    QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);",
+              "#endif",
+              "#ifdef Q_OS_MAC",
+              "    QApplication::setAttribute(Qt::AA_DontShowIconsInMenus);",
+              "#endif",
+              "",
+          ])
+          new = "\n".join([
+              "#if QT_VERSION > 0x050100",
+              "    // Qt application attributes must be set before QApplication is constructed.",
+              "    QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);",
+              "#endif",
+              "#if QT_VERSION >= 0x050600",
+              "    QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);",
+              "#endif",
+              "#ifdef Q_OS_MAC",
+              "    QApplication::setAttribute(Qt::AA_DontShowIconsInMenus);",
+              "#endif",
+              "",
+              "    BitcoinApplication app(argc, argv);",
+              "",
+          ])
+          if old not in text:
+              raise SystemExit('Expected Qt initialization block not found')
+          path.write_text(text.replace(old, new, 1))
+          PY
+          git diff --check
+          git diff -- src/qt/bitcoin.cpp
+
+      - name: Commit accepted source fix to branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c fix/qt-highdpi-init-order
+          git add src/qt/bitcoin.cpp
+          git commit -m "qt: initialize high-DPI attributes before application"
+          git push origin HEAD:refs/heads/fix/qt-highdpi-init-order
