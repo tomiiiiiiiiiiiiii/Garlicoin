@@ -14,11 +14,6 @@ Building
 - [Windows x86_64 build notes](build-windows.md)
 - [macOS x86_64 build notes](build-osx.md)
 
-Additional Unix platform notes are retained for reference but are not part of the current CI release matrix:
-
-- [OpenBSD build notes](build-openbsd.md)
-- [NetBSD build notes](build-netbsd.md)
-
 Development
 -----------
 
@@ -41,13 +36,14 @@ Operation and integration
 - [Init scripts](init.md)
 - [ZMQ](zmq.md)
 
-Current release notes
----------------------
+Release notes
+-------------
 
+- [Garlicoin Core 0.18.4](release-notes-0.18.4.md)
 - [Garlicoin Core 0.18.3](release-notes-0.18.3.md)
 - [Garlicoin Core 0.18.2](release-notes-0.18.2.md)
 
-Historical Bitcoin and Litecoin release-note archives inherited from upstream are intentionally not kept in this directory. They remain available through Git history and the respective upstream projects.
+Older inherited Bitcoin and Litecoin release-note archives are intentionally not kept in this directory. They remain available through Git history and the respective upstream projects.
 
 Project information
 -------------------
