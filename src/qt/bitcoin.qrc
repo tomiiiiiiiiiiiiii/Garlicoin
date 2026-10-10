@@ -55,11 +55,6 @@
         <file alias="hd_disabled">res/icons/hd_disabled.png</file>
         <file alias="network_disabled">res/icons/network_disabled.png</file>
     </qresource>
-    <qresource prefix="/styles">
-        <file alias="modern">res/styles/modern.qss</file>
-        <file alias="sort-up">res/styles/sort-up.png</file>
-        <file alias="sort-down">res/styles/sort-down.png</file>
-    </qresource>
     <qresource prefix="/movies">
         <file alias="spinner-000">res/movies/spinner-000.png</file>
         <file alias="spinner-001">res/movies/spinner-001.png</file>

@@ -8,7 +8,6 @@
 
 #include <QApplication>
 #include <QColor>
-#include <QFile>
 #include <QImage>
 #include <QPalette>
 
@@ -129,24 +128,6 @@ QIcon PlatformStyle::TextColorIcon(const QIcon& icon) const
 
 const PlatformStyle *PlatformStyle::instantiate(const QString &platformId)
 {
-    // Keep visual theming isolated from wallet/node behaviour. The resource is
-    // initialized before BitcoinApplication constructs PlatformStyle, so applying
-    // it here gives every Qt screen a consistent 0.18.3 preview style.
-    static bool modernThemeApplied = false;
-    if (!modernThemeApplied && qApp) {
-        QFile themeFile(":/styles/modern");
-        if (themeFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            QString theme = QString::fromUtf8(themeFile.readAll());
-            theme += QStringLiteral(
-                "\nQCheckBox::indicator { width: 18px; height: 18px; }\n"
-                "QStatusBar { min-height: 28px; }\n"
-                "QStatusBar QLabel { margin-left: 3px; margin-right: 3px; }\n"
-                "QStatusBar QToolButton { margin-left: 2px; margin-right: 2px; }\n");
-            qApp->setStyleSheet(theme);
-            modernThemeApplied = true;
-        }
-    }
-
     for (unsigned x=0; x<platform_styles_count; ++x)
     {
         if (platformId == platform_styles[x].platformId)
@@ -160,3 +141,4 @@ const PlatformStyle *PlatformStyle::instantiate(const QString &platformId)
     }
     return 0;
 }
+

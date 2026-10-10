@@ -119,11 +119,4 @@ public Q_SLOTS:
 
 };
 
-// Qt's qMax template requires both arguments to have the same type. The
-// column widths are enum constants while runtime size hints are ints.
-inline int qMax(TransactionView::ColumnWidths baseWidth, int actualWidth)
-{
-    return qMax(static_cast<int>(baseWidth), actualWidth);
-}
-
 #endif // BITCOIN_QT_TRANSACTIONVIEW_H

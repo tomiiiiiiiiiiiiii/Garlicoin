@@ -6,55 +6,49 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>720</width>
-    <height>420</height>
+    <width>780</width>
+    <height>400</height>
    </rect>
-  </property>
-  <property name="minimumSize">
-   <size>
-    <width>620</width>
-    <height>360</height>
-   </size>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout_2">
    <property name="spacing">
-    <number>16</number>
+    <number>0</number>
    </property>
    <property name="leftMargin">
-    <number>18</number>
+    <number>12</number>
    </property>
    <property name="topMargin">
-    <number>18</number>
+    <number>12</number>
    </property>
    <property name="rightMargin">
-    <number>18</number>
+    <number>12</number>
    </property>
    <property name="bottomMargin">
-    <number>16</number>
+    <number>12</number>
    </property>
    <item>
-    <layout class="QVBoxLayout" name="verticalLayoutLogo">
-     <property name="spacing">
-      <number>8</number>
+    <layout class="QVBoxLayout" name="verticalLayoutLogo" stretch="0,0">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>4</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
      </property>
      <item>
       <widget class="QLabel" name="aboutLogo">
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <sizepolicy hsizetype="Preferred" vsizetype="Ignored">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
-       <property name="minimumSize">
-        <size>
-         <width>76</width>
-         <height>76</height>
-        </size>
-       </property>
        <property name="maximumSize">
         <size>
-         <width>76</width>
-         <height>76</height>
+         <width>100</width>
+         <height>100</height>
         </size>
        </property>
        <property name="pixmap">
@@ -64,30 +58,24 @@
         <bool>true</bool>
        </property>
        <property name="alignment">
-        <set>Qt::AlignHCenter|Qt::AlignTop</set>
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
        </property>
       </widget>
      </item>
      <item>
-      <spacer name="verticalSpacerLogo">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
+      <widget class="QFrame" name="frame">
+       <property name="frameShape">
+        <enum>QFrame::NoFrame</enum>
        </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>20</width>
-         <height>40</height>
-        </size>
+       <property name="frameShadow">
+        <enum>QFrame::Raised</enum>
        </property>
-      </spacer>
+      </widget>
      </item>
     </layout>
    </item>
    <item>
     <layout class="QVBoxLayout" name="verticalLayout">
-     <property name="spacing">
-      <number>10</number>
-     </property>
      <item>
       <widget class="QTextEdit" name="helpMessage">
        <property name="readOnly">
@@ -101,28 +89,13 @@
         <enum>QFrame::NoFrame</enum>
        </property>
        <property name="verticalScrollBarPolicy">
-        <enum>Qt::ScrollBarAsNeeded</enum>
-       </property>
-       <property name="horizontalScrollBarPolicy">
-        <enum>Qt::ScrollBarAlwaysOff</enum>
+        <enum>Qt::ScrollBarAlwaysOn</enum>
        </property>
        <property name="widgetResizable">
         <bool>true</bool>
        </property>
        <widget class="QWidget" name="scrollAreaWidgetContents">
         <layout class="QVBoxLayout" name="verticalLayout_2">
-         <property name="leftMargin">
-          <number>4</number>
-         </property>
-         <property name="topMargin">
-          <number>4</number>
-         </property>
-         <property name="rightMargin">
-          <number>4</number>
-         </property>
-         <property name="bottomMargin">
-          <number>4</number>
-         </property>
          <item>
           <widget class="QLabel" name="aboutMessage">
            <property name="cursor">
@@ -133,9 +106,6 @@
            </property>
            <property name="alignment">
             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-           </property>
-           <property name="wordWrap">
-            <bool>true</bool>
            </property>
            <property name="openExternalLinks">
             <bool>true</bool>
@@ -148,6 +118,22 @@
         </layout>
        </widget>
       </widget>
+     </item>
+     <item>
+      <spacer name="verticalSpacer">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Fixed</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>4</width>
+         <height>4</height>
+        </size>
+       </property>
+      </spacer>
      </item>
      <item>
       <widget class="QDialogButtonBox" name="okButton">

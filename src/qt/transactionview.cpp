@@ -55,8 +55,7 @@ TransactionView::TransactionView(const PlatformStyle *platformStyle, QWidget *pa
     }
 
     watchOnlyWidget = new QComboBox(this);
-    watchOnlyWidget->setObjectName("watchOnlyFilter");
-    watchOnlyWidget->setFixedWidth(42);
+    watchOnlyWidget->setFixedWidth(24);
     watchOnlyWidget->addItem("", TransactionFilterProxy::WatchOnlyFilter_All);
     watchOnlyWidget->addItem(platformStyle->SingleColorIcon(":/icons/eye_plus"), "", TransactionFilterProxy::WatchOnlyFilter_Yes);
     watchOnlyWidget->addItem(platformStyle->SingleColorIcon(":/icons/eye_minus"), "", TransactionFilterProxy::WatchOnlyFilter_No);
@@ -75,7 +74,6 @@ TransactionView::TransactionView(const PlatformStyle *platformStyle, QWidget *pa
     dateWidget->addItem(tr("Last month"), LastMonth);
     dateWidget->addItem(tr("This year"), ThisYear);
     dateWidget->addItem(tr("Range..."), Range);
-    dateWidget->setFixedWidth(qMax(dateWidget->width(), dateWidget->sizeHint().width()));
     hlayout->addWidget(dateWidget);
 
     typeWidget = new QComboBox(this);
@@ -94,7 +92,6 @@ TransactionView::TransactionView(const PlatformStyle *platformStyle, QWidget *pa
     typeWidget->addItem(tr("Mined"), TransactionFilterProxy::TYPE(TransactionRecord::Generated));
     typeWidget->addItem(tr("Other"), TransactionFilterProxy::TYPE(TransactionRecord::Other));
 
-    typeWidget->setFixedWidth(qMax(typeWidget->width(), typeWidget->sizeHint().width()));
     hlayout->addWidget(typeWidget);
 
     search_widget = new QLineEdit(this);
@@ -112,7 +109,6 @@ TransactionView::TransactionView(const PlatformStyle *platformStyle, QWidget *pa
     } else {
         amountWidget->setFixedWidth(100);
     }
-    amountWidget->setFixedWidth(qMax(amountWidget->width(), amountWidget->fontMetrics().width(amountWidget->placeholderText()) + 16));
     amountWidget->setValidator(new QDoubleValidator(0, 1e20, 8, this));
     hlayout->addWidget(amountWidget);
 
@@ -135,7 +131,7 @@ TransactionView::TransactionView(const PlatformStyle *platformStyle, QWidget *pa
     vlayout->addLayout(hlayout);
     vlayout->addWidget(createDateRangeWidget());
     vlayout->addWidget(view);
-    vlayout->setSpacing(6);
+    vlayout->setSpacing(0);
     int width = view->verticalScrollBar()->sizeHint().width();
     // Cover scroll bar width with spacing
     if (platformStyle->getUseExtraSpacing()) {
@@ -232,10 +228,8 @@ void TransactionView::setModel(WalletModel *_model)
 
         transactionView->setColumnWidth(TransactionTableModel::Status, STATUS_COLUMN_WIDTH);
         transactionView->setColumnWidth(TransactionTableModel::Watchonly, WATCHONLY_COLUMN_WIDTH);
-        transactionView->ensurePolished();
-        const int dateWidth = transactionView->fontMetrics().width(GUIUtil::dateTimeStr(QDateTime(QDate(2000, 12, 30), QTime(23, 59)))) + 16;
-        transactionView->setColumnWidth(TransactionTableModel::Date, qMax(DATE_COLUMN_WIDTH, dateWidth));
-        transactionView->setColumnWidth(TransactionTableModel::Type, qMax(TYPE_COLUMN_WIDTH, typeWidget->sizeHint().width()));
+        transactionView->setColumnWidth(TransactionTableModel::Date, DATE_COLUMN_WIDTH);
+        transactionView->setColumnWidth(TransactionTableModel::Type, TYPE_COLUMN_WIDTH);
         transactionView->setColumnWidth(TransactionTableModel::Amount, AMOUNT_MINIMUM_COLUMN_WIDTH);
 
         columnResizingFixer = new GUIUtil::TableViewLastColumnResizingFixer(transactionView, AMOUNT_MINIMUM_COLUMN_WIDTH, MINIMUM_COLUMN_WIDTH, this);
