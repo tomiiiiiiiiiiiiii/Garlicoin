@@ -1,140 +1,98 @@
-WINDOWS BUILD NOTES
-===================
+Windows x86_64 build notes
+==========================
 
-This document describes the currently verified 64-bit Windows cross-build path for Garlicoin Core.
+This document describes the maintained 64-bit Windows cross-build used by Garlicoin Core CI and release validation.
 
-The supported maintenance target is:
+Validated target
+----------------
 
 - build host: Ubuntu 22.04;
 - target: `x86_64-w64-mingw32`;
 - MinGW-w64 POSIX thread model;
-- deterministic `depends` build;
+- deterministic `depends` stack;
 - wallet enabled;
 - Qt 5 GUI enabled.
 
-This procedure is validated by the repository's Windows MinGW CI. It builds and verifies:
+The current dependency baseline includes Qt 5.15.19, OpenSSL 3.5.9, and Berkeley DB 4.8.30 for wallet compatibility.
 
-- `src/garlicoind.exe`;
-- `src/garlicoin-cli.exe`;
-- `src/qt/garlicoin-qt.exe`.
+Host tools
+----------
 
-The CI additionally checks that these are 64-bit Windows PE executables rather than host Linux ELF binaries.
+Install the normal autotools/build utilities and the x86_64 MinGW-w64 compiler. The repository CI workflow is the source of truth for the exact package list used by automation.
 
-Garlicoin is Litecoin-derived. Litecoin Core 0.18.1 remains the primary upstream reference for this build generation, but the commands below reflect the procedure actually validated for the current Garlicoin tree on Ubuntu 22.04.
+Select the POSIX MinGW variants:
 
-64-bit Windows cross-build on Ubuntu 22.04
-------------------------------------------
+```sh
+sudo update-alternatives --set x86_64-w64-mingw32-gcc /usr/bin/x86_64-w64-mingw32-gcc-posix
+sudo update-alternatives --set x86_64-w64-mingw32-g++ /usr/bin/x86_64-w64-mingw32-g++-posix
+```
 
-Install the host build tools and the 64-bit MinGW-w64 compiler:
+Build
+-----
 
-    sudo apt-get update
-    sudo apt-get install -y --no-install-recommends \
-        autoconf \
-        automake \
-        autotools-dev \
-        bsdmainutils \
-        build-essential \
-        ca-certificates \
-        ccache \
-        curl \
-        file \
-        g++-mingw-w64-x86-64 \
-        git \
-        gperf \
-        libtool \
-        mingw-w64-tools \
-        patch \
-        perl \
-        pkg-config \
-        python3
+From the repository root:
 
-Select the POSIX MinGW thread model for both C and C++:
+```sh
+HOST=x86_64-w64-mingw32
+make -j2 -C depends HOST="$HOST"
 
-    sudo update-alternatives --set x86_64-w64-mingw32-gcc /usr/bin/x86_64-w64-mingw32-gcc-posix
-    sudo update-alternatives --set x86_64-w64-mingw32-g++ /usr/bin/x86_64-w64-mingw32-g++-posix
+./autogen.sh
+CONFIG_SITE="$PWD/depends/$HOST/share/config.site" \
+  ./configure \
+    --enable-wallet \
+    --with-gui=qt5 \
+    --disable-tests \
+    --disable-bench
 
-The POSIX variant is required by this C++11-era codebase. The Win32 thread variant conflicts with standard threading facilities used by the source tree.
+make -j2 -C src
+```
 
-You can confirm the selected compiler with:
+Expected executables include:
 
-    x86_64-w64-mingw32-gcc --version
-    x86_64-w64-mingw32-g++ --version
-    x86_64-w64-mingw32-g++ -v
+```text
+src/garlicoind.exe
+src/garlicoin-cli.exe
+src/garlicoin-tx.exe
+src/qt/garlicoin-qt.exe
+```
 
-Build the pinned deterministic dependencies:
+Verification
+------------
 
-    make -j2 -C depends HOST=x86_64-w64-mingw32
+Confirm the binaries are Windows x86_64 PE files rather than host Linux executables:
 
-Then configure Garlicoin Core using the generated depends configuration:
+```sh
+file src/garlicoind.exe
+file src/garlicoin-cli.exe
+file src/garlicoin-tx.exe
+file src/qt/garlicoin-qt.exe
+```
 
-    ./autogen.sh
-    CONFIG_SITE="$PWD/depends/x86_64-w64-mingw32/share/config.site" \
-        ./configure \
-            --enable-wallet \
-            --with-gui=qt5 \
-            --disable-tests \
-            --disable-bench
+The result should identify `PE32+` / `x86-64` Windows executables.
 
-Build the Windows executables:
+For another target-format check:
 
-    make -j2 -C src
+```sh
+x86_64-w64-mingw32-objdump -f src/qt/garlicoin-qt.exe
+```
 
-Expected binaries
------------------
+The reported format should be `pei-x86-64`.
 
-A successful wallet + Qt build produces at least:
-
-    src/garlicoind.exe
-    src/garlicoin-cli.exe
-    src/qt/garlicoin-qt.exe
-
-Verify that the files are 64-bit Windows PE executables:
-
-    file src/garlicoind.exe
-    file src/garlicoin-cli.exe
-    file src/qt/garlicoin-qt.exe
-
-Each result should identify a `PE32+ executable`, `x86-64`, for Microsoft Windows.
-
-For an additional target-format check:
-
-    x86_64-w64-mingw32-objdump -f src/garlicoind.exe
-    x86_64-w64-mingw32-objdump -f src/garlicoin-cli.exe
-    x86_64-w64-mingw32-objdump -f src/qt/garlicoin-qt.exe
-
-The reported file format should be:
-
-    pei-x86-64
-
-Depends system
+Release builds
 --------------
 
-The Windows cross-build uses the versions pinned by the Garlicoin `depends` system. Do not replace those dependencies with host libraries when reproducing the deterministic build.
+A successful compile is not sufficient for a public release. The repository's release-validation workflow builds and packages the maintained Windows artifacts and performs target/version checks before publication.
 
-See [depends/README.md](../depends/README.md) for additional information about the depends framework.
+Use the pinned `depends` stack for release reproduction. Do not silently substitute host Qt, OpenSSL, Berkeley DB, or other libraries and then treat the result as equivalent to the validated release build.
 
-Current compatibility scope
----------------------------
+Scope
+-----
 
-The verified path above is specifically the 64-bit MinGW-w64 cross-build on Ubuntu 22.04.
+This document does not claim CI validation for native Visual Studio builds, 32-bit Windows, Cygwin, or arbitrary MSYS2 configurations. Those may be useful development environments but are outside the maintained release path until explicitly validated.
 
-The following are not claimed as currently CI-validated by this document:
+Source of truth
+---------------
 
-- native Visual Studio builds;
-- Cygwin or MSYS2 builds;
-- 32-bit Windows builds;
-- WSL-specific filesystem/install procedures;
-- runtime Windows testing under Wine or on a Windows runner.
-
-These environments may work, but should not be documented as supported until they are tested against the current Garlicoin tree.
-
-Dependency compatibility
-------------------------
-
-The current verified Windows build retains the existing pinned compatibility baseline, including:
-
-- Berkeley DB 4.8 for wallet compatibility;
-- Qt 5.9.7;
-- OpenSSL 1.0.1k.
-
-A successful modern MinGW cross-build does not by itself justify changing these versions. Dependency upgrades should remain separate, evidence-driven maintenance work.
+- `.github/workflows/windows-ci.yml` for normal Windows CI;
+- `.github/workflows/release-validation-ci.yml` for release validation;
+- `depends/packages/` for pinned dependency versions and build recipes.
