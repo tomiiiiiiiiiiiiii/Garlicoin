@@ -1,21 +1,10 @@
+Debian metadata
+===============
 
-Debian
-====================
-This directory contains files used to package bitcoind/bitcoin-qt
-for Debian-based Linux systems. If you compile bitcoind/bitcoin-qt yourself, there are some useful files here.
+The old Debian packaging files in this directory were inherited from Bitcoin-era packaging and are not part of the maintained Garlicoin Core 0.18.x build or release process.
 
-## bitcoin: URI support ##
+The obsolete package control files, install manifests, changelog, example `bitcoin.conf`, quilt metadata and watch/rules files have been removed to avoid presenting them as a supported packaging path.
 
+`copyright` is retained because repository documentation uses it as the durable attribution record for inherited assets and source material.
 
-bitcoin-qt.desktop  (Gnome / Open Desktop)
-To install:
-
-	sudo desktop-file-install bitcoin-qt.desktop
-	sudo update-desktop-database
-
-If you build yourself, you will either need to modify the paths in
-the .desktop file or copy or symlink your bitcoin-qt binary to `/usr/bin`
-and the `../../share/pixmaps/bitcoin128.png` to `/usr/share/pixmaps`
-
-bitcoin-qt.protocol (KDE)
-
+Current official maintenance binaries are produced by the GitHub Actions release workflow described in `doc/release-process.md`.

@@ -20,15 +20,19 @@ Useful maintenance utilities
 - `qos/` - optional Linux traffic-control helper for node operators.
 - `zmq/` - ZeroMQ subscriber examples used with the ZMQ interface.
 
-Packaging material
-------------------
+Compatibility placeholders
+--------------------------
 
-- `debian/` - historical Debian packaging metadata and asset/copyright attribution. It is not the current GitHub Actions release path.
-- `init/`, `rpm/` and the legacy bash-completion files are retained for the moment because they are still referenced by `Makefile.am` source-distribution metadata. They should only be removed together with the corresponding `Makefile.am` cleanup.
+`Makefile.am` still includes the legacy paths `contrib/init`, `contrib/rpm` and three historically named bash-completion files in source-distribution metadata. To avoid changing the build system during this cleanup:
+
+- `init/` and `rpm/` now contain only short notes explaining that the old upstream templates were removed;
+- `bitcoin-cli.bash-completion`, `bitcoin-tx.bash-completion` and `bitcoind.bash-completion` retain their historical filenames but now register completion for `garlicoin-cli`, `garlicoin-tx` and `garlicoind` respectively.
+
+`debian/` now retains only its README and the copyright/asset attribution record; the obsolete Bitcoin package recipes were removed.
 
 Removed legacy tooling
 ----------------------
 
-The maintained release process no longer uses Gitian, the old Bitcoin binary-verification scripts, the inherited commit-signature trust set, or the obsolete Python 2 `spendfrom` utility. These were removed rather than left as misleading maintenance paths.
+The maintained release process no longer uses Gitian, the old Bitcoin binary-verification scripts, the inherited commit-signature trust set, the obsolete qmake form project, or the Python 2 `spendfrom` utility. These were removed rather than left as misleading maintenance paths.
 
 The supported release process is documented in `doc/release-process.md` and implemented by the repository GitHub Actions workflows.
