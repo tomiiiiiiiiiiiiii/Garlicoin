@@ -2,18 +2,18 @@ Garlicoin Core
 ==============
 
 [![Linux CI](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/linux-ci.yml/badge.svg?branch=master)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/linux-ci.yml)
-[![Ubuntu Toolchain CI](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/ubuntu-toolchain-ci.yml/badge.svg?event=pull_request)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/ubuntu-toolchain-ci.yml)
+[![Ubuntu Toolchain CI](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/ubuntu-toolchain-ci.yml/badge.svg?branch=master)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/ubuntu-toolchain-ci.yml)
 [![Qt GUI CI](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/qt-ci.yml/badge.svg?branch=master)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/qt-ci.yml)
 [![Windows MinGW CI](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/windows-ci.yml/badge.svg?branch=master)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/windows-ci.yml)
-[![Release Validation CI](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/release-validation-ci.yml/badge.svg?event=pull_request)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/release-validation-ci.yml)
+[![Release Validation 0.18.4](https://img.shields.io/badge/release%20validation-0.18.4%20passed-brightgreen)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/runs/38043659670)
 ![Maintained 2026](https://img.shields.io/badge/maintained-2026-brightgreen)
-![Source 0.18.3](https://img.shields.io/badge/source-0.18.3-blue)
-![Latest release 0.18.3](https://img.shields.io/badge/latest%20release-0.18.3-blue)
+![Source 0.18.4](https://img.shields.io/badge/source-0.18.4-blue)
+![Latest release 0.18.4](https://img.shields.io/badge/latest%20release-0.18.4-blue)
 ![License MIT](https://img.shields.io/badge/license-MIT-blue)
 
 This repository is a maintained fork of [GarlicoinOrg/Garlicoin](https://github.com/GarlicoinOrg/Garlicoin), focused on keeping the Garlicoin Core 0.18.x line buildable, testable and maintainable on current systems.
 
-The current `master` source and latest published binary release are **Garlicoin Core 0.18.3**.
+The current `master` source and latest published binary release are **Garlicoin Core 0.18.4**.
 
 The maintenance line preserves Garlicoin consensus, Allium proof of work, DarkGravityWave, wallet format, address formats, network identity and existing user datadirs. Garlicoin is Litecoin-derived, with Litecoin Core 0.18.1 used as the primary upstream reference for compatible maintenance fixes.
 
@@ -22,7 +22,7 @@ Maintained builds are identified as the **grlc.eu edition (2026)** to distinguis
 Current maintenance baseline
 ----------------------------
 
-The maintained 0.18.3 source line includes:
+The maintained 0.18.4 source line includes:
 
 - Qt **5.15.19**;
 - OpenSSL **3.5.9**;
@@ -33,35 +33,35 @@ The maintained 0.18.3 source line includes:
 - Python 3.12+ compatible P2P functional-test transport;
 - removal of the legacy BIP70 Payment Protocol runtime and implementation while keeping normal `garlicoin:` payment URI support;
 - maintained dependency sources, build-system fixes and selected security/robustness backports;
-- refreshed Garlicoin / grlc.eu branding and GUI maintenance work.
+- original wallet appearance with corrected Qt High-DPI scaling and refreshed Garlicoin / grlc.eu maintenance branding.
 
 These maintenance changes are intended to improve buildability, portability and maintainability without changing the existing Garlicoin network or wallet compatibility.
 
 Latest published release
 ------------------------
 
-The latest published release is **Garlicoin Core 0.18.3 - GRLC.eu Maintenance Release**.
+The latest published release is **Garlicoin Core 0.18.4 - GRLC.eu Maintenance Release**.
 
-[View release notes and all downloads](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/tag/v0.18.3)
+[View release notes and all downloads](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/tag/v0.18.4)
 
 Downloads:
 
-- [Windows installer (x86_64)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/download/v0.18.3/garlicoin-0.18.3-win64-setup.exe)
-- [Windows ZIP (x86_64)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/download/v0.18.3/garlicoin-0.18.3-win64.zip)
-- [Linux tarball (x86_64)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/download/v0.18.3/garlicoin-0.18.3-linux-x86_64.tar.gz)
-- [macOS DMG (x86_64)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/download/v0.18.3/garlicoin-0.18.3-osx64.dmg)
-- [macOS tarball (x86_64)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/download/v0.18.3/garlicoin-0.18.3-osx64.tar.gz)
-- [Source tarball](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/download/v0.18.3/garlicoin-0.18.3.tar.gz)
-- [SHA256SUMS](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/download/v0.18.3/SHA256SUMS)
+- [Windows installer (x86_64)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/download/v0.18.4/garlicoin-0.18.4-win64-setup.exe)
+- [Windows ZIP (x86_64)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/download/v0.18.4/garlicoin-0.18.4-win64.zip)
+- [Linux tarball (x86_64)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/download/v0.18.4/garlicoin-0.18.4-linux-x86_64.tar.gz)
+- [macOS DMG (x86_64)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/download/v0.18.4/garlicoin-0.18.4-osx64.dmg)
+- [macOS tarball (x86_64)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/download/v0.18.4/garlicoin-0.18.4-osx64.tar.gz)
+- [Source tarball](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/download/v0.18.4/garlicoin-0.18.4.tar.gz)
+- [SHA256SUMS](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/download/v0.18.4/SHA256SUMS)
 
 Verify downloaded release artifacts against `SHA256SUMS` before installation.
 
-0.18.3 status
+0.18.4 status
 -------------
 
-Garlicoin Core **v0.18.3** is published with validated Linux, Windows and macOS x86_64 artifacts, source code and SHA256 checksums.
+Garlicoin Core **v0.18.4** is published with validated Linux, Windows and macOS x86_64 artifacts, source code and SHA256 checksums.
 
-See [`doc/release-notes-0.18.3.md`](doc/release-notes-0.18.3.md) for the current maintenance-release notes. Download final binaries from the tagged GitHub release.
+See the [v0.18.4 GitHub release](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/tag/v0.18.4) for the current maintenance-release notes and final binaries.
 
 Building
 --------
