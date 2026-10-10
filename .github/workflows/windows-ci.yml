@@ -52,31 +52,35 @@ jobs:
           from pathlib import Path
           path = Path('src/qt/bitcoin.cpp')
           text = path.read_text()
-          old = '''    BitcoinApplication app(argc, argv);
-#if QT_VERSION > 0x050100
-    // Generate high-dpi pixmaps
-    QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
-#endif
-#if QT_VERSION >= 0x050600
-    QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-#endif
-#ifdef Q_OS_MAC
-    QApplication::setAttribute(Qt::AA_DontShowIconsInMenus);
-#endif
-'''
-          new = '''#if QT_VERSION > 0x050100
-    // Qt application attributes must be set before QApplication is constructed.
-    QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
-#endif
-#if QT_VERSION >= 0x050600
-    QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-#endif
-#ifdef Q_OS_MAC
-    QApplication::setAttribute(Qt::AA_DontShowIconsInMenus);
-#endif
-
-    BitcoinApplication app(argc, argv);
-'''
+          old = "\n".join([
+              "    BitcoinApplication app(argc, argv);",
+              "#if QT_VERSION > 0x050100",
+              "    // Generate high-dpi pixmaps",
+              "    QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);",
+              "#endif",
+              "#if QT_VERSION >= 0x050600",
+              "    QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);",
+              "#endif",
+              "#ifdef Q_OS_MAC",
+              "    QApplication::setAttribute(Qt::AA_DontShowIconsInMenus);",
+              "#endif",
+              "",
+          ])
+          new = "\n".join([
+              "#if QT_VERSION > 0x050100",
+              "    // Qt application attributes must be set before QApplication is constructed.",
+              "    QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);",
+              "#endif",
+              "#if QT_VERSION >= 0x050600",
+              "    QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);",
+              "#endif",
+              "#ifdef Q_OS_MAC",
+              "    QApplication::setAttribute(Qt::AA_DontShowIconsInMenus);",
+              "#endif",
+              "",
+              "    BitcoinApplication app(argc, argv);",
+              "",
+          ])
           if old not in text:
               raise SystemExit('Expected Qt initialization block not found')
           path.write_text(text.replace(old, new, 1))
@@ -105,7 +109,8 @@ jobs:
             patch \
             perl \
             pkg-config \
-            python3
+            python3 \
+            zip
 
       - name: Select POSIX MinGW thread model
         run: |
