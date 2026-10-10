@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - preview/windows-highdpi-ci
     paths:
       - 'src/**'
       - 'configure.ac'
