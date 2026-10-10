@@ -1,29 +1,35 @@
-<!-- This issue tracker is only for technical issues related to Garlicoin Core.
+# Garlicoin Core issue
 
-This issue tracker is only for technical issues related to garlicoin-core.
+Thanks for reporting a technical problem with Garlicoin Core.
 
-General garlicoin questions and/or support requests and are best directed to the [garlicoin subreddit](https://www.reddit.com/r/garlicoin/) or [garlicoin discord server](https://discord.gg/garlicoin).
+Please keep this issue focused on a reproducible bug, build problem, regression, or compatibility issue in this repository.
 
-<!-- Describe the issue -->
-<!--- What behavior did you expect? -->
+## Version
 
-<!--- What was the actual behavior (provide screenshots if the issue is GUI-related)? -->
+- Garlicoin Core version or commit:
+- Binary source: GRLC.eu release / self-built / other:
 
-<!--- How reliably can you reproduce the issue, what are the steps to do so? -->
+## Environment
 
-<!-- What version of Garlicoin Core are you using, where did you get it (website, self-compiled, etc)? -->
-
-<!-- What type of machine are you observing the error on (OS/CPU and disk type)? -->
-
-### What version of garlicoin-core are you using?
-List the version number/commit ID, and if it is an official binary, self compiled or a distribution package such as PPA.
-
-### Machine specs:
-- OS:
-- CPU:
+- Operating system:
+- CPU architecture:
 - RAM:
-- Disk size:
-- Disk Type (HD/SDD):
+- Disk type and free space:
 
-### Any extra information that might be useful in the debugging process.
-This is normally the contents of a `debug.log` or `config.log` file. Raw text or a link to a pastebin type site are preferred.
+## Problem
+
+Describe what happened and what you expected to happen.
+
+## Steps to reproduce
+
+1.
+2.
+3.
+
+## Logs and diagnostics
+
+Paste the smallest relevant excerpt from `debug.log`, `config.log`, CI output, or other diagnostics. Remove passwords, RPC credentials, wallet secrets, private keys, seed phrases, and other sensitive data before posting.
+
+## Additional context
+
+Include screenshots, transaction IDs, block heights, or links to related issues when useful.
