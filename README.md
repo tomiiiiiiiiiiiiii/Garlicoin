@@ -8,12 +8,12 @@ Garlicoin Core
 [![Release Validation CI](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/release-validation-ci.yml/badge.svg?event=pull_request)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/actions/workflows/release-validation-ci.yml)
 ![Maintained 2026](https://img.shields.io/badge/maintained-2026-brightgreen)
 ![Source 0.18.3](https://img.shields.io/badge/source-0.18.3-blue)
-![Latest release 0.18.2](https://img.shields.io/badge/latest%20release-0.18.2-blue)
+![Latest release 0.18.3](https://img.shields.io/badge/latest%20release-0.18.3-blue)
 ![License MIT](https://img.shields.io/badge/license-MIT-blue)
 
 This repository is a maintained fork of [GarlicoinOrg/Garlicoin](https://github.com/GarlicoinOrg/Garlicoin), focused on keeping the Garlicoin Core 0.18.x line buildable, testable and maintainable on current systems.
 
-The current `master` source identifies as **Garlicoin Core 0.18.3**. The latest published binary release is still **v0.18.2** until the 0.18.3 release artifacts are completed and published.
+The current `master` source and latest published binary release are **Garlicoin Core 0.18.3**.
 
 The maintenance line preserves Garlicoin consensus, Allium proof of work, DarkGravityWave, wallet format, address formats, network identity and existing user datadirs. Garlicoin is Litecoin-derived, with Litecoin Core 0.18.1 used as the primary upstream reference for compatible maintenance fixes.
 
@@ -40,28 +40,28 @@ These maintenance changes are intended to improve buildability, portability and 
 Latest published release
 ------------------------
 
-The latest published release is **Garlicoin Core 0.18.2 - GRLC.eu Maintenance Release**.
+The latest published release is **Garlicoin Core 0.18.3 - GRLC.eu Maintenance Release**.
 
-[View release notes and all downloads](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/tag/v0.18.2)
+[View release notes and all downloads](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/tag/v0.18.3)
 
 Downloads:
 
-- [Windows installer (x86_64)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/download/v0.18.2/garlicoin-0.18.2-win64-setup.exe)
-- [Windows ZIP (x86_64)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/download/v0.18.2/garlicoin-0.18.2-win64.zip)
-- [Linux tarball (x86_64)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/download/v0.18.2/garlicoin-0.18.2-linux-x86_64.tar.gz)
-- [macOS DMG (x86_64)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/download/v0.18.2/garlicoin-0.18.2-osx64.dmg)
-- [macOS tarball (x86_64)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/download/v0.18.2/garlicoin-0.18.2-osx64.tar.gz)
-- [Source tarball](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/download/v0.18.2/garlicoin-0.18.2.tar.gz)
-- [SHA256SUMS](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/download/v0.18.2/SHA256SUMS)
+- [Windows installer (x86_64)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/download/v0.18.3/garlicoin-0.18.3-win64-setup.exe)
+- [Windows ZIP (x86_64)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/download/v0.18.3/garlicoin-0.18.3-win64.zip)
+- [Linux tarball (x86_64)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/download/v0.18.3/garlicoin-0.18.3-linux-x86_64.tar.gz)
+- [macOS DMG (x86_64)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/download/v0.18.3/garlicoin-0.18.3-osx64.dmg)
+- [macOS tarball (x86_64)](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/download/v0.18.3/garlicoin-0.18.3-osx64.tar.gz)
+- [Source tarball](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/download/v0.18.3/garlicoin-0.18.3.tar.gz)
+- [SHA256SUMS](https://github.com/tomiiiiiiiiiiiiii/Garlicoin/releases/download/v0.18.3/SHA256SUMS)
 
 Verify downloaded release artifacts against `SHA256SUMS` before installation.
 
 0.18.3 status
 -------------
 
-The repository source has already been bumped to **0.18.3**, but no public `v0.18.3` GitHub release is published yet.
+Garlicoin Core **v0.18.3** is published with validated Linux, Windows and macOS x86_64 artifacts, source code and SHA256 checksums.
 
-See [`doc/release-notes-0.18.3.md`](doc/release-notes-0.18.3.md) for the current maintenance-release notes. Final downloadable binaries should be taken from the tagged GitHub release once it is published, not from intermediate validation artifacts.
+See [`doc/release-notes-0.18.3.md`](doc/release-notes-0.18.3.md) for the current maintenance-release notes. Download final binaries from the tagged GitHub release.
 
 Building
 --------
