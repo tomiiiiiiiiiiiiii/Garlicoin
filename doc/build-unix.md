@@ -1,208 +1,137 @@
-UNIX BUILD NOTES
+Unix build notes
 ================
 
-These notes cover building Garlicoin Core on Unix-like systems. For OpenBSD-specific instructions, see [build-openbsd.md](build-openbsd.md).
-
-Garlicoin Core is a legacy codebase with several intentionally old pinned dependencies. For repeatable maintenance and CI builds, prefer the repository's `depends` system over replacing system libraries with obsolete distribution packages.
+These notes cover the maintained Unix/Linux build path for Garlicoin Core. For reproducible maintenance work, prefer the repository's `depends` system over manually assembling old or mismatched system libraries.
 
 Basic build
 -----------
 
 When suitable dependencies are already available:
 
-```bash
+```sh
 ./autogen.sh
 ./configure
 make
-# make install   # optional
 ```
 
-Use `./configure --help` to see all available build options.
+Run `./configure --help` for the complete option list.
 
-Recommended reproducible build with `depends`
----------------------------------------------
+Recommended deterministic build
+-------------------------------
 
-The `depends` directory builds the dependency versions pinned by this repository without requiring you to downgrade system libraries.
+For a normal x86_64 Linux wallet + Qt build:
 
-For a headless build without wallet or UPnP:
+```sh
+HOST=x86_64-unknown-linux-gnu
+make -C depends HOST="$HOST"
 
-```bash
+./autogen.sh
+CONFIG_SITE="$PWD/depends/$HOST/share/config.site" \
+  ./configure --enable-wallet --with-gui=qt5
+
+make
+```
+
+For a headless build without wallet, Qt, UPnP, or ZMQ:
+
+```sh
 HOST=x86_64-unknown-linux-gnu
 make -C depends HOST="$HOST" NO_QT=1 NO_WALLET=1 NO_UPNP=1
+
 ./autogen.sh
 CONFIG_SITE="$PWD/depends/$HOST/share/config.site" \
-  ./configure --disable-wallet --without-gui --without-miniupnpc --disable-zmq --enable-sse2
+  ./configure \
+    --disable-wallet \
+    --without-gui \
+    --without-miniupnpc \
+    --disable-zmq
+
 make
 ```
 
-For a wallet-enabled headless build:
+Current maintenance baseline
+----------------------------
 
-```bash
-HOST=x86_64-unknown-linux-gnu
-make -C depends HOST="$HOST" NO_QT=1 NO_UPNP=1
-./autogen.sh
-CONFIG_SITE="$PWD/depends/$HOST/share/config.site" \
-  ./configure --enable-wallet --without-gui --without-miniupnpc --disable-zmq --enable-sse2
-make
-```
+Maintained release builds currently use:
 
-For the Qt 5 GUI with wallet support:
+- Qt 5.15.19;
+- OpenSSL 3.5.9;
+- Berkeley DB 4.8.30 for wallet compatibility.
 
-```bash
-HOST=x86_64-unknown-linux-gnu
-make -C depends HOST="$HOST" NO_UPNP=1
-./autogen.sh
-CONFIG_SITE="$PWD/depends/$HOST/share/config.site" \
-  ./configure --enable-wallet --with-gui=qt5 --without-miniupnpc --disable-zmq --enable-sse2
-make
-```
+The full dependency set and exact recipes are under `depends/packages/`. See [dependencies.md](dependencies.md).
 
-Ubuntu 22.04 remains the CI compatibility baseline. The Ubuntu toolchain and Qt workflows also validate native x86_64 builds on Ubuntu 24.04 with the pinned `depends` stack. See [Ubuntu toolchain validation](ubuntu-toolchain.md) for scope, evidence and limitations.
+Ubuntu validation
+-----------------
 
-Dependencies
-------------
+Ubuntu 22.04 is the release/CI compatibility baseline used by the maintained Linux and cross-build workflows. Additional modern-toolchain validation is documented in [ubuntu-toolchain.md](ubuntu-toolchain.md).
 
-Core requirements include:
+Wallet builds
+-------------
 
-| Library | Purpose |
-| --- | --- |
-| OpenSSL | Cryptographic support |
-| Boost | Utility, threading and test support |
-| libevent | Asynchronous networking |
+Berkeley DB is required when wallet support is enabled. Existing wallet compatibility is based on Berkeley DB 4.8.
 
-Optional components include:
+The repository also contains the historical helper:
 
-| Library | Purpose |
-| --- | --- |
-| Berkeley DB | Wallet storage; 4.8 is used for compatibility |
-| Qt 5 | GUI |
-| protobuf | Payment protocol / GUI support |
-| qrencode | QR codes in GUI |
-| MiniUPnPc | Optional UPnP support |
-| ZeroMQ | Optional ZMQ notifications |
-
-For the exact versions pinned by the deterministic build system, see [dependencies.md](dependencies.md) and the recipes in [`depends/packages/`](../depends/packages/).
-
-Ubuntu / Debian build tools
----------------------------
-
-A typical host needs the standard C/C++ and autotools toolchain:
-
-```bash
-sudo apt-get update
-sudo apt-get install -y \
-  autoconf automake autotools-dev bsdmainutils build-essential \
-  ca-certificates curl git libtool pkg-config python3 perl
-# Qt depends additionally needs gperf and patch:
-# sudo apt-get install -y gperf patch
-```
-
-If you build against distribution libraries instead of `depends`, install the appropriate development packages for Boost, libevent, OpenSSL and any optional features you enable. Package names and available versions vary by distribution release.
-
-Do **not** replace your distribution repositories with an obsolete Debian or Ubuntu release merely to obtain an old OpenSSL package. Use the deterministic `depends` build or a controlled build environment instead.
-
-Wallet and Berkeley DB
-----------------------
-
-Berkeley DB is required only when wallet support is enabled. Existing Garlicoin wallet compatibility is based on Berkeley DB 4.8.
-
-The repository includes a helper script for building the compatible version locally:
-
-```bash
+```sh
 ./contrib/install_db4.sh "$PWD"
 ```
 
-Follow the environment/configure instructions printed by the script.
+For release work, prefer the pinned `depends` BDB recipe so the build matches CI.
 
-If wallet compatibility with existing Berkeley DB 4.8 builds is not required, `configure` also supports `--with-incompatible-bdb` when using another supported Berkeley DB version. Use this deliberately: wallets created or modified with incompatible database versions may not be portable to standard builds.
+Disable the wallet with:
 
-To build without wallet support:
-
-```bash
+```sh
 ./configure --disable-wallet
 ```
 
-GUI
----
+GUI builds
+----------
 
-Qt 5 is the maintained GUI target for this fork. For reproducible builds, prefer the pinned Qt provided by `depends`.
+Qt 5 is the maintained GUI line for this fork.
 
-To build without the GUI:
-
-```bash
-./configure --without-gui
-```
-
-To request Qt 5 explicitly:
-
-```bash
+```sh
 ./configure --with-gui=qt5
 ```
 
-UPnP and ZMQ
-------------
+Disable the GUI with:
 
-UPnP support is optional. Disable it entirely with:
+```sh
+./configure --without-gui
+```
 
-```bash
+Optional features
+-----------------
+
+UPnP can be disabled with:
+
+```sh
 ./configure --without-miniupnpc
 ```
 
-ZMQ notifications are also optional and can be disabled with:
+ZeroMQ can be disabled with:
 
-```bash
+```sh
 ./configure --disable-zmq
 ```
 
-Security hardening
-------------------
+Build resources
+---------------
 
-Hardening is enabled by default where supported. The relevant configure switches are:
+C++ and Qt compilation can use substantial RAM. On constrained systems reduce parallelism before changing compiler or dependency settings, for example:
 
-```bash
-./configure --enable-hardening
-./configure --disable-hardening
-```
-
-Do not disable hardening merely to make an unsupported dependency combination compile; prefer fixing or isolating the compatibility issue.
-
-Memory requirements
--------------------
-
-C++ compilation can use substantial memory. On constrained systems, reduce parallelism first, for example:
-
-```bash
+```sh
 make -j1
 ```
 
-The older compiler tuning flags historically documented here should only be used when you understand their effect on your compiler version.
+Other Unix-like systems
+-----------------------
 
-ARM cross-compilation
----------------------
+The source may build on additional Unix-like systems, but the maintained public release path does not currently validate dedicated NetBSD or OpenBSD builds. Avoid treating old upstream platform instructions as supported until they are tested against the current source and dependency stack.
 
-The `depends` system supports cross-compilation. On Debian/Ubuntu hosts, for example:
+Source of truth
+---------------
 
-```bash
-sudo apt-get install g++-arm-linux-gnueabihf curl
-make -C depends HOST=arm-linux-gnueabihf NO_QT=1
-./autogen.sh
-./configure --prefix="$PWD/depends/arm-linux-gnueabihf" \
-  --enable-glibc-back-compat --enable-reduce-exports LDFLAGS=-static-libstdc++
-make
-```
-
-Exact toolchain support can vary with the host distribution and should be validated in CI before publishing binaries.
-
-FreeBSD
--------
-
-Use GNU make (`gmake`) and install the normal autotools, Boost, OpenSSL and libevent development packages from FreeBSD ports/packages. Wallet builds additionally require a compatible Berkeley DB configuration.
-
-Because package versions change over time, prefer current FreeBSD package names rather than relying on historical version-specific commands in this document.
-
-Further information
--------------------
-
-- [`depends/README.md`](../depends/README.md) describes the deterministic dependency system.
-- [dependencies.md](dependencies.md) records the dependency versions pinned by this repository.
-- Run `./configure --help` for the complete configure option list.
+- `depends/packages/` for dependency recipes;
+- `.github/workflows/linux-ci.yml` for Linux CI;
+- `.github/workflows/release-validation-ci.yml` for release builds;
+- `./configure --help` for current build options.
