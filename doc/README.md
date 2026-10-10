@@ -3,7 +3,7 @@ Garlicoin Core documentation
 
 This directory contains documentation relevant to the maintained Garlicoin Core 0.18.x line.
 
-The repository source, `depends` recipes, and GitHub Actions workflows are the source of truth when a document and the implementation disagree. The currently validated release platforms are Linux x86_64, Windows x86_64 (MinGW), and native macOS x86_64.
+The repository source, `depends` recipes, chain parameters, and GitHub Actions workflows are the source of truth when a document and the implementation disagree. The currently validated release platforms are Linux x86_64, Windows x86_64 (MinGW), and native macOS x86_64.
 
 Building
 --------
@@ -21,7 +21,6 @@ Development
 - [Release process](release-process.md)
 - [Unauthenticated REST interface](REST-interface.md)
 - [Shared libraries](shared-libraries.md)
-- [BIPs](bips.md)
 - [DNS seed policy](dnsseed-policy.md)
 - [Benchmarking](benchmarking.md)
 - [Fuzz testing](fuzzing.md)
@@ -33,7 +32,6 @@ Operation and integration
 - [Data files](files.md)
 - [Reduce traffic](reduce-traffic.md)
 - [Tor support](tor.md)
-- [Init scripts](init.md)
 - [ZMQ](zmq.md)
 
 Release notes
@@ -43,7 +41,7 @@ Release notes
 - [Garlicoin Core 0.18.3](release-notes-0.18.3.md)
 - [Garlicoin Core 0.18.2](release-notes-0.18.2.md)
 
-Older inherited Bitcoin and Litecoin release-note archives are intentionally not kept in this directory. They remain available through Git history and the respective upstream projects.
+Older inherited Bitcoin and Litecoin release-note archives and unverified upstream protocol matrices are intentionally not kept in this directory. They remain available through Git history and the respective upstream projects.
 
 Project information
 -------------------
