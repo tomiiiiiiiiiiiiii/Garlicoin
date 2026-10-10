@@ -52,6 +52,14 @@ HelpMessageDialog::HelpMessageDialog(QWidget *parent, bool about) :
 
         /// HTML-format the license message from the core
         QString licenseInfo = QString::fromStdString(LicenseInfo());
+        licenseInfo.replace(
+            "Please contribute if you find Garlicoin Core useful. Visit <https://garlicoin.io> for further information about the software.",
+            "This maintained edition of Garlicoin Core is provided by GRLC.eu. Visit <https://grlc.eu> for current project information.");
+        licenseInfo.replace("<https://garlicoin.io>", "<https://grlc.eu>");
+        licenseInfo.replace(
+            "<https://github.com/GarlicoinOrg/Garlicoin>",
+            "<https://github.com/tomiiiiiiiiiiiiii/Garlicoin>");
+
         QString licenseInfoHTML = licenseInfo;
         // Make URLs clickable
         QRegExp uri("<(.*)>", Qt::CaseSensitive, QRegExp::RegExp2);
