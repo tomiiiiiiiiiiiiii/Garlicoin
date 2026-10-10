@@ -1,109 +1,52 @@
-Translation Strings Policy
-===========================
+Translation strings policy
+==========================
 
-This document provides guidelines for internationalization of the Bitcoin Core software.
+This document describes the maintained translation conventions for Garlicoin Core.
 
-How to translate?
-------------------
+Marking strings for translation
+-------------------------------
 
-To mark a message as translatable
+- In GUI code under `src/qt`, use Qt translation facilities such as `tr("...")`.
+- In non-GUI user-facing code under `src`, use `_("...")` where the surrounding code already uses the gettext-style translation wrapper.
+- Developer-only diagnostics, internal logs, RPC field names, and protocol/internal error details generally should not be translated.
 
-- In GUI source code (under `src/qt`): use `tr("...")`
-
-- In non-GUI source code (under `src`): use `_("...")`
-
-No internationalization is used for e.g. developer scripts outside `src`.
-
-Strings to be translated
+What should be translated
 -------------------------
 
-On a high level, these strings are to be translated:
+Translate text that is directly presented to users, including:
 
-- GUI strings, anything that appears in a dialog or window
+- window titles, labels, buttons, menus and tooltips;
+- user-facing progress and message-box text;
+- normal command-line option descriptions.
 
-- Command-line option documentation
+Avoid putting changing default values directly into translation strings. Format the value into the translated message instead so translators do not need to update a string solely because a default changed.
 
-### GUI strings
+Writing translation-friendly strings
+------------------------------------
 
-Anything that appears to the user in the GUI is to be translated. This includes labels, menu items, button texts, tooltips and window titles.
-This includes messages passed to the GUI through the UI interface through `InitMessage`, `ThreadSafeMessageBox` or `ShowProgress`.
+- Prefer complete, self-contained sentences instead of fragments assembled at runtime.
+- Avoid unnecessary near-duplicate strings.
+- Avoid embedding presentation HTML when normal Qt formatting can be used instead.
+- Keep detailed developer/debug information in logs and show users a concise translatable message when appropriate.
 
-### Command-line options
+Plurals
+-------
 
-Documentation for the command line options in the output of `--help` should be translated as well.
+Use Qt's numerus support for GUI strings that depend on a count. For example:
 
-Make sure that default values do not end up in the string, but use string formatting like `strprintf(_("Threshold for disconnecting misbehaving peers (default: %u)"), 100)`. Putting default values in strings has led to accidental translations in the past, and forces the string to be retranslated every time the value changes.
+```cpp
+tr("%n active connection(s) to the Garlicoin network", "", count);
+```
 
-Do not translate messages that are only shown to developers, such as those that only appear when `--help-debug` is used.
+Qt translation files can then provide the language-specific plural forms.
 
-General recommendations
-------------------------
+Updating translations
+---------------------
 
-### Avoid unnecessary translation strings
+The source tree retains historical upstream filenames for some translation infrastructure. In particular, the English Qt catalog is currently named:
 
-Try not to burden translators with translating messages that are e.g. slight variations of other messages.
-In the GUI, avoid the use of text where an icon or symbol will do.
-Make sure that placeholder texts in forms don't end up in the list of strings to be translated (use `<string notr="true">`).
+`src/qt/locale/bitcoin_en.ts`
 
-### Make translated strings understandable
+The filename is an inherited implementation detail and does not mean the application is Bitcoin Core.
 
-Try to write translation strings in an understandable way, for both the user and the translator. Avoid overly technical or detailed messages
-
-### Do not translate internal errors
-
-Do not translate internal errors, or log messages, or messages that appear on the RPC interface. If an error is to be shown to the user,
-use a translatable generic message, then log the detailed message to the log. E.g. "A fatal internal error occurred, see debug.log for details".
-This helps troubleshooting; if the error is the same for everyone, the likelihood is increased that it can be found using a search engine.
-
-### Avoid fragments
-
-Avoid dividing up a message into fragments. Translators see every string separately, so may misunderstand the context if the messages are not self-contained.
-
-### Avoid HTML in translation strings
-
-There have been difficulties with use of HTML in translation strings; translators should not be able to accidentally affect the formatting of messages.
-This may sometimes be at conflict with the recommendation in the previous section.
-
-### Plurals
-
-Plurals can be complex in some languages. A quote from the gettext documentation:
-
-    In Polish we use e.g. plik (file) this way:
-    1 plik,
-    2,3,4 pliki,
-    5-21 pliko'w,
-    22-24 pliki,
-    25-31 pliko'w
-    and so on
-
-In Qt code use tr's third argument for optional plurality. For example:
-
-    tr("%n hour(s)","",secs/HOUR_IN_SECONDS);
-    tr("%n day(s)","",secs/DAY_IN_SECONDS);
-    tr("%n week(s)","",secs/WEEK_IN_SECONDS);
-
-This adds `<numerusform>`s to the respective `.ts` file, which can be translated separately depending on the language. In English, this is simply:
-
-    <message numerus="yes">
-        <source>%n active connection(s) to Bitcoin network</source>
-        <translation>
-            <numerusform>%n active connection to Bitcoin network</numerusform>
-            <numerusform>%n active connections to Bitcoin network</numerusform>
-        </translation>
-    </message>
-
-Where it is possible try to avoid embedding numbers into the flow of the string at all. e.g.
-
-    WARNING: check your network connection, %d blocks received in the last %d hours (%d expected)
-
-versus
-
-    WARNING: check your network connection, less blocks (%d) were received in the last %n hours than expected (%d).
-
-The second example reduces the number of pluralized words that translators have to handle from three to one, at no cost to comprehensibility of the sentence.
-
-### String freezes
-
-During a string freeze (often before a major release), no translation strings are to be added, modified or removed.
-
-This can be checked by executing `make translate` in the `src` directory, then verifying that `bitcoin_en.ts` remains unchanged.
+When changing translatable strings, use the translation/update targets supported by the current build tree and review the resulting `.ts` changes before committing them. Do not perform unrelated mass translation churn as part of a small maintenance patch.
