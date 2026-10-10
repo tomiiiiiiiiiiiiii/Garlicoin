@@ -4,6 +4,8 @@ Garlicoin Core 0.18.3 is a maintenance release focused on dependency modernizati
 
 ## Highlights
 
+- Refreshed the wallet GUI and Garlicoin / GRLC.eu presentation for the maintained 2026 edition.
+- Fixed source-archive and Windows-installer packaging after documentation cleanup.
 - Updated the Qt 5 line to Qt 5.15.19.
 - Updated OpenSSL to 3.5.9.
 - Preserved Berkeley DB 4.8.30 wallet compatibility.
@@ -48,4 +50,4 @@ Windows release binaries are built for x86_64 with MinGW and packaged both as a 
 
 ## Notes
 
-This is a maintenance release in the Garlicoin Core 0.18.x line. A larger UI refresh or Qt 6 migration is intentionally outside the scope of 0.18.3.
+This is a maintenance release in the Garlicoin Core 0.18.x line. The GUI refresh preserves the existing wallet operations. Migration to Qt 6 remains outside the scope of 0.18.3.
