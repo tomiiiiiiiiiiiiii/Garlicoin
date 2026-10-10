@@ -142,7 +142,12 @@ jobs:
           tar -xzf "release-assets/garlicoin-${VERSION}-linux-x86_64.tar.gz" -C /tmp/grlc-release-check
           FIRST_LINE="$(/tmp/grlc-release-check/garlicoin-${VERSION}/bin/garlicoind --version | head -n1)"
           echo "$FIRST_LINE"
-          test "$FIRST_LINE" = "Garlicoin Core Daemon version v${VERSION}"
+          # Lightweight tags retain the build number and exact commit suffix.
+          SOURCE_SUFFIX="$(git rev-parse --short HEAD)"
+          case "$FIRST_LINE" in
+            "Garlicoin Core Daemon version v${VERSION}"|"Garlicoin Core Daemon version v${VERSION}.0-${SOURCE_SUFFIX}") ;;
+            *) echo "Unexpected release binary version: $FIRST_LINE" >&2; exit 1 ;;
+          esac
 
       - name: Publish GitHub release
         env:
